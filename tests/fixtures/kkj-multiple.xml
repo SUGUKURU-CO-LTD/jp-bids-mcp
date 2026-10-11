@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Results>
+  <Version>1.0</Version>
+  <SearchResults>
+    <SearchHits>2</SearchHits>
+    <SearchResult>
+      <ResultId>1</ResultId>
+      <Key>KKJ-MULTI-001</Key>
+      <ProjectName>庁舎ネットワーク保守</ProjectName>
+      <OrganizationName>鹿児島県</OrganizationName>
+      <Category>役務</Category>
+    </SearchResult>
+    <SearchResult>
+      <ResultId>2</ResultId>
+      <Key>KKJ-MULTI-002</Key>
+      <ProjectName>端末調達</ProjectName>
+      <OrganizationName>鹿児島市</OrganizationName>
+      <Category>物品</Category>
+    </SearchResult>
+  </SearchResults>
+</Results>

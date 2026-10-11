@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Results>
+  <Version>1.0</Version>
+  <SearchResults>
+    <SearchHits>1</SearchHits>
+    <SearchResult>
+      <ResultId>1</ResultId>
+      <Key>KKJ-TEST-001</Key>
+      <ExternalDocumentURI>https://www.kkj.go.jp/test/001</ExternalDocumentURI>
+      <ProjectName>鹿児島市システム保守業務委託</ProjectName>
+      <Date>2026-04-25T09:00:00+09:00</Date>
+      <LgCode>46</LgCode>
+      <PrefectureName>鹿児島県</PrefectureName>
+      <CityCode>46201</CityCode>
+      <CityName>鹿児島市</CityName>
+      <OrganizationName>鹿児島市</OrganizationName>
+      <Certification>A B</Certification>
+      <CftIssueDate>2026-04-25</CftIssueDate>
+      <PeriodEndTime>2027-03-31</PeriodEndTime>
+      <Category>役務</Category>
+      <ProcedureType>一般競争入札</ProcedureType>
+      <Location>鹿児島市役所</Location>
+      <TenderSubmissionDeadline>2026-05-15</TenderSubmissionDeadline>
+      <OpeningTendersEvent>2026-05-20</OpeningTendersEvent>
+      <ItemCode>001</ItemCode>
+      <ProjectDescription>システム保守の公告です。</ProjectDescription>
+      <Attachments>
+        <Attachment>
+          <Name>仕様書.pdf</Name>
+          <Uri>https://www.kkj.go.jp/test/spec.pdf</Uri>
+        </Attachment>
+      </Attachments>
+    </SearchResult>
+  </SearchResults>
+</Results>

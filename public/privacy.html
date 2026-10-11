@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Policy — JP Bids MCP</title>
+<style>
+body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; line-height: 1.7; color: #222; }
+h1 { font-size: 1.4rem; border-bottom: 1px solid #ddd; padding-bottom: 0.5rem; }
+h2 { font-size: 1.1rem; margin-top: 2rem; }
+p, ul { margin: 0.8rem 0; }
+ul { padding-left: 1.5rem; }
+.lang { color: #888; font-size: 0.85rem; margin-bottom: 2rem; }
+footer { margin-top: 3rem; border-top: 1px solid #ddd; padding-top: 1rem; font-size: 0.85rem; color: #666; }
+</style>
+</head>
+<body>
+<h1>Privacy Policy / プライバシーポリシー</h1>
+<p class="lang">Last updated: 2026-06-28</p>
+
+<h2>1. 収集する情報 / Information We Collect / Informasi yang Kami Kumpulkan</h2>
+<p>JP Bids MCP は、MCPリクエストに含まれるクエリパラメータ（検索キーワード、都道府県、カテゴリ等）を公告検索の処理に使用します。同一クエリに対する過度な上流アクセスを防ぐため、構成に応じて検索条件をキーとする結果を短時間のプロセス内キャッシュ（既定TTL 10分）へ保持する場合があります。OAuth認証では、クライアント登録・認可コード・更新トークン等の認可状態を設定されたストア（メモリまたはFirestore等、環境設定に依存）で管理します。現行の公開MVPプロファイル（完全無料・読み取り中心）では、ユーザー登録や課金情報は収集・保持しません。会話本文や検索内容は永続保存しません。</p>
+<p>JP Bids MCP uses query parameters included in MCP requests (search keywords, prefecture, category, etc.) for processing procurement searches. Depending on configuration, results keyed by search conditions may be held in a short-lived in-process cache (default TTL 10 minutes) to prevent redundant upstream requests. In OAuth authentication, authorization state such as client registrations, authorization codes, and refresh tokens are managed in configured storage (memory or Firestore depending on deployment configuration). In the current Public MVP profile (free, read-centric), user registrations and billing information are not collected or retained. Conversation content and search queries are not persisted.</p>
+<p>JP Bids MCP menggunakan parameter kueri dalam permintaan MCP (kata kunci pencarian, prefektur, kategori, dll.) untuk memproses pencarian pengadaan. Bergantung pada konfigurasi, hasil yang dikunci oleh kriteria pencarian dapat disimpan dalam cache proses jangka pendek (TTL default 10 menit) untuk mencegah permintaan upstream yang berlebihan. Dalam autentikasi OAuth, status otorisasi seperti pendaftaran klien, kode otorisasi, dan refresh token dikelola dalam penyimpanan terkonfigurasi (memori atau Firestore tergantung konfigurasi deployment). Pada profil Public MVP saat ini (gratis, read-centric), pendaftaran pengguna dan informasi penagihan tidak dikumpulkan atau disimpan. Isi percakapan dan kueri pencarian tidak disimpan secara permanen.</p>
+
+<h2>2. サードパーティへのデータ送信 / Third-Party Data Sharing / Berbagi Data dengan Pihak Ketiga</h2>
+<ul>
+<li><strong>中小企業庁 官公需情報ポータルサイト (KKJ)</strong>: 検索クエリを中小企業庁APIに転送します。中小企業庁のプライバシーポリシーが適用されます。</li>
+<li><strong>Google Vertex AI</strong>: 要件抽出機能使用時、添付資料の内容をVertex AI Geminiに送信します（※公開MVPでは外部資料抽出は既定で無効化されています）。Google Cloud のデータ処理規約が適用されます。ドキュメントはサーバー側に保存されません。</li>
+<li><strong>Stripe（※現行公開MVPでは不使用）</strong>: 公開MVPは完全無料であり、Stripe等の課金連携・データ送信は行いません。</li>
+</ul>
+<p>Search queries are forwarded to the SME Agency (KKJ) API. When requirement extraction is used with external document fetching enabled, attachment content is sent to Google Vertex AI Gemini for processing (external document extraction is disabled by default in Public MVP). Documents are never persisted on our servers. Stripe billing is not used in the free Public MVP profile.</p>
+<p>Kueri pencarian diteruskan ke API SME Agency (KKJ). Saat ekstraksi persyaratan digunakan dengan pengambilan dokumen eksternal diaktifkan, isi lampiran dikirim ke Google Vertex AI Gemini untuk diproses (ekstraksi dokumen eksternal dinonaktifkan secara default di Public MVP). Dokumen tidak disimpan di server kami. Penagihan Stripe tidak digunakan pada profil Public MVP gratis.</p>
+
+<h2>3. ログ / Logging / Log</h2>
+<p>Cloud Run のインフラログ（HTTPステータスコード、レスポンスタイム等）は Google Cloud の標準ログ保持ポリシーに従い保持されます。検索クエリの内容はログに記録しません。</p>
+<p>Infrastructure logs (HTTP status codes, response times) are retained per Google Cloud's standard log retention policy. Search query content is not logged.</p>
+<p>Log infrastruktur (kode status HTTP, waktu respons, dll.) disimpan sesuai kebijakan retensi standar Google Cloud. Isi kueri pencarian tidak dicatat dalam log.</p>
+
+<h2>4. Cookie / Cookies / Cookie</h2>
+<p>JP Bids MCP の MCP endpoint 自体は Cookie を使用しません。公開WebページやOAuth認可画面において認証状態維持に必要な技術を使用する場合があります。過去の有料プランや別サービスに関するCookie・決済処理については、現行の公開MVPでは利用されません（実際の保持状況は管理者確認事項として管理されます）。</p>
+<p>The JP Bids MCP endpoint itself does not use cookies. Public web pages or OAuth authorization pages may use technologies necessary for maintaining authentication state. Cookies or payment processing related to past paid plans or separate services are not used in the current Public MVP (actual historical retention is managed as an administrator verification item).</p>
+<p>Endpoint JP Bids MCP sendiri tidak menggunakan cookie. Halaman web publik atau halaman otorisasi OAuth dapat menggunakan teknologi yang diperlukan untuk mempertahankan status autentikasi. Cookie atau pemrosesan pembayaran terkait paket berbayar sebelumnya atau layanan terpisah tidak digunakan dalam Public MVP saat ini (retensi historis aktual dikelola sebagai item verifikasi administrator).</p>
+
+<h2>5. データの保存 / Data Storage / Penyimpanan Data</h2>
+<p>入札情報の添付ファイル（PDF等）は要件抽出時に一時的にメモリ上で処理されます（※公開MVPでは外部資料本文抽出は既定で無効化されています）。重複取得を避けるため同一プロセス内の短時間キャッシュに一時保持される場合がありますが、ファイルや会話内容を永続化することはありません。公開MVPの7ツールには保存検索機能は含まれず、過去の保存データが存在する場合の扱いについては管理者の構成確認事項として分離されています。</p>
+<p>Bid attachment files (PDFs, etc.) are processed in memory temporarily during requirement extraction (external document extraction is disabled by default in Public MVP). Files may be temporarily held in short-lived in-process cache to avoid duplicate fetches, but files or conversation contents are never persisted. The 7 Public MVP tools do not include saved-search features; handling of any past stored data is separated as an administrator configuration verification item.</p>
+<p>Berkas lampiran tender (PDF, dll.) diproses sementara di memori selama ekstraksi persyaratan (ekstraksi dokumen eksternal dinonaktifkan secara default di Public MVP). Berkas dapat disimpan sementara di cache proses jangka pendek untuk menghindari pengambilan berulang, namun berkas atau isi percakapan tidak pernah disimpan secara permanen. 7 alat Public MVP tidak menyertakan fitur pencarian tersimpan; penanganan data tersimpan sebelumnya dipisahkan sebagai item verifikasi konfigurasi administrator.</p>
+
+<h2>6. お問い合わせ / Contact / Kontak</h2>
+<p>プライバシーに関するお問い合わせは <a href="https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/issues">GitHub Issues</a> までお願いします。</p>
+<p>For privacy questions, please contact us through <a href="https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/issues">GitHub Issues</a>.</p>
+<p>Untuk pertanyaan privasi, silakan hubungi kami melalui <a href="https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/issues">GitHub Issues</a>.</p>
+
+<footer>
+<p>Sugukuru Inc. / スグクル株式会社 — <a href="https://mcp.bid-jp.com">mcp.bid-jp.com</a></p>
+</footer>
+</body>
+</html>

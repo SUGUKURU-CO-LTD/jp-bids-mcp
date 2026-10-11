@@ -1,0 +1,54 @@
+{
+  "schema_version": "0.1.0",
+  "name": "JP Bids",
+  "version": "0.9.0",
+  "type": "mcp_server",
+  "homepage": "https://mcp.bid-jp.com",
+  "repository": "https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp",
+  "privacy_policy": "https://mcp.bid-jp.com/privacy",
+  "terms_of_service": "https://mcp.bid-jp.com/terms",
+  "description": {
+    "ja": "日本の官公需公告をMCPで検索・順位付け・要件抽出・出力する読み取り専用サーバー。完全無料・7ツール。",
+    "en": "Search, rank, extract requirements, and export Japanese public procurement notices through MCP. Free, read-centric, 7 tools.",
+    "id": "Server MCP untuk mencari, memeringkat, mengekstrak persyaratan, dan mengekspor pengumuman pengadaan Jepang. Gratis, read-centric, 7 tools."
+  },
+  "data_sources": [
+    {
+      "name": "中小企業庁 官公需情報ポータルサイト 検索API",
+      "url": "https://www.kkj.go.jp/",
+      "license_url": "https://www.kkj.go.jp/s/help/notes/",
+      "retention": "No upstream documents or attachment files are stored by the server."
+    }
+  ],
+  "capabilities": {
+    "tools": [
+      "search_bids",
+      "list_recent_bids",
+      "get_bid_detail",
+      "rank_bids",
+      "extract_bid_requirements",
+      "export_bid_shortlist",
+      "search_bids_app"
+    ],
+    "prompts": ["morning_bid_briefing", "bid_discovery_workspace", "bid_due_alert"],
+    "resources": [
+      "attribution://kkj",
+      "docs://api-reference",
+      "codes://prefectures",
+      "ui://jp-bids/search-results.html"
+    ],
+    "resource_templates": ["prefecture://{lg_code}"]
+  },
+  "governance": {
+    "human_review_required": "Official procurement documents must be verified by a human before bidding decisions.",
+    "legal_disclaimer": "Results are reference information, not legal or bidding advice.",
+    "sampling": "Sampling is not enabled in the Public MVP profile. The MCP Apps view uses standard MCP UI messaging without host-side sampling, and external document extraction is OFF by default.",
+    "tasks": "Not implemented or advertised. Current searches and review workflows are short-running and synchronous; multi-step workflows are exposed as MCP Prompts instead.",
+    "authentication": "Remote endpoint supports OAuth 2.0 with Dynamic Client Registration (RFC 7591) and PKCE S256, per MCP authorization spec 2025-11-25. Stdio package is local and unauthenticated."
+  },
+  "security": {
+    "prompt_injection": "Upstream bid text is treated as untrusted data and returned as structured content.",
+    "logging": "Secrets and personal data must not be logged.",
+    "storage": "Fetched bid PDF/HTML documents are processed ephemerally in memory and are not stored by the server."
+  }
+}

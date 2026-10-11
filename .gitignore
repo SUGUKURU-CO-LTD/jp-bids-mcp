@@ -1,0 +1,37 @@
+node_modules/
+dist/
+coverage/
+.env
+.env.*
+!.env.example
+gcs-key.json
+data/
+bom.json
+*.log
+reports/
+.stryker-tmp/
+.mutation-tmp/
+.smithery/shttp/module.js
+.smithery/shttp/module.js.map
+
+# cookbook-scout local candidates
+.cookbook-candidates/
+
+# confidential docs (pitch / acquisition materials)
+docs/pitch.md
+docs/outreach-draft.md
+docs/outreach/
+
+# sibling MCP repositories cloned locally for deploy/deploy-all-production.sh.
+# They are independent repositories, not submodules of this one; the deploy
+# script prints the git clone command when they are missing.
+jgrants-mcp-server/
+japan-real-estate-intel-mcp/
+
+# local review archives, evidence packets & draft artifacts (internal only)
+*.zip
+evidence/
+docs/drafts/
+JP_BIDS_*.md
+JP_BIDS_*.json
+ANTIGRAVITY_*.md

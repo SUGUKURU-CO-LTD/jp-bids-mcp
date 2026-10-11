@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<title>MCP Apps mock host — JP Bids AI Bid Workspace</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #ffffff; }
+  #frame { display: block; border: 0; width: 100%; height: 100vh; }
+  body.dark { background: #191919; }
+</style>
+</head>
+<body>
+<iframe
+  id="frame"
+  src="./search-results.html"
+  title="AI Bid Workspace"
+  sandbox="allow-scripts allow-same-origin allow-downloads"
+  allow="clipboard-write"
+></iframe>
+<script>
+// MCP Apps ホストの最小実装。ui/initialize に応答し、tool result を1回流す。
+// 本番UI（dist/apps/search-results.html）に一切手を入れずに決定的なキャプチャを得るために使う。
+const PROTOCOL_VERSION = "2026-01-26";
+
+const params = new URLSearchParams(location.search);
+const theme = params.get("theme") === "dark" ? "dark" : "light";
+const displayMode = params.get("displayMode") ?? "inline";
+const denyMessage = params.get("denyMessage") === "1";
+const denyDownload = params.get("denyDownload") === "1";
+const autoResult = params.get("autoResult") !== "0";
+const openEvidence = params.get("openEvidence") === "1";
+const clickAction = params.get("clickAction");
+const selectBids = params.get("selectBids");
+
+if (theme === "dark") document.body.classList.add("dark");
+
+const frame = document.getElementById("frame");
+const send = (message) => frame.contentWindow.postMessage(message, "*");
+
+const ACCESSED_AT = "2026-07-26T09:00:00.000Z";
+const attribution = {
+  dataSource: "中小企業庁 官公需情報ポータルサイト",
+  apiEndpoint: "http://www.kkj.go.jp/api/",
+  licenseUrl: "https://www.kkj.go.jp/s/help/notes/",
+  serviceDisclaimer:
+    "JP Bids MCP returns public procurement search results as reference information. Verify official documents before bidding.",
+  accessedAt: ACCESSED_AT,
+};
+
+const bids = [
+  {
+    resultId: 1,
+    key: "KKJ-2026-46201-0311",
+    bidRef: "token_mock_signed_ref_0311",
+    projectName: "鹿児島市 学校教育情報システム 保守運用業務",
+    organizationName: "鹿児島市",
+    prefectureName: "鹿児島県",
+    cityName: "鹿児島市",
+    category: "役務",
+    procedureType: "一般競争入札",
+    certification: "役務の提供等 A・B等級",
+    cftIssueDate: "2026-07-21",
+    tenderSubmissionDeadline: "2026-08-03T17:00:00+09:00",
+    openingTendersEvent: "2026-08-07T14:00:00+09:00",
+    externalDocumentUri: "https://www.pref.kagoshima.jp/docs/notice_0311.pdf",
+    officialUrl: "https://www.pref.kagoshima.jp/bids/0311.html",
+    fileType: "pdf",
+    fileSize: 486_912,
+    projectDescription: "小中学校で運用する教育情報システムの保守および運用支援業務一式。",
+    attachments: [{ name: "仕様書_0311.pdf", uri: "https://www.pref.kagoshima.jp/docs/notice_0311.pdf" }],
+  },
+  {
+    resultId: 2,
+    key: "KKJ-2026-46000-0288",
+    bidRef: "token_mock_signed_ref_0288",
+    projectName: "鹿児島県 農林水産統計データ整備支援業務",
+    organizationName: "鹿児島県",
+    prefectureName: "鹿児島県",
+    category: "役務",
+    procedureType: "指名競争入札",
+    cftIssueDate: "2026-07-18",
+    tenderSubmissionDeadline: "2026-08-19T17:00:00+09:00",
+    openingTendersEvent: "2026-08-24T10:00:00+09:00",
+    externalDocumentUri: "https://www.pref.kagoshima.jp/docs/notice_0288.pdf",
+    officialUrl: "https://www.pref.kagoshima.jp/bids/0288.html",
+    fileType: "pdf",
+    fileSize: 271_360,
+    attachments: [{ name: "仕様書_0288.pdf", uri: "https://www.pref.kagoshima.jp/docs/notice_0288.pdf" }],
+  },
+  {
+    resultId: 3,
+    key: "KKJ-2026-46215-0102",
+    bidRef: "token_mock_signed_ref_0102",
+    projectName: "霧島市 上下水道台帳システム更新",
+    organizationName: "霧島市",
+    prefectureName: "鹿児島県",
+    cityName: "霧島市",
+    category: "物品",
+    procedureType: "一般競争入札",
+    cftIssueDate: "2026-07-14",
+    tenderSubmissionDeadline: "2026-07-28T17:00:00+09:00",
+    externalDocumentUri: "https://www.city.kirishima.lg.jp/docs/notice_0102.pdf",
+    officialUrl: "https://www.city.kirishima.lg.jp/bids/0102.html",
+    fileType: "pdf",
+    fileSize: 158_720,
+    attachments: [{ name: "仕様書_0102.pdf", uri: "https://www.city.kirishima.lg.jp/docs/notice_0102.pdf" }],
+  },
+  {
+    resultId: 4,
+    key: "KKJ-2026-46220-0077",
+    bidRef: "token_mock_signed_ref_0077",
+    projectName: "薩摩川内市 庁舎清掃業務委託",
+    organizationName: "薩摩川内市",
+    prefectureName: "鹿児島県",
+    category: "役務",
+    procedureType: "一般競争入札",
+    cftIssueDate: "2026-07-09",
+    tenderSubmissionDeadline: "2026-07-22T17:00:00+09:00",
+    externalDocumentUri: "https://www.city.satsumasendai.lg.jp/docs/notice_0077.pdf",
+    officialUrl: "https://www.city.satsumasendai.lg.jp/bids/0077.html",
+    attachments: [{ name: "仕様書_0077.pdf", uri: "https://www.city.satsumasendai.lg.jp/docs/notice_0077.pdf" }],
+  },
+  {
+    resultId: 5,
+    key: "KKJ-2026-46100-0455",
+    bidRef: "token_mock_signed_ref_0455",
+    projectName: "県立高校 ネットワーク機器更新一式",
+    organizationName: "鹿児島県教育委員会",
+    prefectureName: "鹿児島県",
+    category: "物品",
+    procedureType: "一般競争入札",
+    cftIssueDate: "2026-07-24",
+    tenderSubmissionDeadline: "2026-08-12T17:00:00+09:00",
+    externalDocumentUri: "https://www.pref.kagoshima.jp/docs/notice_0455.pdf",
+    officialUrl: "https://www.pref.kagoshima.jp/bids/0455.html",
+    fileType: "pdf",
+    fileSize: 92_160,
+    attachments: [{ name: "仕様書_0455.pdf", uri: "https://www.pref.kagoshima.jp/docs/notice_0455.pdf" }],
+  },
+  {
+    resultId: 6,
+    key: "KKJ-2026-46201-0512",
+    bidRef: "token_mock_signed_ref_0512",
+    projectName: "鹿児島市 防災情報通信基盤整備工事",
+    organizationName: "鹿児島市",
+    prefectureName: "鹿児島県",
+    category: "工事",
+    procedureType: "一般競争入札",
+    cftIssueDate: "2026-07-20",
+    tenderSubmissionDeadline: "2026-08-15T17:00:00+09:00",
+    externalDocumentUri: "https://www.pref.kagoshima.jp/docs/notice_0512.pdf",
+    officialUrl: "https://www.pref.kagoshima.jp/bids/0512.html",
+    fileType: "pdf",
+    fileSize: 310_000,
+    attachments: [{ name: "仕様書_0512.pdf", uri: "https://www.pref.kagoshima.jp/docs/notice_0512.pdf" }],
+  },
+  {
+    resultId: 7,
+    key: "KKJ-2026-46201-0520",
+    bidRef: "token_mock_signed_ref_0520",
+    projectName: "鹿児島市 図書館情報システム クラウド移行業務",
+    organizationName: "鹿児島市",
+    prefectureName: "鹿児島県",
+    category: "役務",
+    procedureType: "公募型プロポーザル",
+    cftIssueDate: "2026-07-15",
+    tenderSubmissionDeadline: "2026-08-25T17:00:00+09:00",
+    externalDocumentUri: "https://www.pref.kagoshima.jp/docs/notice_0520.pdf",
+    officialUrl: "https://www.pref.kagoshima.jp/bids/0520.html",
+    attachments: [{ name: "仕様書_0520.pdf", uri: "https://www.pref.kagoshima.jp/docs/notice_0520.pdf" }],
+  },
+  {
+    resultId: 8,
+    key: "KKJ-2026-46000-0533",
+    bidRef: "token_mock_signed_ref_0533",
+    projectName: "鹿児島県 観光プロモーション Webサイト再構築",
+    organizationName: "鹿児島県",
+    prefectureName: "鹿児島県",
+    category: "役務",
+    procedureType: "一般競争入札",
+    cftIssueDate: "2026-07-10",
+    tenderSubmissionDeadline: "2026-08-05T17:00:00+09:00",
+    externalDocumentUri: "https://www.pref.kagoshima.jp/docs/notice_0533.pdf",
+    officialUrl: "https://www.pref.kagoshima.jp/bids/0533.html",
+    attachments: [{ name: "仕様書_0533.pdf", uri: "https://www.pref.kagoshima.jp/docs/notice_0533.pdf" }],
+  },
+  {
+    resultId: 9,
+    key: "KKJ-2026-46208-0119",
+    bidRef: "token_mock_signed_ref_0119",
+    projectName: "鹿屋市 自治体DX推進アドバイザリー業務",
+    organizationName: "鹿屋市",
+    prefectureName: "鹿児島県",
+    category: "役務",
+    procedureType: "簡易公募型競争入札",
+    cftIssueDate: "2026-07-17",
+    tenderSubmissionDeadline: "2026-08-10T17:00:00+09:00",
+    externalDocumentUri: "https://www.city.kanoya.lg.jp/docs/notice_0119.pdf",
+    officialUrl: "https://www.city.kanoya.lg.jp/bids/0119.html",
+    attachments: [{ name: "仕様書_0119.pdf", uri: "https://www.city.kanoya.lg.jp/docs/notice_0119.pdf" }],
+  },
+  {
+    resultId: 10,
+    key: "KKJ-2026-46210-0088",
+    bidRef: "token_mock_signed_ref_0088",
+    projectName: "枕崎市 水産加工流通データ分析基盤構築",
+    organizationName: "枕崎市",
+    prefectureName: "鹿児島県",
+    category: "役務",
+    procedureType: "一般競争入札",
+    cftIssueDate: "2026-07-12",
+    tenderSubmissionDeadline: "2026-08-18T17:00:00+09:00",
+    externalDocumentUri: "https://www.city.makurazaki.lg.jp/docs/notice_0088.pdf",
+    officialUrl: "https://www.city.makurazaki.lg.jp/bids/0088.html",
+    attachments: [{ name: "仕様書_0088.pdf", uri: "https://www.city.makurazaki.lg.jp/docs/notice_0088.pdf" }],
+  },
+  {
+    resultId: 11,
+    key: "KKJ-2026-46218-0045",
+    bidRef: "token_mock_signed_ref_0045",
+    projectName: "日置市 庁内グループウェア更新ライセンス調達",
+    organizationName: "日置市",
+    prefectureName: "鹿児島県",
+    category: "物品",
+    procedureType: "一般競争入札",
+    cftIssueDate: "2026-07-22",
+    tenderSubmissionDeadline: "2026-08-08T17:00:00+09:00",
+    externalDocumentUri: "https://www.city.hioki.lg.jp/docs/notice_0045.pdf",
+    officialUrl: "https://www.city.hioki.lg.jp/bids/0045.html",
+    attachments: [{ name: "仕様書_0045.pdf", uri: "https://www.city.hioki.lg.jp/docs/notice_0045.pdf" }],
+  },
+  {
+    resultId: 12,
+    key: "KKJ-2026-46222-0062",
+    bidRef: "token_mock_signed_ref_0062",
+    projectName: "奄美市 遠隔医療ネットワーク設備保守",
+    organizationName: "奄美市",
+    prefectureName: "鹿児島県",
+    category: "役務",
+    procedureType: "指名競争入札",
+    cftIssueDate: "2026-07-08",
+    tenderSubmissionDeadline: "2026-08-30T17:00:00+09:00",
+    externalDocumentUri: "https://www.city.amami.lg.jp/docs/notice_0062.pdf",
+    officialUrl: "https://www.city.amami.lg.jp/bids/0062.html",
+    attachments: [{ name: "仕様書_0062.pdf", uri: "https://www.city.amami.lg.jp/docs/notice_0062.pdf" }],
+  },
+  {
+    resultId: 13,
+    key: "KKJ-2026-46225-0033",
+    bidRef: "token_mock_signed_ref_0033",
+    projectName: "南さつま市 防犯カメラシステム保守管理業務",
+    organizationName: "南さつま市",
+    prefectureName: "鹿児島県",
+    category: "役務",
+    procedureType: "一般競争入札",
+    cftIssueDate: "2026-07-19",
+    tenderSubmissionDeadline: "2026-08-14T17:00:00+09:00",
+    externalDocumentUri: "https://www.city.minamisatsuma.lg.jp/docs/notice_0033.pdf",
+    officialUrl: "https://www.city.minamisatsuma.lg.jp/bids/0033.html",
+    attachments: [{ name: "仕様書_0033.pdf", uri: "https://www.city.minamisatsuma.lg.jp/docs/notice_0033.pdf" }],
+  },
+  {
+    resultId: 14,
+    key: "KKJ-2026-46300-0019",
+    bidRef: "token_mock_signed_ref_0019",
+    projectName: "屋久島町 環境モニタリングIoT端末設置業務",
+    organizationName: "屋久島町",
+    prefectureName: "鹿児島県",
+    category: "物品",
+    procedureType: "一般競争入札",
+    cftIssueDate: "2026-07-23",
+    tenderSubmissionDeadline: "2026-08-20T17:00:00+09:00",
+    externalDocumentUri: "https://www.town.yakushima.kagoshima.jp/docs/notice_0019.pdf",
+    officialUrl: "https://www.town.yakushima.kagoshima.jp/bids/0019.html",
+    attachments: [{ name: "仕様書_0019.pdf", uri: "https://www.town.yakushima.kagoshima.jp/docs/notice_0019.pdf" }],
+  },
+];
+
+const searchResult = {
+  searchHits: bids.length,
+  returnedCount: bids.length,
+  bids,
+  query: { Query: "システム", CFT_Issue_Date: "2026-07-01", Prefecture: "46" },
+  attribution,
+  pagination: { has_more: false, total_count: bids.length },
+  searchCriteria: {
+    query: "システム",
+    prefecture: ["鹿児島県"],
+    limit: 20,
+    certification: ["役務の提供等 A・B等級"],
+  },
+};
+
+const hostCapabilities = {
+  openLinks: {},
+  serverTools: { listChanged: false },
+  serverResources: { listChanged: false },
+  logging: {},
+  updateModelContext: { text: {} },
+  ...(denyMessage ? {} : { message: { text: {} } }),
+  ...(denyDownload ? {} : { downloadFile: {} }),
+};
+
+const hostContext = {
+  theme,
+  displayMode,
+  availableDisplayModes: ["inline", "fullscreen"],
+  userAgent: "mcp-apps-harness/1.0",
+  locale: "ja-JP",
+};
+
+const result = (id, value) => send({ jsonrpc: "2.0", id, result: value });
+const errorResult = (id, message) =>
+  send({ jsonrpc: "2.0", id, result: { isError: true, content: [{ type: "text", text: message }] } });
+
+window.appRequests = [];
+
+window.addEventListener("message", (event) => {
+  const message = event.data;
+  if (!message || message.jsonrpc !== "2.0") return;
+  if (message.method) window.appRequests.push(message.method);
+
+  switch (message.method) {
+    case "ui/initialize":
+      result(message.id, {
+        protocolVersion: PROTOCOL_VERSION,
+        hostInfo: { name: "mcp-apps-harness", version: "1.0.0" },
+        hostCapabilities,
+        hostContext,
+      });
+      return;
+    case "ui/notifications/initialized":
+      if (autoResult) {
+        send({
+          jsonrpc: "2.0",
+          method: "ui/notifications/tool-input",
+          params: { arguments: { query: "システム", limit: 20 } },
+        });
+        send({
+          jsonrpc: "2.0",
+          method: "ui/notifications/tool-result",
+          params: {
+            structuredContent: searchResult,
+            content: [{ type: "text", text: `${bids.length}件見つかりました。` }],
+          },
+        });
+        if (openEvidence) {
+          setTimeout(() => {
+            const details = frame.contentDocument?.querySelector(".evidence-panel details");
+            if (details) details.open = true;
+          }, 400);
+        }
+        if (selectBids) {
+          setTimeout(() => {
+            if (selectBids === "all") {
+              const allBtn = frame.contentDocument?.querySelector(".selection-stats button");
+              if (allBtn) {
+                allBtn.click();
+                window.bidsSelected = "all";
+              }
+            } else if (selectBids === "11_unordered") {
+              // Select 11 distinct items in a specifically non-trivial sequence:
+              // Index order: [10, 2, 6, 0, 8, 4, 1, 7, 3, 9, 5]
+              const sequence = [10, 2, 6, 0, 8, 4, 1, 7, 3, 9, 5];
+              const checkboxes = frame.contentDocument?.querySelectorAll(".bid-card input[type=checkbox]");
+              window.selectedOrderRefs = [];
+              window.selectedOrderKeys = [];
+              if (checkboxes) {
+                for (const idx of sequence) {
+                  if (checkboxes[idx]) {
+                    checkboxes[idx].click();
+                    window.selectedOrderRefs.push(bids[idx].bidRef);
+                    window.selectedOrderKeys.push(bids[idx].key);
+                  }
+                }
+                window.bidsSelected = sequence;
+              }
+            } else {
+              const indices = selectBids.split(",").map(Number);
+              const checkboxes = frame.contentDocument?.querySelectorAll(".bid-card input[type=checkbox]");
+              if (checkboxes) {
+                for (const idx of indices) {
+                  if (checkboxes[idx]) checkboxes[idx].click();
+                }
+                window.bidsSelected = indices;
+              }
+            }
+          }, 400);
+        }
+        if (clickAction) {
+          setTimeout(() => {
+            const buttons = [
+              ...(frame.contentDocument?.querySelectorAll(".action-dock button, .lane-selection-bar button, .lane-actions button") ?? [])
+            ];
+            const targetBtn = buttons.find((b) => b.textContent?.includes(clickAction));
+            if (!targetBtn) {
+              window.actionClickError = `Target button containing "${clickAction}" not found`;
+              return;
+            }
+            targetBtn.click();
+            window.actionClicked = true;
+          }, selectBids ? 700 : 500);
+        }
+      }
+      return;
+    case "ui/open-link":
+    case "ui/update-model-context":
+      result(message.id, {});
+      return;
+    case "ui/download-file":
+      window.lastDownloadFile = message.params?.contents;
+      if (denyDownload) errorResult(message.id, "download declined");
+      else result(message.id, {});
+      return;
+    case "ui/message":
+      if (denyMessage) errorResult(message.id, "message declined");
+      else result(message.id, {});
+      return;
+    case "ui/request-display-mode":
+      hostContext.displayMode = message.params?.mode ?? hostContext.displayMode;
+      result(message.id, { mode: hostContext.displayMode });
+      send({
+        jsonrpc: "2.0",
+        method: "ui/notifications/host-context-changed",
+        params: hostContext,
+      });
+      return;
+    case "tools/call": {
+      const toolName = message.params?.name;
+      const toolArgs = message.params?.arguments || {};
+      window.toolCalls = window.toolCalls || [];
+      window.toolCalls.push({ name: toolName, arguments: toolArgs });
+
+      if (toolName === "rank_bids") {
+        const refs = Array.isArray(toolArgs.bid_refs) ? toolArgs.bid_refs : [];
+        const unknownRef = refs.find((ref) => !bids.some((b) => b.bidRef === ref));
+        if (unknownRef) {
+          errorResult(message.id, `Unknown bid_ref: ${unknownRef}`);
+          return;
+        }
+
+        const rankedBids = refs.map((ref, idx) => {
+          const matchedBid = bids.find((b) => b.bidRef === ref);
+          const score = 95 - (idx * 3);
+          return {
+            bid: matchedBid,
+            score,
+            priority: score >= 80 ? "pursue" : score >= 60 ? "review" : "skip",
+            reasons: [`適合度スコア (${score}点) - 要件合致`],
+            risks: [],
+            nextActions: ["参加要件の確認", "質問書の提出検討"],
+            selectionIndex: idx,
+          };
+        });
+
+        const rankContent = {
+          searchHits: refs.length,
+          returnedCount: refs.length,
+          rankedCount: rankedBids.length,
+          rankedBids,
+          query: { Query: "選択案件比較" },
+          attribution,
+          scoringPolicy: {
+            version: "1.0",
+            summary: "ルールベース適合度評価",
+          },
+        };
+
+        window.lastToolCall = { name: toolName, arguments: toolArgs, response: rankContent };
+        result(message.id, {
+          content: [{ type: "text", text: `${rankedBids.length}件の案件を比較採点しました。` }],
+          structuredContent: rankContent,
+        });
+        return;
+      }
+
+      if (toolName === "export_bid_shortlist") {
+        const refs = Array.isArray(toolArgs.bid_refs) ? toolArgs.bid_refs : [];
+        const unknownRef = refs.find((ref) => !bids.some((b) => b.bidRef === ref));
+        if (unknownRef) {
+          errorResult(message.id, `Unknown bid_ref: ${unknownRef}`);
+          return;
+        }
+
+        const matched = refs.map((ref) => bids.find((b) => b.bidRef === ref));
+        const format = toolArgs.format || "csv";
+        const columns = [
+          "key",
+          "projectName",
+          "organizationName",
+          "prefectureName",
+          "category",
+          "procedureType",
+          "cftIssueDate",
+          "tenderSubmissionDeadline",
+          "officialUrl",
+        ];
+
+        let exportContent;
+        if (format === "json") {
+          exportContent = {
+            format: "json",
+            filename: "jp-bids-export.json",
+            rankedCount: matched.length,
+            columns,
+            jsonContent: matched.map((b) => ({
+              key: b.key,
+              projectName: b.projectName,
+              organizationName: b.organizationName,
+              prefectureName: b.prefectureName,
+              category: b.category,
+              procedureType: b.procedureType,
+              cftIssueDate: b.cftIssueDate,
+              tenderSubmissionDeadline: b.tenderSubmissionDeadline,
+              officialUrl: b.officialUrl,
+            })),
+            attribution,
+            scoringPolicy: {
+              version: "1.0",
+              summary: "ルールベース適合度評価",
+            },
+          };
+        } else {
+          const header = columns.join(",");
+          const rows = matched.map((b) =>
+            columns.map((c) => JSON.stringify(b[c] ?? "")).join(","),
+          );
+          exportContent = {
+            format: "csv",
+            filename: "jp-bids-export.csv",
+            rankedCount: matched.length,
+            columns,
+            csv: [header, ...rows].join("\n"),
+            attribution,
+            scoringPolicy: {
+              version: "1.0",
+              summary: "ルールベース適合度評価",
+            },
+          };
+        }
+
+        window.lastToolCall = { name: toolName, arguments: toolArgs, response: exportContent };
+        result(message.id, {
+          content: [{ type: "text", text: `エクスポート完了: ${matched.length}件` }],
+          structuredContent: exportContent,
+        });
+        return;
+      }
+
+      if (toolName === "search_bids_app" || toolName === "search_bids") {
+        window.lastToolCall = { name: toolName, arguments: toolArgs, response: searchResult };
+        result(message.id, {
+          content: [{ type: "text", text: `${bids.length}件見つかりました。` }],
+          structuredContent: searchResult,
+        });
+        return;
+      }
+
+      window.lastToolCall = { name: toolName, arguments: toolArgs };
+      result(message.id, { content: [{ type: "text", text: "ok" }] });
+      return;
+    }
+    default:
+      if (message.id !== undefined) result(message.id, {});
+  }
+});
+</script>
+</body>
+</html>

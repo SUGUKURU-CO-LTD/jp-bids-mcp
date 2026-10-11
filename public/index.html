@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JP Bids MCP — 入札情報をAIで（完全無料・7ツール）</title>
+<meta name="description" content="日本の官公需入札情報をAIアシスタントで検索・順位付け・要件抽出・エクスポート。Claude / Cursor / ChatGPT で即利用（完全無料・読み取り専用・7ツール）。">
+<link rel="icon" href="/favicon.png" type="image/png">
+<meta property="og:title" content="JP Bids MCP — 入札情報をAIで（完全無料・7ツール）">
+<meta property="og:description" content="中小企業庁 KKJ の公開入札公示をAIから検索・順位付け・要件抽出・出力。完全無料・読み取り専用・7ツール。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://mcp.bid-jp.com">
+<meta property="og:image" content="https://mcp.bid-jp.com/ogp.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="JP Bids MCP — 入札情報をAIで（完全無料・7ツール）">
+<meta name="twitter:description" content="中小企業庁 KKJ の公開入札公示をAIから検索・順位付け・要件抽出・出力。完全無料・読み取り専用・7ツール。">
+<meta name="twitter:image" content="https://mcp.bid-jp.com/ogp.png">
+<link rel="canonical" href="https://mcp.bid-jp.com/">
+<link rel="alternate" type="text/markdown" href="https://mcp.bid-jp.com/llms.txt" title="LLM-friendly summary (Markdown)">
+<link rel="alternate" type="text/markdown" href="https://mcp.bid-jp.com/llms-full.txt" title="LLM-friendly full content (Markdown)">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://mcp.bid-jp.com/#website",
+      "url": "https://mcp.bid-jp.com/",
+      "name": "JP Bids MCP",
+      "description": "中小企業庁の官公需入札情報を AI から扱える Model Context Protocol サーバー（完全無料・読み取り中心・7ツール）。",
+      "inLanguage": "ja",
+      "publisher": { "@id": "https://sugu-kuru.co.jp/#organization" }
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://mcp.bid-jp.com/#software",
+      "name": "JP Bids MCP",
+      "alternateName": ["JP Bids", "io.github.SUGUKURU-CO-LTD/jp-bids", "jp-bids-mcp"],
+      "applicationCategory": "DeveloperApplication",
+      "applicationSubCategory": "Model Context Protocol Server",
+      "operatingSystem": "Any (Cloud / Streamable HTTP)",
+      "url": "https://mcp.bid-jp.com/",
+      "downloadUrl": "https://www.npmjs.com/package/jp-bids-mcp",
+      "softwareVersion": "0.9.0",
+      "license": "https://www.apache.org/licenses/LICENSE-2.0",
+      "description": "Read-only Model Context Protocol server that exposes public procurement notice data from Japan's SME Agency KKJ portal as 7 AI tools for search, ranking, requirement extraction, export, and interactive MCP Apps workspace. Completely free and read-centric.",
+      "inLanguage": ["ja", "en", "id"],
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "JPY",
+        "availability": "https://schema.org/InStock",
+        "description": "Completely free (read-centric, 7 tools)"
+      },
+      "publisher": { "@id": "https://sugu-kuru.co.jp/#organization" },
+      "softwareRequirements": "Any MCP 2025-11-25 compliant client (Claude Desktop, Cursor, ChatGPT, etc.)",
+      "featureList": [
+        "Search public procurement notices from Japan's SME Agency KKJ portal (search_bids, list_recent_bids, get_bid_detail)",
+        "AI ranking by company profile (rank_bids)",
+        "Procurement requirement extraction (extract_bid_requirements)",
+        "Shortlist export to CSV/JSON (export_bid_shortlist)",
+        "Interactive search workspace (search_bids_app)",
+        "OAuth 2.0 with PKCE and Dynamic Client Registration",
+        "Streamable HTTP and stdio transports"
+      ]
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://sugu-kuru.co.jp/#organization",
+      "name": "スグクル株式会社",
+      "alternateName": "Sugukuru Inc.",
+      "url": "https://sugu-kuru.co.jp",
+      "logo": "https://mcp.bid-jp.com/favicon.png",
+      "founder": { "@id": "https://sugu-kuru.co.jp/#founder" },
+      "areaServed": "JP",
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "JP",
+        "addressRegion": "鹿児島県",
+        "addressLocality": "霧島市"
+      }
+    },
+    {
+      "@type": "Person",
+      "@id": "https://sugu-kuru.co.jp/#founder",
+      "name": "壁",
+      "alternateName": "Kabe",
+      "jobTitle": "代表取締役 / CEO",
+      "worksFor": { "@id": "https://sugu-kuru.co.jp/#organization" }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://mcp.bid-jp.com/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "JP Bids MCP は何のためのサーバーですか？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "中小企業庁 官公需情報ポータルサイト KKJ の公開入札公示データを、Model Context Protocol 2025-11-25 仕様で AI に提供する読み取り専用のサーバーです。Claude Desktop / Cursor / ChatGPT などの MCP 対応クライアントから、自然言語で入札を検索・順位付け・要件抽出・CSV/JSON出力できます。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Cursor で JP Bids MCP を使うには？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": ".cursor/mcp.json に { \"mcpServers\": { \"jp-bids\": { \"url\": \"https://mcp.bid-jp.com/mcp\" } } } を追加してください。インストール不要で、初回アクセス時に OAuth 2.0 で認証されます。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Claude Desktop で JP Bids MCP を使うには？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "claude_desktop_config.json に { \"mcpServers\": { \"jp-bids\": { \"command\": \"npx\", \"args\": [\"--yes\", \"mcp-remote\", \"https://mcp.bid-jp.com/mcp\"] } } } を追加してください。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "利用料金はいくらですか？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "完全無料でご利用いただけます。公開プロファイル（Public MVP, 7ツール）において月額料金や有料プラン、Stripe等の課金呼出しは一切ありません。（※Claude等のAIクライアント利用料や自己ホスト時のインフラ費用は除きます）"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "データの出典はどこですか？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "中小企業庁の官公需情報ポータルサイト（KKJ, https://kkj.go.jp ）の公開 API です。政府標準利用規約 第 2.0 版に従い、本サーバーが返すすべての結果に出典を含めます。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Investor Radar や追加の分析機能は公開されていますか？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Investor Radar（上場銘柄への名寄せやJ-Quants終値連携）や過去落札分析などの追加モジュールは、開発者向けのローカル開発用プロファイル（full_local）限定の参考実装です。公開MVPでは、信頼性と安全性を最優先した読み取り専用の7ツールに絞って提供しています。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Jグランツ MCP や freee MCP と連携できますか？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "はい。デジタル庁公式の Jグランツ MCP（補助金）と freee 株式会社の freee MCP（会計）を同じ AI 会話に追加することで、入札 → 補助金 → 会計を一つの会話でカバーできます。サンプル設定とワークフロー例は examples/ 配下に公開しています。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "セルフホストできますか？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "はい。Apache-2.0 ライセンスの OSS なので、リポジトリの Dockerfile を使って Cloud Run / Fly.io / 自社サーバーなどでホスティングできます。stdio モードでローカル起動する場合は npx jp-bids-mcp で動きます。"
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#fafbfc;--fg:#1a1a2e;--accent:#2563eb;--accent-light:#dbeafe;--card-bg:#fff;--border:#e5e7eb;--muted:#6b7280;--green:#059669;--green-bg:#d1fae5;--radius:12px}
+body{font-family:"Inter",system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--fg);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.hero{text-align:center;padding:4rem 1.5rem 3rem;background:linear-gradient(180deg,#eff6ff 0%,var(--bg) 100%)}
+.hero-badge{display:inline-block;background:var(--green-bg);color:var(--green);font-size:.8rem;font-weight:600;padding:.3rem .8rem;border-radius:999px;margin-bottom:1.2rem;letter-spacing:.02em}
+.hero h1{font-size:clamp(2rem,5vw,3rem);font-weight:800;letter-spacing:-.02em;margin-bottom:.8rem}
+.hero h1 span{color:var(--accent)}
+.hero p{font-size:1.15rem;color:var(--muted);max-width:640px;margin:0 auto 2rem}
+.hero-actions{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.7rem 1.4rem;border-radius:8px;font-size:.95rem;font-weight:600;transition:all .15s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:#1d4ed8;text-decoration:none}
+.btn-outline{background:var(--card-bg);color:var(--fg);border:1px solid var(--border)}
+.btn-outline:hover{border-color:var(--accent);text-decoration:none}
+
+.setup{max-width:700px;margin:0 auto;padding:0 1.5rem}
+.setup h2{font-size:1.3rem;font-weight:700;text-align:center;margin-bottom:1.5rem}
+.setup-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:2.5rem}
+.setup-card .tab-bar{display:flex;border-bottom:1px solid var(--border)}
+.setup-card .tab{flex:1;padding:.6rem;text-align:center;font-size:.85rem;font-weight:600;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;transition:all .15s}
+.setup-card .tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.setup-card .tab-panel{display:none;padding:1.2rem}
+.setup-card .tab-panel.active{display:block}
+pre{background:#1e293b;color:#e2e8f0;padding:1rem;border-radius:8px;overflow-x:auto;font-size:.85rem;line-height:1.6}
+pre .comment{color:#94a3b8}
+pre .string{color:#a5f3fc}
+pre .key{color:#c4b5fd}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;max-width:800px;margin:0 auto 3rem;padding:0 1.5rem}
+.stat-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;text-align:center}
+.stat-num{font-size:1.8rem;font-weight:800;color:var(--accent)}
+.stat-label{font-size:.85rem;color:var(--muted);margin-top:.2rem}
+
+.features{max-width:900px;margin:0 auto 3rem;padding:0 1.5rem}
+.features h2{font-size:1.3rem;font-weight:700;text-align:center;margin-bottom:1.5rem}
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem}
+.feature-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem}
+.feature-icon{font-size:1.5rem;margin-bottom:.5rem}
+.feature-card h3{font-size:1rem;font-weight:700;margin-bottom:.3rem}
+.feature-card p{font-size:.88rem;color:var(--muted);line-height:1.5}
+
+.workflows{max-width:900px;margin:0 auto 3rem;padding:0 1.5rem}
+.workflows h2{font-size:1.3rem;font-weight:700;text-align:center;margin-bottom:.5rem}
+.workflows .sub{text-align:center;color:var(--muted);font-size:.9rem;margin-bottom:1.5rem}
+.workflow-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem}
+.workflow-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem}
+.workflow-card .step{font-size:.8rem;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem}
+.workflow-card h3{font-size:.95rem;font-weight:700;margin-bottom:.3rem}
+.workflow-card p{font-size:.85rem;color:var(--muted);line-height:1.5}
+
+.usecases{max-width:960px;margin:0 auto 3rem;padding:0 1.5rem}
+.usecases h2{font-size:1.3rem;font-weight:700;text-align:center;margin-bottom:.5rem}
+.usecases .sub{text-align:center;color:var(--muted);font-size:.9rem;margin-bottom:1.5rem}
+.usecase-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem}
+.usecase-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:1.3rem;display:flex;flex-direction:column;gap:.8rem}
+.usecase-flow{display:flex;align-items:center;justify-content:center;gap:.25rem;flex-wrap:wrap;padding:.6rem .3rem;background:var(--accent-light);border-radius:8px}
+.usecase-node{display:flex;flex-direction:column;align-items:center;gap:.15rem;min-width:52px}
+.usecase-node .icon{font-size:1.4rem;line-height:1}
+.usecase-node .label{font-size:.64rem;font-weight:700;color:var(--fg);text-align:center;white-space:nowrap}
+.usecase-arrow{color:var(--accent);font-size:1rem;font-weight:700;flex-shrink:0}
+.usecase-card h3{font-size:1rem;font-weight:700}
+.usecase-card p{font-size:.85rem;color:var(--muted);line-height:1.55}
+.usecase-target{display:inline-flex;align-self:flex-start;font-size:.72rem;font-weight:600;color:var(--accent);background:var(--accent-light);padding:.2rem .6rem;border-radius:999px}
+.usecase-more{text-align:center;margin-top:1.5rem}
+.usecase-more a{font-size:.88rem;font-weight:600}
+
+.cta{text-align:center;padding:3rem 1.5rem;background:linear-gradient(180deg,var(--bg) 0%,#eff6ff 100%)}
+.cta h2{font-size:1.5rem;font-weight:800;margin-bottom:.5rem}
+.cta p{color:var(--muted);margin-bottom:1.5rem}
+
+footer{text-align:center;padding:2rem 1.5rem;font-size:.8rem;color:var(--muted);border-top:1px solid var(--border)}
+footer a{color:var(--muted)}
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-badge">Public MVP — 完全無料・読み取り専用・7ツール</div>
+  <h1>入札情報を<span>AIで</span></h1>
+  <p>中小企業庁 官公需情報ポータルサイトの公開入札公示データを、AIアシスタントから直接検索・順位付け・要件整理・エクスポート。<br>公式調達書類の確認を前提とした、実務向けの読み取り専用MCPサーバーです。</p>
+  <div class="hero-actions">
+    <a href="#setup" class="btn btn-primary">今すぐ使う</a>
+    <a href="https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp" class="btn btn-outline">GitHub</a>
+  </div>
+</section>
+
+<section class="stats">
+  <div class="stat-card">
+    <div class="stat-num">7</div>
+    <div class="stat-label">AIツール</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num">KKJ</div>
+    <div class="stat-label">公式公開API</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num">OAuth</div>
+    <div class="stat-label">接続時の認可</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num">¥0</div>
+    <div class="stat-label">完全無料</div>
+  </div>
+</section>
+
+<section class="setup" id="setup">
+  <h2>セットアップ</h2>
+  <div class="setup-card">
+    <div class="tab-bar">
+      <div class="tab active" data-tab="remote">リモート（推奨）</div>
+      <div class="tab" data-tab="claude">Claude Desktop</div>
+      <div class="tab" data-tab="cursor">Cursor</div>
+    </div>
+    <div class="tab-panel active" id="tab-remote">
+      <p style="font-size:.9rem;color:var(--muted);margin-bottom:.8rem">インストール不要。リモートURLを登録するだけ。</p>
+      <pre><span class="comment"># MCP対応クライアントにこのURLを登録</span>
+<span class="string">https://mcp.bid-jp.com/mcp</span>
+
+<span class="comment"># トランスポート: Streamable HTTP</span>
+<span class="comment"># 認証: OAuth 2.0（自動）</span></pre>
+    </div>
+    <div class="tab-panel" id="tab-claude">
+      <p style="font-size:.9rem;color:var(--muted);margin-bottom:.8rem">claude_desktop_config.json に追加：</p>
+      <pre>{
+  <span class="key">"mcpServers"</span>: {
+    <span class="key">"jp-bids"</span>: {
+      <span class="key">"command"</span>: <span class="string">"npx"</span>,
+      <span class="key">"args"</span>: [<span class="string">"--yes"</span>, <span class="string">"mcp-remote"</span>,
+              <span class="string">"https://mcp.bid-jp.com/mcp"</span>]
+    }
+  }
+}</pre>
+    </div>
+    <div class="tab-panel" id="tab-cursor">
+      <p style="font-size:.9rem;color:var(--muted);margin-bottom:.8rem">.cursor/mcp.json に追加：</p>
+      <pre>{
+  <span class="key">"mcpServers"</span>: {
+    <span class="key">"jp-bids"</span>: {
+      <span class="key">"url"</span>: <span class="string">"https://mcp.bid-jp.com/mcp"</span>
+    }
+  }
+}</pre>
+    </div>
+  </div>
+</section>
+
+<section class="workflows">
+  <h2>顧客が実際にやること</h2>
+  <p class="sub">AIに話しかけるだけで、入札業務が変わる</p>
+  <div class="workflow-list">
+    <div class="workflow-card">
+      <div class="step">会話例 1</div>
+      <h3>「IT系の入札を探して」</h3>
+      <p>全国の入札情報から条件に合う案件を検索 (`search_bids`)。自社条件に合う順にランク付け (`rank_bids`)。</p>
+    </div>
+    <div class="workflow-card">
+      <div class="step">会話例 2</div>
+      <h3>「この仕様書の要件を整理して」</h3>
+      <p>案件メタデータから必須要件・評価項目・提出書類を構造化して整理 (`extract_bid_requirements`)。※外部資料抽出は既定OFF。最終判断は必ず公式書類で確認。</p>
+    </div>
+    <div class="workflow-card">
+      <div class="step">会話例 3</div>
+      <h3>「上位5件をCSVで出力して」</h3>
+      <p>選択した案件の順序を保ったままCSVまたはJSON形式でエクスポート (`export_bid_shortlist`)。</p>
+    </div>
+    <div class="workflow-card">
+      <div class="step">会話例 4</div>
+      <h3>「直近の新着案件を確認して」</h3>
+      <p>直近1〜30日間に公告された新着入札案件を一覧取得 (`list_recent_bids`)。毎朝の営業チェックに活用。</p>
+    </div>
+    <div class="workflow-card">
+      <div class="step">会話例 5</div>
+      <h3>「うちの条件に合うか確認したい」</h3>
+      <p>自社プロファイルと案件を比較採点 (`rank_bids`)。※参考情報としての適合度整理であり、参加資格の確定判定ではありません。</p>
+    </div>
+    <div class="workflow-card">
+      <div class="step">会話例 6</div>
+      <h3>「対話画面で絞り込みたい」</h3>
+      <p>対話型検索アプリ (`search_bids_app`) を開き、MCP Apps 互換クライアントで表形式のワークスペースを直接操作。</p>
+    </div>
+  </div>
+</section>
+
+<section class="features" style="margin-bottom:2rem">
+  <h2>入札業務の効率化</h2>
+  <div style="max-width:700px;margin:0 auto">
+    <table style="width:100%;border-collapse:collapse;font-size:.88rem;background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
+      <thead><tr style="background:var(--accent-light)"><th style="padding:.7rem;text-align:left">作業</th><th style="padding:.7rem;text-align:left">従来の手作業</th><th style="padding:.7rem;text-align:left">JP Bids MCP</th></tr></thead>
+      <tbody>
+        <tr><td style="padding:.6rem .7rem;border-top:1px solid var(--border)">案件検索</td><td style="padding:.6rem;border-top:1px solid var(--border)">ポータル手動検索・条件入力</td><td style="padding:.6rem;border-top:1px solid var(--border);color:var(--green);font-weight:700">自然言語でキーワード・地域・業種横断検索</td></tr>
+        <tr><td style="padding:.6rem .7rem;border-top:1px solid var(--border)">案件比較</td><td style="padding:.6rem;border-top:1px solid var(--border)">個別ページを行き来して目視比較</td><td style="padding:.6rem;border-top:1px solid var(--border);color:var(--green);font-weight:700">自社条件に応じた適合度・期限スコアリング</td></tr>
+        <tr><td style="padding:.6rem .7rem;border-top:1px solid var(--border)">要件整理</td><td style="padding:.6rem;border-top:1px solid var(--border)">書類の目視チェックリスト手動作成</td><td style="padding:.6rem;border-top:1px solid var(--border);color:var(--green);font-weight:700">提出書類・必要資格の構造化抽出</td></tr>
+        <tr><td style="padding:.6rem .7rem;border-top:1px solid var(--border)">リスト共有</td><td style="padding:.6rem;border-top:1px solid var(--border)">スプレッドシートへの手作業コピペ</td><td style="padding:.6rem;border-top:1px solid var(--border);color:var(--green);font-weight:700">選択順序を保持したCSV/JSONエクスポート</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="features">
+  <h2>7つのAIツール</h2>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-icon">&#x1F50D;</div>
+      <h3>search_bids</h3>
+      <p>官公需入札検索。キーワード・機関名・地域・カテゴリ・期間で柔軟に絞り込み。</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">&#x1F4CA;</div>
+      <h3>rank_bids</h3>
+      <p>自社プロファイル・優先語句に基づき、候補案件の適合度と緊急度を0〜100で採点。</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">&#x1F4C5;</div>
+      <h3>list_recent_bids</h3>
+      <p>直近1〜30日間に公告された新着案件を一覧取得。毎朝の新着チェックに対応。</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">&#x1F4D1;</div>
+      <h3>get_bid_detail</h3>
+      <p>指定した案件の詳細情報・公告内容・添付ファイル一覧を取得。</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">&#x1F4C4;</div>
+      <h3>extract_bid_requirements</h3>
+      <p>案件メタデータから必須要件・評価項目・提出書類を構造化抽出（※外部資料抽出は既定OFF）。</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">&#x1F4E4;</div>
+      <h3>export_bid_shortlist</h3>
+      <p>選択した案件リストを指定順序のままCSVまたはJSON形式でエクスポート。</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">&#x1F5A5;</div>
+      <h3>search_bids_app</h3>
+      <p>MCP Apps UI対応クライアントで、表形式の対話型入札検索ワークスペースを表示・操作。</p>
+    </div>
+  </div>
+</section>
+
+<section class="usecases" id="usecases">
+  <h2>ユースケース — 入札検索から一歩先へ</h2>
+  <p class="sub">JP Bids MCP を他のMCPコネクタと組み合わせると、こんなことができる</p>
+  <div class="usecase-grid">
+    <div class="usecase-card">
+      <span class="usecase-target">受託開発・IT企業</span>
+      <div class="usecase-flow">
+        <div class="usecase-node"><span class="icon">&#x1F50D;</span><span class="label">JP Bids</span></div>
+        <span class="usecase-arrow">&#x2192;</span>
+        <div class="usecase-node"><span class="icon">&#x1F4B0;</span><span class="label">J-Grants</span></div>
+      </div>
+      <h3>入札と補助金を同時に探索する</h3>
+      <p>デジタル庁公式の J-Grants MCP と組み合わせ、IT調達案件と中小企業向けDX補助金を一つの会話で同時に絞り込み。</p>
+    </div>
+    <div class="usecase-card">
+      <span class="usecase-target">営業・提案チーム</span>
+      <div class="usecase-flow">
+        <div class="usecase-node"><span class="icon">&#x1F50D;</span><span class="label">JP Bids</span></div>
+        <span class="usecase-arrow">&#x2192;</span>
+        <div class="usecase-node"><span class="icon">&#x1F4CA;</span><span class="label">Shortlist</span></div>
+      </div>
+      <h3>案件をランク付けしてCSV/JSON共有</h3>
+      <p>自社に適合する案件を比較採点し、選択した優先順位を崩さずにCSV/JSONで出力。社内検討や営業管理へ即時連携。</p>
+    </div>
+    <div class="usecase-card">
+      <span class="usecase-target">自治体・公共事業参入企業</span>
+      <div class="usecase-flow">
+        <div class="usecase-node"><span class="icon">&#x1F4C5;</span><span class="label">新着一覧</span></div>
+        <span class="usecase-arrow">&#x2192;</span>
+        <div class="usecase-node"><span class="icon">&#x1F4C4;</span><span class="label">要件整理</span></div>
+      </div>
+      <h3>新着案件の要件・提出書類を迅速に把握</h3>
+      <p>直近の新着案件から提出書類・参加資格の項目を抽出整理。公式調達書類の確認をスムーズに進められます。</p>
+    </div>
+  </div>
+  <p class="usecase-more"><a href="https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp">GitHub リポジトリで詳細を見る →</a></p>
+</section>
+
+<section class="cta">
+  <h2>今日から入札業務をAIで</h2>
+  <p>対応するMCPクライアントへ接続先を登録し、OAuth認可を経て入札検索を利用できます。</p>
+  <div class="hero-actions">
+    <a href="#setup" class="btn btn-primary">セットアップへ</a>
+    <a href="#usecases" class="btn btn-outline">ユースケース</a>
+  </div>
+</section>
+
+<footer>
+  <p>&copy; 2025-2026 <a href="https://sugu-kuru.co.jp">スグクル株式会社</a> &nbsp;|&nbsp; <a href="/privacy">プライバシー</a> &nbsp;|&nbsp; <a href="/terms">利用規約</a> &nbsp;|&nbsp; <a href="https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp">GitHub</a></p>
+  <p style="margin-top:.5rem">データ出典: <a href="https://kkj.go.jp">中小企業庁 官公需情報ポータルサイト</a>（政府標準利用規約 第2.0版）</p>
+</footer>
+
+<script>
+document.querySelectorAll('.tab-bar').forEach(bar => {
+  bar.addEventListener('click', e => {
+    const tab = e.target.closest('.tab');
+    if (!tab) return;
+    const card = bar.closest('.setup-card');
+    for (const t of card.querySelectorAll('.tab')) t.classList.remove('active');
+    for (const p of card.querySelectorAll('.tab-panel')) p.classList.remove('active');
+    tab.classList.add('active');
+    card.querySelector(`#tab-${tab.dataset.tab}`).classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

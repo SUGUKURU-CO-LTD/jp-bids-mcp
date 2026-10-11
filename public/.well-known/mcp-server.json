@@ -1,0 +1,40 @@
+{
+  "name": "JP Bids",
+  "version": "0.9.0",
+  "description": "日本の官公需公告をMCPで検索・順位付け・要件抽出・出力する（完全無料・読み取り中心・7ツール）。Search, rank, extract requirements, and export Japanese public procurement notices through MCP (free, read-centric, 7 tools).",
+  "homepage": "https://mcp.bid-jp.com",
+  "repository": "https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp",
+  "license": "Apache-2.0",
+  "privacy_policy": "https://mcp.bid-jp.com/privacy",
+  "terms_of_service": "https://mcp.bid-jp.com/terms",
+  "endpoints": {
+    "mcp": "https://mcp.bid-jp.com/mcp"
+  },
+  "authentication": {
+    "type": "oauth2",
+    "authorization_servers": ["https://mcp.bid-jp.com"],
+    "dynamic_client_registration_supported": true,
+    "pkce_methods": ["S256"]
+  },
+  "capabilities": {
+    "tools": {
+      "listChanged": false
+    },
+    "resources": {
+      "listChanged": false,
+      "subscribe": false
+    },
+    "prompts": {
+      "listChanged": false
+    },
+    "completions": {}
+  },
+  "transports": ["stdio", "streamable-http"],
+  "data_sources": [
+    {
+      "name": "中小企業庁 官公需情報ポータルサイト 検索API",
+      "url": "https://www.kkj.go.jp/",
+      "license_url": "https://www.kkj.go.jp/s/help/notes/"
+    }
+  ]
+}

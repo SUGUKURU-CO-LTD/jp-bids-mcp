@@ -1,0 +1,2769 @@
+{
+  "serverInfo": {
+    "name": "JP Bids",
+    "version": "0.9.0"
+  },
+  "authentication": {
+    "required": true,
+    "schemes": ["oauth2", "api_key"],
+    "transports": {
+      "stdio": {
+        "required": false
+      },
+      "streamable_http": {
+        "required": true
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "search_bids",
+      "title": "官公需入札検索",
+      "description": "日本全国の官公需入札情報を検索する。USE THIS WHEN: キーワード・件名・発注機関・都道府県・期間で入札候補を探したいとき。DO NOT USE WHEN: 既に Key があり1件の詳細が欲しいとき（get_bid_detail を使う）、追うべき順に並べたいとき（rank_bids を使う）。Search Japanese public procurement bids by keyword, project name, organization, prefecture, or date range. Cari tender pengadaan pemerintah Jepang berdasarkan kata kunci, nama proyek, instansi, prefektur, atau rentang tanggal.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "description": "自由記述キーワード。複数キーワードはAND結合で検索されます。",
+            "type": "string",
+            "minLength": 1
+          },
+          "project_name": {
+            "description": "件名で絞り込む場合に指定します。",
+            "type": "string",
+            "minLength": 1
+          },
+          "prefecture": {
+            "description": "都道府県名で絞り込む。配列で複数指定可。例: 鹿児島県、東京都。",
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "北海道",
+                  "青森県",
+                  "岩手県",
+                  "宮城県",
+                  "秋田県",
+                  "山形県",
+                  "福島県",
+                  "茨城県",
+                  "栃木県",
+                  "群馬県",
+                  "埼玉県",
+                  "千葉県",
+                  "東京都",
+                  "神奈川県",
+                  "新潟県",
+                  "富山県",
+                  "石川県",
+                  "福井県",
+                  "山梨県",
+                  "長野県",
+                  "岐阜県",
+                  "静岡県",
+                  "愛知県",
+                  "三重県",
+                  "滋賀県",
+                  "京都府",
+                  "大阪府",
+                  "兵庫県",
+                  "奈良県",
+                  "和歌山県",
+                  "鳥取県",
+                  "島根県",
+                  "岡山県",
+                  "広島県",
+                  "山口県",
+                  "徳島県",
+                  "香川県",
+                  "愛媛県",
+                  "高知県",
+                  "福岡県",
+                  "佐賀県",
+                  "長崎県",
+                  "熊本県",
+                  "大分県",
+                  "宮崎県",
+                  "鹿児島県",
+                  "沖縄県"
+                ]
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "北海道",
+                    "青森県",
+                    "岩手県",
+                    "宮城県",
+                    "秋田県",
+                    "山形県",
+                    "福島県",
+                    "茨城県",
+                    "栃木県",
+                    "群馬県",
+                    "埼玉県",
+                    "千葉県",
+                    "東京都",
+                    "神奈川県",
+                    "新潟県",
+                    "富山県",
+                    "石川県",
+                    "福井県",
+                    "山梨県",
+                    "長野県",
+                    "岐阜県",
+                    "静岡県",
+                    "愛知県",
+                    "三重県",
+                    "滋賀県",
+                    "京都府",
+                    "大阪府",
+                    "兵庫県",
+                    "奈良県",
+                    "和歌山県",
+                    "鳥取県",
+                    "島根県",
+                    "岡山県",
+                    "広島県",
+                    "山口県",
+                    "徳島県",
+                    "香川県",
+                    "愛媛県",
+                    "高知県",
+                    "福岡県",
+                    "佐賀県",
+                    "長崎県",
+                    "熊本県",
+                    "大分県",
+                    "宮崎県",
+                    "鹿児島県",
+                    "沖縄県"
+                  ]
+                }
+              }
+            ]
+          },
+          "category": {
+            "description": "入札区分。物品、役務、工事、その他。",
+            "type": "string",
+            "enum": ["物品", "工事", "役務"]
+          },
+          "procedure_type": {
+            "description": "公示種別。一般競争入札、指名競争入札、随意契約など。",
+            "type": "string",
+            "enum": ["一般競争入札", "簡易公募型競争入札", "簡易公募型指名競争入札"]
+          },
+          "certification": {
+            "description": "全省庁統一資格の等級。A、B、C、D から複数指定可。",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["A", "B", "C", "D"]
+            }
+          },
+          "organization_name": {
+            "description": "発注機関名で絞り込む。例: 農林水産省、防衛省。",
+            "type": "string",
+            "minLength": 1
+          },
+          "issued_after": {
+            "description": "公告日 YYYY-MM-DD 以降",
+            "type": "string"
+          },
+          "issued_before": {
+            "description": "公告日 YYYY-MM-DD 以前",
+            "type": "string"
+          },
+          "due_after": {
+            "description": "入札書提出期限 YYYY-MM-DD 以降",
+            "type": "string"
+          },
+          "due_before": {
+            "description": "入札書提出期限 YYYY-MM-DD 以前",
+            "type": "string"
+          },
+          "opening_after": {
+            "description": "開札日 YYYY-MM-DD 以降",
+            "type": "string"
+          },
+          "opening_before": {
+            "description": "開札日 YYYY-MM-DD 以前",
+            "type": "string"
+          },
+          "period_end_after": {
+            "description": "納入期限日 YYYY-MM-DD 以降",
+            "type": "string"
+          },
+          "period_end_before": {
+            "description": "納入期限日 YYYY-MM-DD 以前",
+            "type": "string"
+          },
+          "limit": {
+            "default": 20,
+            "description": "取得件数の上限。デフォルト20、最大1000。",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "searchHits": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "returnedCount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "bids": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "resultId": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "key": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "externalDocumentUri": {
+                  "type": "string"
+                },
+                "projectName": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "date": {
+                  "type": "string"
+                },
+                "fileType": {
+                  "type": "string"
+                },
+                "fileSize": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "lgCode": {
+                  "type": "string"
+                },
+                "prefectureName": {
+                  "type": "string"
+                },
+                "cityCode": {
+                  "type": "string"
+                },
+                "cityName": {
+                  "type": "string"
+                },
+                "organizationName": {
+                  "type": "string"
+                },
+                "certification": {
+                  "type": "string"
+                },
+                "cftIssueDate": {
+                  "type": "string"
+                },
+                "periodEndTime": {
+                  "type": "string"
+                },
+                "category": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": ["物品", "工事", "役務"]
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "procedureType": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": ["一般競争入札", "簡易公募型競争入札", "簡易公募型指名競争入札"]
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "location": {
+                  "type": "string"
+                },
+                "tenderSubmissionDeadline": {
+                  "type": "string"
+                },
+                "openingTendersEvent": {
+                  "type": "string"
+                },
+                "itemCode": {
+                  "type": "string"
+                },
+                "projectDescription": {
+                  "type": "string"
+                },
+                "attachments": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "uri": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["name", "uri"],
+                    "additionalProperties": false
+                  }
+                },
+                "bidRef": {
+                  "type": "string"
+                },
+                "attachmentsTruncated": {
+                  "type": "boolean"
+                },
+                "truncatedReason": {
+                  "type": "string"
+                }
+              },
+              "required": ["resultId", "key", "projectName"],
+              "additionalProperties": false
+            }
+          },
+          "query": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            }
+          },
+          "attribution": {
+            "type": "object",
+            "properties": {
+              "dataSource": {
+                "type": "string",
+                "const": "中小企業庁 官公需情報ポータルサイト"
+              },
+              "apiEndpoint": {
+                "type": "string",
+                "const": "http://www.kkj.go.jp/api/"
+              },
+              "licenseUrl": {
+                "type": "string",
+                "format": "uri"
+              },
+              "serviceDisclaimer": {
+                "type": "string"
+              },
+              "accessedAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              }
+            },
+            "required": [
+              "dataSource",
+              "apiEndpoint",
+              "licenseUrl",
+              "serviceDisclaimer",
+              "accessedAt"
+            ],
+            "additionalProperties": false
+          },
+          "pagination": {
+            "type": "object",
+            "properties": {
+              "has_more": {
+                "type": "boolean"
+              },
+              "next_cursor": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "total_count": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": ["has_more", "total_count"],
+            "additionalProperties": false
+          },
+          "searchCriteria": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          }
+        },
+        "required": ["searchHits", "returnedCount", "bids", "query", "attribution"],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "_meta": {}
+    },
+    {
+      "name": "list_recent_bids",
+      "title": "直近の官公需入札一覧",
+      "description": "過去1〜30日間に公告された新着官公需入札を一覧する。USE THIS WHEN: 毎朝の営業チェック、都道府県別の新着確認、直近公告の漏れ確認をしたいとき。DO NOT USE WHEN: 古い公告や細かい条件検索が必要なとき（search_bids を使う）。List recently published bid notices from the past 1–30 days for daily morning sales checks. Daftar pengumuman tender baru dalam 1–30 hari terakhir untuk cek pagi harian.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "prefecture": {
+            "description": "都道府県名で絞り込む。例: 鹿児島県。",
+            "type": "string",
+            "enum": [
+              "北海道",
+              "青森県",
+              "岩手県",
+              "宮城県",
+              "秋田県",
+              "山形県",
+              "福島県",
+              "茨城県",
+              "栃木県",
+              "群馬県",
+              "埼玉県",
+              "千葉県",
+              "東京都",
+              "神奈川県",
+              "新潟県",
+              "富山県",
+              "石川県",
+              "福井県",
+              "山梨県",
+              "長野県",
+              "岐阜県",
+              "静岡県",
+              "愛知県",
+              "三重県",
+              "滋賀県",
+              "京都府",
+              "大阪府",
+              "兵庫県",
+              "奈良県",
+              "和歌山県",
+              "鳥取県",
+              "島根県",
+              "岡山県",
+              "広島県",
+              "山口県",
+              "徳島県",
+              "香川県",
+              "愛媛県",
+              "高知県",
+              "福岡県",
+              "佐賀県",
+              "長崎県",
+              "熊本県",
+              "大分県",
+              "宮崎県",
+              "鹿児島県",
+              "沖縄県"
+            ]
+          },
+          "category": {
+            "description": "入札区分。物品、役務、工事、その他。",
+            "type": "string",
+            "enum": ["物品", "工事", "役務"]
+          },
+          "days": {
+            "default": 7,
+            "description": "過去何日分の公告を取得するか。デフォルト7日。",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 30
+          },
+          "limit": {
+            "default": 50,
+            "description": "取得件数の上限。デフォルト50。",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "searchHits": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "returnedCount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "bids": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "resultId": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "key": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "externalDocumentUri": {
+                  "type": "string"
+                },
+                "projectName": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "date": {
+                  "type": "string"
+                },
+                "fileType": {
+                  "type": "string"
+                },
+                "fileSize": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "lgCode": {
+                  "type": "string"
+                },
+                "prefectureName": {
+                  "type": "string"
+                },
+                "cityCode": {
+                  "type": "string"
+                },
+                "cityName": {
+                  "type": "string"
+                },
+                "organizationName": {
+                  "type": "string"
+                },
+                "certification": {
+                  "type": "string"
+                },
+                "cftIssueDate": {
+                  "type": "string"
+                },
+                "periodEndTime": {
+                  "type": "string"
+                },
+                "category": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": ["物品", "工事", "役務"]
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "procedureType": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": ["一般競争入札", "簡易公募型競争入札", "簡易公募型指名競争入札"]
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "location": {
+                  "type": "string"
+                },
+                "tenderSubmissionDeadline": {
+                  "type": "string"
+                },
+                "openingTendersEvent": {
+                  "type": "string"
+                },
+                "itemCode": {
+                  "type": "string"
+                },
+                "projectDescription": {
+                  "type": "string"
+                },
+                "attachments": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "uri": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["name", "uri"],
+                    "additionalProperties": false
+                  }
+                },
+                "bidRef": {
+                  "type": "string"
+                },
+                "attachmentsTruncated": {
+                  "type": "boolean"
+                },
+                "truncatedReason": {
+                  "type": "string"
+                }
+              },
+              "required": ["resultId", "key", "projectName"],
+              "additionalProperties": false
+            }
+          },
+          "query": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            }
+          },
+          "attribution": {
+            "type": "object",
+            "properties": {
+              "dataSource": {
+                "type": "string",
+                "const": "中小企業庁 官公需情報ポータルサイト"
+              },
+              "apiEndpoint": {
+                "type": "string",
+                "const": "http://www.kkj.go.jp/api/"
+              },
+              "licenseUrl": {
+                "type": "string",
+                "format": "uri"
+              },
+              "serviceDisclaimer": {
+                "type": "string"
+              },
+              "accessedAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              }
+            },
+            "required": [
+              "dataSource",
+              "apiEndpoint",
+              "licenseUrl",
+              "serviceDisclaimer",
+              "accessedAt"
+            ],
+            "additionalProperties": false
+          },
+          "pagination": {
+            "type": "object",
+            "properties": {
+              "has_more": {
+                "type": "boolean"
+              },
+              "next_cursor": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "total_count": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": ["has_more", "total_count"],
+            "additionalProperties": false
+          },
+          "searchCriteria": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          }
+        },
+        "required": ["searchHits", "returnedCount", "bids", "query", "attribution"],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "_meta": {}
+    },
+    {
+      "name": "get_bid_detail",
+      "title": "官公需入札詳細",
+      "description": "入札Keyまたはbid_refから1件の詳細を取得する。添付資料は保存せず公式サイトのURIのみ返す。USE THIS WHEN: search_bids/list_recent_bids が返した bid_ref や Key から公式公告ページ・添付URI・機関情報を確認したいとき。DO NOT USE WHEN: Key や bid_ref がまだ無いとき（search_bids を先に使う）。Fetch full details for one bid by bid_ref or key without storing attachments. Ambil detail lengkap satu tender berdasarkan bid_ref atau kunci tanpa menyimpan lampiran.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "bid_ref": {
+            "description": "search_bids または list_recent_bids が返した bid_ref トークン（優先）",
+            "type": "string",
+            "minLength": 1
+          },
+          "bid_key": {
+            "description": "search_bids または list_recent_bids が返した Key フィールド",
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "searchHits": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "returnedCount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "bids": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "resultId": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "key": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "externalDocumentUri": {
+                  "type": "string"
+                },
+                "projectName": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "date": {
+                  "type": "string"
+                },
+                "fileType": {
+                  "type": "string"
+                },
+                "fileSize": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "lgCode": {
+                  "type": "string"
+                },
+                "prefectureName": {
+                  "type": "string"
+                },
+                "cityCode": {
+                  "type": "string"
+                },
+                "cityName": {
+                  "type": "string"
+                },
+                "organizationName": {
+                  "type": "string"
+                },
+                "certification": {
+                  "type": "string"
+                },
+                "cftIssueDate": {
+                  "type": "string"
+                },
+                "periodEndTime": {
+                  "type": "string"
+                },
+                "category": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": ["物品", "工事", "役務"]
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "procedureType": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": ["一般競争入札", "簡易公募型競争入札", "簡易公募型指名競争入札"]
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "location": {
+                  "type": "string"
+                },
+                "tenderSubmissionDeadline": {
+                  "type": "string"
+                },
+                "openingTendersEvent": {
+                  "type": "string"
+                },
+                "itemCode": {
+                  "type": "string"
+                },
+                "projectDescription": {
+                  "type": "string"
+                },
+                "attachments": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "uri": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["name", "uri"],
+                    "additionalProperties": false
+                  }
+                },
+                "bidRef": {
+                  "type": "string"
+                },
+                "attachmentsTruncated": {
+                  "type": "boolean"
+                },
+                "truncatedReason": {
+                  "type": "string"
+                }
+              },
+              "required": ["resultId", "key", "projectName"],
+              "additionalProperties": false
+            }
+          },
+          "query": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            }
+          },
+          "attribution": {
+            "type": "object",
+            "properties": {
+              "dataSource": {
+                "type": "string",
+                "const": "中小企業庁 官公需情報ポータルサイト"
+              },
+              "apiEndpoint": {
+                "type": "string",
+                "const": "http://www.kkj.go.jp/api/"
+              },
+              "licenseUrl": {
+                "type": "string",
+                "format": "uri"
+              },
+              "serviceDisclaimer": {
+                "type": "string"
+              },
+              "accessedAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              }
+            },
+            "required": [
+              "dataSource",
+              "apiEndpoint",
+              "licenseUrl",
+              "serviceDisclaimer",
+              "accessedAt"
+            ],
+            "additionalProperties": false
+          },
+          "pagination": {
+            "type": "object",
+            "properties": {
+              "has_more": {
+                "type": "boolean"
+              },
+              "next_cursor": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "total_count": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": ["has_more", "total_count"],
+            "additionalProperties": false
+          },
+          "searchCriteria": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          }
+        },
+        "required": ["searchHits", "returnedCount", "bids", "query", "attribution"],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "_meta": {}
+    },
+    {
+      "name": "rank_bids",
+      "title": "追うべき入札ランキング",
+      "description": "官公需入札を検索または指定選択し、追うべき順にスコアリングする。USE THIS WHEN: 検索結果や指定した bid_ref 一覧を営業優先度で並べ、pursue/review/skip の初期判断を作りたいとき。DO NOT USE WHEN: 法的な参加資格の最終判定が必要なとき（公式公告資料や発注機関窓口による確認が必要）。Search or evaluate selected bids and score by follow-up priority using AI Bid Radar. Cari atau evaluasi tender terpilih dan peringkat berdasarkan prioritas tindak lanjut dengan AI Bid Radar.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "description": "自由記述キーワード。複数キーワードはAND結合で検索されます。",
+            "type": "string",
+            "minLength": 1
+          },
+          "project_name": {
+            "description": "件名で絞り込む場合に指定します。",
+            "type": "string",
+            "minLength": 1
+          },
+          "prefecture": {
+            "description": "都道府県名で絞り込む。配列で複数指定可。例: 鹿児島県、東京都。",
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "北海道",
+                  "青森県",
+                  "岩手県",
+                  "宮城県",
+                  "秋田県",
+                  "山形県",
+                  "福島県",
+                  "茨城県",
+                  "栃木県",
+                  "群馬県",
+                  "埼玉県",
+                  "千葉県",
+                  "東京都",
+                  "神奈川県",
+                  "新潟県",
+                  "富山県",
+                  "石川県",
+                  "福井県",
+                  "山梨県",
+                  "長野県",
+                  "岐阜県",
+                  "静岡県",
+                  "愛知県",
+                  "三重県",
+                  "滋賀県",
+                  "京都府",
+                  "大阪府",
+                  "兵庫県",
+                  "奈良県",
+                  "和歌山県",
+                  "鳥取県",
+                  "島根県",
+                  "岡山県",
+                  "広島県",
+                  "山口県",
+                  "徳島県",
+                  "香川県",
+                  "愛媛県",
+                  "高知県",
+                  "福岡県",
+                  "佐賀県",
+                  "長崎県",
+                  "熊本県",
+                  "大分県",
+                  "宮崎県",
+                  "鹿児島県",
+                  "沖縄県"
+                ]
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "北海道",
+                    "青森県",
+                    "岩手県",
+                    "宮城県",
+                    "秋田県",
+                    "山形県",
+                    "福島県",
+                    "茨城県",
+                    "栃木県",
+                    "群馬県",
+                    "埼玉県",
+                    "千葉県",
+                    "東京都",
+                    "神奈川県",
+                    "新潟県",
+                    "富山県",
+                    "石川県",
+                    "福井県",
+                    "山梨県",
+                    "長野県",
+                    "岐阜県",
+                    "静岡県",
+                    "愛知県",
+                    "三重県",
+                    "滋賀県",
+                    "京都府",
+                    "大阪府",
+                    "兵庫県",
+                    "奈良県",
+                    "和歌山県",
+                    "鳥取県",
+                    "島根県",
+                    "岡山県",
+                    "広島県",
+                    "山口県",
+                    "徳島県",
+                    "香川県",
+                    "愛媛県",
+                    "高知県",
+                    "福岡県",
+                    "佐賀県",
+                    "長崎県",
+                    "熊本県",
+                    "大分県",
+                    "宮崎県",
+                    "鹿児島県",
+                    "沖縄県"
+                  ]
+                }
+              }
+            ]
+          },
+          "category": {
+            "description": "入札区分。物品、役務、工事、その他。",
+            "type": "string",
+            "enum": ["物品", "工事", "役務"]
+          },
+          "procedure_type": {
+            "description": "公示種別。一般競争入札、指名競争入札、随意契約など。",
+            "type": "string",
+            "enum": ["一般競争入札", "簡易公募型競争入札", "簡易公募型指名競争入札"]
+          },
+          "certification": {
+            "description": "全省庁統一資格の等級。A、B、C、D から複数指定可。",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["A", "B", "C", "D"]
+            }
+          },
+          "organization_name": {
+            "description": "発注機関名で絞り込む。例: 農林水産省、防衛省。",
+            "type": "string",
+            "minLength": 1
+          },
+          "issued_after": {
+            "description": "公告日 YYYY-MM-DD 以降",
+            "type": "string"
+          },
+          "issued_before": {
+            "description": "公告日 YYYY-MM-DD 以前",
+            "type": "string"
+          },
+          "due_after": {
+            "description": "入札書提出期限 YYYY-MM-DD 以降",
+            "type": "string"
+          },
+          "due_before": {
+            "description": "入札書提出期限 YYYY-MM-DD 以前",
+            "type": "string"
+          },
+          "opening_after": {
+            "description": "開札日 YYYY-MM-DD 以降",
+            "type": "string"
+          },
+          "opening_before": {
+            "description": "開札日 YYYY-MM-DD 以前",
+            "type": "string"
+          },
+          "period_end_after": {
+            "description": "納入期限日 YYYY-MM-DD 以降",
+            "type": "string"
+          },
+          "period_end_before": {
+            "description": "納入期限日 YYYY-MM-DD 以前",
+            "type": "string"
+          },
+          "limit": {
+            "default": 20,
+            "description": "取得件数の上限。デフォルト20、最大1000。",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "bid_refs": {
+            "description": "採点対象とする bid_ref の配列（最大50件）。指定時は検索を行わず指定案件のみを採点します（Selection-only mode）。",
+            "minItems": 1,
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "preferred_keywords": {
+            "description": "優先したい語句。例: ソフトウェア、保守、クラウド。",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "avoid_keywords": {
+            "description": "避けたい語句。例: 工事、常駐、夜間。",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "due_within_days": {
+            "default": 30,
+            "description": "この日数以内に提出期限が来る案件を優先します。",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 180
+          },
+          "shortlist_limit": {
+            "description": "ランキング結果として返す最大件数。検索モードではデフォルト10件。選択モードでは指定がなければ全選択件数を返します。",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "searchHits": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "returnedCount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "rankedCount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "rankedBids": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "bid": {
+                  "type": "object",
+                  "properties": {
+                    "resultId": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "key": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "externalDocumentUri": {
+                      "type": "string"
+                    },
+                    "projectName": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "date": {
+                      "type": "string"
+                    },
+                    "fileType": {
+                      "type": "string"
+                    },
+                    "fileSize": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "lgCode": {
+                      "type": "string"
+                    },
+                    "prefectureName": {
+                      "type": "string"
+                    },
+                    "cityCode": {
+                      "type": "string"
+                    },
+                    "cityName": {
+                      "type": "string"
+                    },
+                    "organizationName": {
+                      "type": "string"
+                    },
+                    "certification": {
+                      "type": "string"
+                    },
+                    "cftIssueDate": {
+                      "type": "string"
+                    },
+                    "periodEndTime": {
+                      "type": "string"
+                    },
+                    "category": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "enum": ["物品", "工事", "役務"]
+                        },
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "procedureType": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "enum": ["一般競争入札", "簡易公募型競争入札", "簡易公募型指名競争入札"]
+                        },
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "location": {
+                      "type": "string"
+                    },
+                    "tenderSubmissionDeadline": {
+                      "type": "string"
+                    },
+                    "openingTendersEvent": {
+                      "type": "string"
+                    },
+                    "itemCode": {
+                      "type": "string"
+                    },
+                    "projectDescription": {
+                      "type": "string"
+                    },
+                    "attachments": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "uri": {
+                            "type": "string"
+                          }
+                        },
+                        "required": ["name", "uri"],
+                        "additionalProperties": false
+                      }
+                    },
+                    "bidRef": {
+                      "type": "string"
+                    },
+                    "attachmentsTruncated": {
+                      "type": "boolean"
+                    },
+                    "truncatedReason": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["resultId", "key", "projectName"],
+                  "additionalProperties": false
+                },
+                "score": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "priority": {
+                  "type": "string",
+                  "enum": ["pursue", "review", "skip"]
+                },
+                "reasons": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "risks": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "nextActions": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "deadlineStatus": {
+                  "type": "string",
+                  "enum": ["unknown", "passed", "today", "upcoming"]
+                },
+                "selectionIndex": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": ["bid", "score", "priority", "reasons", "risks", "nextActions"],
+              "additionalProperties": false
+            }
+          },
+          "query": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            }
+          },
+          "attribution": {
+            "type": "object",
+            "properties": {
+              "dataSource": {
+                "type": "string",
+                "const": "中小企業庁 官公需情報ポータルサイト"
+              },
+              "apiEndpoint": {
+                "type": "string",
+                "const": "http://www.kkj.go.jp/api/"
+              },
+              "licenseUrl": {
+                "type": "string",
+                "format": "uri"
+              },
+              "serviceDisclaimer": {
+                "type": "string"
+              },
+              "accessedAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              }
+            },
+            "required": [
+              "dataSource",
+              "apiEndpoint",
+              "licenseUrl",
+              "serviceDisclaimer",
+              "accessedAt"
+            ],
+            "additionalProperties": false
+          },
+          "scoringPolicy": {
+            "type": "object",
+            "properties": {
+              "version": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              }
+            },
+            "required": ["version", "summary"],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "searchHits",
+          "returnedCount",
+          "rankedCount",
+          "rankedBids",
+          "query",
+          "attribution",
+          "scoringPolicy"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "_meta": {}
+    },
+    {
+      "name": "extract_bid_requirements",
+      "title": "入札要件抽出MVP",
+      "description": "1件の入札の参加条件・期限・確認すべきPDFを構造化する。PDFは保存しない。USE THIS WHEN: bid_ref または Key がある案件の参加条件、提出期限、確認対象資料をレビュー用に整理したいとき。DO NOT USE WHEN: 入札検索だけで十分なとき、または公式PDFの最終解釈を人間レビューなしで確定したいとき。Extract bid requirements, deadlines, and PDF checklist from metadata and attachments without storing files. Ekstrak persyaratan tender, tenggat waktu, dan daftar PDF tanpa menyimpan berkas.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "bid_ref": {
+            "description": "search_bids、rank_bids、またはlist_recent_bidsが返したbid_refトークン（優先）",
+            "type": "string",
+            "minLength": 1
+          },
+          "bid_key": {
+            "description": "search_bids、rank_bids、またはlist_recent_bidsが返したKeyフィールド",
+            "type": "string",
+            "minLength": 1
+          },
+          "fetch_documents": {
+            "default": false,
+            "description": "trueの場合、公式公告ページまたは添付資料を一時取得して要件抽出を試みる。",
+            "type": "boolean"
+          },
+          "target_uris": {
+            "description": "抽出対象URL。省略時は検索結果の公式公告ページ・添付資料URLから最大3件を使う。",
+            "maxItems": 3,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "bid": {
+            "type": "object",
+            "properties": {
+              "resultId": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "key": {
+                "type": "string",
+                "minLength": 1
+              },
+              "externalDocumentUri": {
+                "type": "string"
+              },
+              "projectName": {
+                "type": "string",
+                "minLength": 1
+              },
+              "date": {
+                "type": "string"
+              },
+              "fileType": {
+                "type": "string"
+              },
+              "fileSize": {
+                "type": "number",
+                "minimum": 0
+              },
+              "lgCode": {
+                "type": "string"
+              },
+              "prefectureName": {
+                "type": "string"
+              },
+              "cityCode": {
+                "type": "string"
+              },
+              "cityName": {
+                "type": "string"
+              },
+              "organizationName": {
+                "type": "string"
+              },
+              "certification": {
+                "type": "string"
+              },
+              "cftIssueDate": {
+                "type": "string"
+              },
+              "periodEndTime": {
+                "type": "string"
+              },
+              "category": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": ["物品", "工事", "役務"]
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              "procedureType": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": ["一般競争入札", "簡易公募型競争入札", "簡易公募型指名競争入札"]
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              "location": {
+                "type": "string"
+              },
+              "tenderSubmissionDeadline": {
+                "type": "string"
+              },
+              "openingTendersEvent": {
+                "type": "string"
+              },
+              "itemCode": {
+                "type": "string"
+              },
+              "projectDescription": {
+                "type": "string"
+              },
+              "attachments": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "uri": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["name", "uri"],
+                  "additionalProperties": false
+                }
+              },
+              "bidRef": {
+                "type": "string"
+              },
+              "attachmentsTruncated": {
+                "type": "boolean"
+              },
+              "truncatedReason": {
+                "type": "string"
+              }
+            },
+            "required": ["resultId", "key", "projectName"],
+            "additionalProperties": false
+          },
+          "knownRequirements": {
+            "type": "object",
+            "properties": {
+              "organizationName": {
+                "type": "string"
+              },
+              "prefectureName": {
+                "type": "string"
+              },
+              "cityName": {
+                "type": "string"
+              },
+              "category": {
+                "type": "string"
+              },
+              "procedureType": {
+                "type": "string"
+              },
+              "certification": {
+                "type": "string"
+              },
+              "noticeDate": {
+                "type": "string"
+              },
+              "tenderSubmissionDeadline": {
+                "type": "string"
+              },
+              "openingTendersEvent": {
+                "type": "string"
+              },
+              "periodEndTime": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "documentTargets": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "uri": {
+                  "type": "string"
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": ["official_page", "attachment", "unknown"]
+                },
+                "recommendedProcessor": {
+                  "type": "string",
+                  "enum": [
+                    "manual_review",
+                    "gemini_document_understanding",
+                    "document_ai_layout_parser"
+                  ]
+                }
+              },
+              "required": ["label", "uri", "kind", "recommendedProcessor"],
+              "additionalProperties": false
+            }
+          },
+          "missingRequirements": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "extractionPlan": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "safetyNotes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "extractedFromDocuments": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "sourceUri": {
+                  "type": "string"
+                },
+                "finalUri": {
+                  "type": "string"
+                },
+                "sha256": {
+                  "type": "string"
+                },
+                "sizeBytes": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "mimeType": {
+                  "type": "string"
+                },
+                "extractedAt": {
+                  "type": "string"
+                },
+                "mode": {
+                  "type": "string",
+                  "enum": ["sampling", "vertex_ai", "none"]
+                }
+              },
+              "required": [
+                "sourceUri",
+                "finalUri",
+                "sha256",
+                "sizeBytes",
+                "mimeType",
+                "extractedAt",
+                "mode"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "extractedRequirements": {
+            "type": "object",
+            "properties": {
+              "eligibility": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "requiredDocuments": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "questionDeadline": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "tenderSubmissionDeadline": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "openingDate": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "briefingDate": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "deliveryDeadline": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "contractPeriod": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "contactPoint": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "disqualification": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "estimatedBudget": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "evaluationCriteria": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "ambiguousPoints": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "rawNotes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "eligibility",
+              "requiredDocuments",
+              "questionDeadline",
+              "tenderSubmissionDeadline",
+              "openingDate",
+              "briefingDate",
+              "deliveryDeadline",
+              "contractPeriod",
+              "contactPoint",
+              "disqualification",
+              "estimatedBudget",
+              "evaluationCriteria",
+              "ambiguousPoints",
+              "rawNotes"
+            ],
+            "additionalProperties": false
+          },
+          "extractionWarnings": {
+            "default": [],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "rawExtractionText": {
+            "type": "string"
+          },
+          "extractionStatus": {
+            "type": "string",
+            "enum": ["disabled", "partial", "success", "failed"]
+          },
+          "attribution": {
+            "type": "object",
+            "properties": {
+              "dataSource": {
+                "type": "string",
+                "const": "中小企業庁 官公需情報ポータルサイト"
+              },
+              "apiEndpoint": {
+                "type": "string",
+                "const": "http://www.kkj.go.jp/api/"
+              },
+              "licenseUrl": {
+                "type": "string",
+                "format": "uri"
+              },
+              "serviceDisclaimer": {
+                "type": "string"
+              },
+              "accessedAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              }
+            },
+            "required": [
+              "dataSource",
+              "apiEndpoint",
+              "licenseUrl",
+              "serviceDisclaimer",
+              "accessedAt"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "bid",
+          "knownRequirements",
+          "documentTargets",
+          "missingRequirements",
+          "extractionPlan",
+          "safetyNotes",
+          "extractedFromDocuments",
+          "extractionWarnings",
+          "attribution"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "_meta": {}
+    },
+    {
+      "name": "export_bid_shortlist",
+      "title": "入札検討shortlist CSV",
+      "description": "入札を検索または指定選択してランキングし、Google Sheets/Excel用のCSVまたはJSONを返す。スコア・判断・リスク・次アクション付き。USE THIS WHEN: 複数案件を営業リストとして表計算ソフト等に渡したいとき。DO NOT USE WHEN: 1件の詳細情報や公示内容の全文を確認したいとき（get_bid_detail や公式公告リンクを使う）。Search or select and rank bids, then export a CSV/JSON shortlist for Google Sheets/Excel with scores and next actions. Cari atau pilih tender, beri peringkat, dan ekspor shortlist CSV/JSON.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "description": "自由記述キーワード。複数キーワードはAND結合で検索されます。",
+            "type": "string",
+            "minLength": 1
+          },
+          "project_name": {
+            "description": "件名で絞り込む場合に指定します。",
+            "type": "string",
+            "minLength": 1
+          },
+          "prefecture": {
+            "description": "都道府県名で絞り込む。配列で複数指定可。例: 鹿児島県、東京都。",
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "北海道",
+                  "青森県",
+                  "岩手県",
+                  "宮城県",
+                  "秋田県",
+                  "山形県",
+                  "福島県",
+                  "茨城県",
+                  "栃木県",
+                  "群馬県",
+                  "埼玉県",
+                  "千葉県",
+                  "東京都",
+                  "神奈川県",
+                  "新潟県",
+                  "富山県",
+                  "石川県",
+                  "福井県",
+                  "山梨県",
+                  "長野県",
+                  "岐阜県",
+                  "静岡県",
+                  "愛知県",
+                  "三重県",
+                  "滋賀県",
+                  "京都府",
+                  "大阪府",
+                  "兵庫県",
+                  "奈良県",
+                  "和歌山県",
+                  "鳥取県",
+                  "島根県",
+                  "岡山県",
+                  "広島県",
+                  "山口県",
+                  "徳島県",
+                  "香川県",
+                  "愛媛県",
+                  "高知県",
+                  "福岡県",
+                  "佐賀県",
+                  "長崎県",
+                  "熊本県",
+                  "大分県",
+                  "宮崎県",
+                  "鹿児島県",
+                  "沖縄県"
+                ]
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "北海道",
+                    "青森県",
+                    "岩手県",
+                    "宮城県",
+                    "秋田県",
+                    "山形県",
+                    "福島県",
+                    "茨城県",
+                    "栃木県",
+                    "群馬県",
+                    "埼玉県",
+                    "千葉県",
+                    "東京都",
+                    "神奈川県",
+                    "新潟県",
+                    "富山県",
+                    "石川県",
+                    "福井県",
+                    "山梨県",
+                    "長野県",
+                    "岐阜県",
+                    "静岡県",
+                    "愛知県",
+                    "三重県",
+                    "滋賀県",
+                    "京都府",
+                    "大阪府",
+                    "兵庫県",
+                    "奈良県",
+                    "和歌山県",
+                    "鳥取県",
+                    "島根県",
+                    "岡山県",
+                    "広島県",
+                    "山口県",
+                    "徳島県",
+                    "香川県",
+                    "愛媛県",
+                    "高知県",
+                    "福岡県",
+                    "佐賀県",
+                    "長崎県",
+                    "熊本県",
+                    "大分県",
+                    "宮崎県",
+                    "鹿児島県",
+                    "沖縄県"
+                  ]
+                }
+              }
+            ]
+          },
+          "category": {
+            "description": "入札区分。物品、役務、工事、その他。",
+            "type": "string",
+            "enum": ["物品", "工事", "役務"]
+          },
+          "procedure_type": {
+            "description": "公示種別。一般競争入札、指名競争入札、随意契約など。",
+            "type": "string",
+            "enum": ["一般競争入札", "簡易公募型競争入札", "簡易公募型指名競争入札"]
+          },
+          "certification": {
+            "description": "全省庁統一資格の等級。A、B、C、D から複数指定可。",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["A", "B", "C", "D"]
+            }
+          },
+          "organization_name": {
+            "description": "発注機関名で絞り込む。例: 農林水産省、防衛省。",
+            "type": "string",
+            "minLength": 1
+          },
+          "issued_after": {
+            "description": "公告日 YYYY-MM-DD 以降",
+            "type": "string"
+          },
+          "issued_before": {
+            "description": "公告日 YYYY-MM-DD 以前",
+            "type": "string"
+          },
+          "due_after": {
+            "description": "入札書提出期限 YYYY-MM-DD 以降",
+            "type": "string"
+          },
+          "due_before": {
+            "description": "入札書提出期限 YYYY-MM-DD 以前",
+            "type": "string"
+          },
+          "opening_after": {
+            "description": "開札日 YYYY-MM-DD 以降",
+            "type": "string"
+          },
+          "opening_before": {
+            "description": "開札日 YYYY-MM-DD 以前",
+            "type": "string"
+          },
+          "period_end_after": {
+            "description": "納入期限日 YYYY-MM-DD 以降",
+            "type": "string"
+          },
+          "period_end_before": {
+            "description": "納入期限日 YYYY-MM-DD 以前",
+            "type": "string"
+          },
+          "limit": {
+            "default": 20,
+            "description": "取得件数の上限。デフォルト20、最大1000。",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "bid_refs": {
+            "description": "エクスポート対象とする bid_ref の配列（最大50件）。指定時は検索を行わず指定案件のみを出力します（Selection-only mode）。",
+            "minItems": 1,
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "format": {
+            "default": "csv",
+            "description": "出力フォーマット。'csv' または 'json'。デフォルトは 'csv'。",
+            "type": "string",
+            "enum": ["csv", "json"]
+          },
+          "preferred_keywords": {
+            "description": "優先したい語句。例: ソフトウェア、保守、クラウド。",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "avoid_keywords": {
+            "description": "避けたい語句。例: 工事、常駐、夜間。",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "due_within_days": {
+            "default": 30,
+            "description": "この日数以内に提出期限が来る案件を優先。デフォルト30日。",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 180
+          },
+          "shortlist_limit": {
+            "description": "出力する最大件数。検索モードではデフォルト10件。選択モードでは指定がなければ全選択件数を出力します。",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          },
+          "fetch_documents": {
+            "default": false,
+            "description": "trueの場合、上位案件のPDF/HTML抽出結果をCSVに参加資格・提出期限列として追加する。",
+            "type": "boolean"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "format": {
+            "type": "string",
+            "enum": ["csv", "json"]
+          },
+          "filename": {
+            "type": "string"
+          },
+          "rankedCount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "csv": {
+            "type": "string"
+          },
+          "columns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "jsonContent": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {}
+            }
+          },
+          "attribution": {
+            "type": "object",
+            "properties": {
+              "dataSource": {
+                "type": "string",
+                "const": "中小企業庁 官公需情報ポータルサイト"
+              },
+              "apiEndpoint": {
+                "type": "string",
+                "const": "http://www.kkj.go.jp/api/"
+              },
+              "licenseUrl": {
+                "type": "string",
+                "format": "uri"
+              },
+              "serviceDisclaimer": {
+                "type": "string"
+              },
+              "accessedAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              }
+            },
+            "required": [
+              "dataSource",
+              "apiEndpoint",
+              "licenseUrl",
+              "serviceDisclaimer",
+              "accessedAt"
+            ],
+            "additionalProperties": false
+          },
+          "scoringPolicy": {
+            "type": "object",
+            "properties": {
+              "version": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              }
+            },
+            "required": ["version", "summary"],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "format",
+          "filename",
+          "rankedCount",
+          "columns",
+          "attribution",
+          "scoringPolicy"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "_meta": {}
+    },
+    {
+      "name": "search_bids_app",
+      "title": "AI Bid Workspace",
+      "description": "日本全国の官公需入札情報を検索し、MCP Apps対応クライアントではAI Bid Workspaceとして検索結果を表示する。USE THIS WHEN: 対応クライアントで入札検索結果をカード/ワークスペースUIとして確認したいとき。DO NOT USE WHEN: テキストと structuredContent だけで十分なとき（search_bids を使う）。非対応クライアントでも通常のテキスト要約と structuredContent を返す。",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "description": "自由記述キーワード。複数キーワードはAND結合で検索されます。",
+            "type": "string",
+            "minLength": 1
+          },
+          "project_name": {
+            "description": "件名で絞り込む場合に指定します。",
+            "type": "string",
+            "minLength": 1
+          },
+          "prefecture": {
+            "description": "都道府県名で絞り込む。配列で複数指定可。例: 鹿児島県、東京都。",
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "北海道",
+                  "青森県",
+                  "岩手県",
+                  "宮城県",
+                  "秋田県",
+                  "山形県",
+                  "福島県",
+                  "茨城県",
+                  "栃木県",
+                  "群馬県",
+                  "埼玉県",
+                  "千葉県",
+                  "東京都",
+                  "神奈川県",
+                  "新潟県",
+                  "富山県",
+                  "石川県",
+                  "福井県",
+                  "山梨県",
+                  "長野県",
+                  "岐阜県",
+                  "静岡県",
+                  "愛知県",
+                  "三重県",
+                  "滋賀県",
+                  "京都府",
+                  "大阪府",
+                  "兵庫県",
+                  "奈良県",
+                  "和歌山県",
+                  "鳥取県",
+                  "島根県",
+                  "岡山県",
+                  "広島県",
+                  "山口県",
+                  "徳島県",
+                  "香川県",
+                  "愛媛県",
+                  "高知県",
+                  "福岡県",
+                  "佐賀県",
+                  "長崎県",
+                  "熊本県",
+                  "大分県",
+                  "宮崎県",
+                  "鹿児島県",
+                  "沖縄県"
+                ]
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "北海道",
+                    "青森県",
+                    "岩手県",
+                    "宮城県",
+                    "秋田県",
+                    "山形県",
+                    "福島県",
+                    "茨城県",
+                    "栃木県",
+                    "群馬県",
+                    "埼玉県",
+                    "千葉県",
+                    "東京都",
+                    "神奈川県",
+                    "新潟県",
+                    "富山県",
+                    "石川県",
+                    "福井県",
+                    "山梨県",
+                    "長野県",
+                    "岐阜県",
+                    "静岡県",
+                    "愛知県",
+                    "三重県",
+                    "滋賀県",
+                    "京都府",
+                    "大阪府",
+                    "兵庫県",
+                    "奈良県",
+                    "和歌山県",
+                    "鳥取県",
+                    "島根県",
+                    "岡山県",
+                    "広島県",
+                    "山口県",
+                    "徳島県",
+                    "香川県",
+                    "愛媛県",
+                    "高知県",
+                    "福岡県",
+                    "佐賀県",
+                    "長崎県",
+                    "熊本県",
+                    "大分県",
+                    "宮崎県",
+                    "鹿児島県",
+                    "沖縄県"
+                  ]
+                }
+              }
+            ]
+          },
+          "category": {
+            "description": "入札区分。物品、役務、工事、その他。",
+            "type": "string",
+            "enum": ["物品", "工事", "役務"]
+          },
+          "procedure_type": {
+            "description": "公示種別。一般競争入札、指名競争入札、随意契約など。",
+            "type": "string",
+            "enum": ["一般競争入札", "簡易公募型競争入札", "簡易公募型指名競争入札"]
+          },
+          "certification": {
+            "description": "全省庁統一資格の等級。A、B、C、D から複数指定可。",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["A", "B", "C", "D"]
+            }
+          },
+          "organization_name": {
+            "description": "発注機関名で絞り込む。例: 農林水産省、防衛省。",
+            "type": "string",
+            "minLength": 1
+          },
+          "issued_after": {
+            "description": "公告日 YYYY-MM-DD 以降",
+            "type": "string"
+          },
+          "issued_before": {
+            "description": "公告日 YYYY-MM-DD 以前",
+            "type": "string"
+          },
+          "due_after": {
+            "description": "入札書提出期限 YYYY-MM-DD 以降",
+            "type": "string"
+          },
+          "due_before": {
+            "description": "入札書提出期限 YYYY-MM-DD 以前",
+            "type": "string"
+          },
+          "opening_after": {
+            "description": "開札日 YYYY-MM-DD 以降",
+            "type": "string"
+          },
+          "opening_before": {
+            "description": "開札日 YYYY-MM-DD 以前",
+            "type": "string"
+          },
+          "period_end_after": {
+            "description": "納入期限日 YYYY-MM-DD 以降",
+            "type": "string"
+          },
+          "period_end_before": {
+            "description": "納入期限日 YYYY-MM-DD 以前",
+            "type": "string"
+          },
+          "limit": {
+            "default": 20,
+            "description": "取得件数の上限。デフォルト20、最大1000。",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "searchHits": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "returnedCount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "bids": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "resultId": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "key": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "externalDocumentUri": {
+                  "type": "string"
+                },
+                "projectName": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "date": {
+                  "type": "string"
+                },
+                "fileType": {
+                  "type": "string"
+                },
+                "fileSize": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "lgCode": {
+                  "type": "string"
+                },
+                "prefectureName": {
+                  "type": "string"
+                },
+                "cityCode": {
+                  "type": "string"
+                },
+                "cityName": {
+                  "type": "string"
+                },
+                "organizationName": {
+                  "type": "string"
+                },
+                "certification": {
+                  "type": "string"
+                },
+                "cftIssueDate": {
+                  "type": "string"
+                },
+                "periodEndTime": {
+                  "type": "string"
+                },
+                "category": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": ["物品", "工事", "役務"]
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "procedureType": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": ["一般競争入札", "簡易公募型競争入札", "簡易公募型指名競争入札"]
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "location": {
+                  "type": "string"
+                },
+                "tenderSubmissionDeadline": {
+                  "type": "string"
+                },
+                "openingTendersEvent": {
+                  "type": "string"
+                },
+                "itemCode": {
+                  "type": "string"
+                },
+                "projectDescription": {
+                  "type": "string"
+                },
+                "attachments": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "uri": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["name", "uri"],
+                    "additionalProperties": false
+                  }
+                },
+                "bidRef": {
+                  "type": "string"
+                },
+                "attachmentsTruncated": {
+                  "type": "boolean"
+                },
+                "truncatedReason": {
+                  "type": "string"
+                }
+              },
+              "required": ["resultId", "key", "projectName"],
+              "additionalProperties": false
+            }
+          },
+          "query": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            }
+          },
+          "attribution": {
+            "type": "object",
+            "properties": {
+              "dataSource": {
+                "type": "string",
+                "const": "中小企業庁 官公需情報ポータルサイト"
+              },
+              "apiEndpoint": {
+                "type": "string",
+                "const": "http://www.kkj.go.jp/api/"
+              },
+              "licenseUrl": {
+                "type": "string",
+                "format": "uri"
+              },
+              "serviceDisclaimer": {
+                "type": "string"
+              },
+              "accessedAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              }
+            },
+            "required": [
+              "dataSource",
+              "apiEndpoint",
+              "licenseUrl",
+              "serviceDisclaimer",
+              "accessedAt"
+            ],
+            "additionalProperties": false
+          },
+          "pagination": {
+            "type": "object",
+            "properties": {
+              "has_more": {
+                "type": "boolean"
+              },
+              "next_cursor": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "total_count": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": ["has_more", "total_count"],
+            "additionalProperties": false
+          },
+          "searchCriteria": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          }
+        },
+        "required": ["searchHits", "returnedCount", "bids", "query", "attribution"],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "_meta": {
+        "ui": {
+          "resourceUri": "ui://jp-bids/search-results.html"
+        },
+        "ui/resourceUri": "ui://jp-bids/search-results.html"
+      }
+    }
+  ]
+}

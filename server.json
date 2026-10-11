@@ -1,0 +1,47 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.SUGUKURU-CO-LTD/jp-bids",
+  "title": "JP Bids",
+  "description": "Read-only MCP for Japan's KKJ public procurement notices (free, 7 tools, MCP Apps UI).",
+  "repository": {
+    "url": "https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp",
+    "source": "github"
+  },
+  "version": "0.9.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "jp-bids-mcp",
+      "version": "0.9.0",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.bid-jp.com/mcp"
+    }
+  ],
+  "interoperability": {
+    "complementary_servers": [
+      {
+        "name": "io.github.digital-go-jp/jgrants-mcp-server",
+        "title": "J-Grants MCP (デジタル庁 補助金)",
+        "repository": "https://github.com/digital-go-jp/jgrants-mcp-server",
+        "description": "Subsidy search via the Digital Agency of Japan's J-Grants public API. Complements JP Bids MCP for full public-sector funding coverage.",
+        "description_ja": "デジタル庁Jグランツ公開APIによる補助金検索。JP Bids MCPと組み合わせることで入札と補助金をひとつの会話でカバーできます。",
+        "integration_guide": "https://github.com/digital-go-jp/jgrants-mcp-server"
+      },
+      {
+        "name": "freee-mcp",
+        "title": "freee MCP (会計・人事労務・請求書)",
+        "repository": "https://www.npmjs.com/package/freee-mcp",
+        "description": "freee Accounting, HR, and Invoice APIs via MCP. Complements JP Bids MCP for procurement-to-accounting automation.",
+        "description_ja": "freee会計・人事労務・請求書APIのMCPサーバー。JP Bids MCPと組み合わせることで入札から会計処理までをひとつの会話で完結できます。",
+        "integration_guide": "https://www.npmjs.com/package/freee-mcp"
+      }
+    ]
+  }
+}

@@ -1,0 +1,69 @@
+# JP Bids MCP — robots.txt
+# 中小企業庁の官公需入札情報を AI から扱える MCP サーバー / Read-only MCP server for Japan government procurement bid information
+# https://mcp.bid-jp.com
+
+# 一般的な検索エンジン / General search engines
+User-agent: *
+Allow: /
+Disallow: /mcp
+Disallow: /oauth/
+
+Sitemap: https://mcp.bid-jp.com/sitemap.xml
+
+# AI クローラーを明示的に許可 / Explicit allowlist for AI crawlers
+# 2026-05 現在の主要な AI 検索クローラーを公式仕様に基づき列挙
+# Source: each provider's official documentation
+
+# OpenAI
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+# Anthropic
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+# Perplexity
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+# Google AI Overviews / Gemini
+User-agent: Google-Extended
+Allow: /
+
+# Apple Intelligence
+User-agent: Applebot-Extended
+Allow: /
+
+# Common Crawl (broad LLM training)
+User-agent: CCBot
+Allow: /
+
+# Microsoft Copilot
+User-agent: Bingbot
+Allow: /
+
+# Mistral
+User-agent: MistralAI-User
+Allow: /
+
+# DuckDuckGo Assist
+User-agent: DuckAssistBot
+Allow: /
+
+# AI search crawlers should read llms.txt for canonical content layout
+# https://mcp.bid-jp.com/llms.txt

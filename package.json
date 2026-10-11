@@ -1,0 +1,122 @@
+{
+  "name": "jp-bids-mcp",
+  "version": "0.9.0",
+  "description": "日本の官公需公告をMCPで検索・順位付け・要件抽出・出力する（完全無料・読み取り中心・7ツール）。Search, rank, extract requirements, and export Japanese public procurement notices through MCP (free, read-centric, 7 tools).",
+  "type": "module",
+  "license": "Apache-2.0",
+  "mcpName": "io.github.SUGUKURU-CO-LTD/jp-bids",
+  "main": "./dist/mcp.js",
+  "types": "./dist/mcp.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/mcp.d.ts",
+      "import": "./dist/mcp.js"
+    },
+    "./api": {
+      "types": "./dist/api/kkj-client.d.ts",
+      "import": "./dist/api/kkj-client.js"
+    },
+    "./types": {
+      "types": "./dist/domain/bid.d.ts",
+      "import": "./dist/domain/bid.js"
+    }
+  },
+  "sideEffects": false,
+  "packageManager": "npm@11.6.2",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "procurement",
+    "japan",
+    "government",
+    "bids",
+    "kkj",
+    "cloud-run"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp.git"
+  },
+  "homepage": "https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp",
+  "bugs": {
+    "url": "https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/issues"
+  },
+  "bin": {
+    "jp-bids-mcp": "dist/server.js"
+  },
+  "files": [
+    "dist",
+    "public",
+    "README.md",
+    "README.ja.md",
+    "README.id.md",
+    "LICENSE",
+    "server.json"
+  ],
+  "engines": {
+    "node": ">=20 <25"
+  },
+  "scripts": {
+    "build": "npm run build:server && npm run typecheck:ui && npm run build:ui",
+    "build:server": "tsc -p tsconfig.json",
+    "build:ui": "vite build",
+    "typecheck:ui": "tsc -p tsconfig.app.json",
+    "dev": "tsx src/server.ts",
+    "dev:http": "tsx src/server.ts --http",
+    "start": "node dist/server.js",
+    "start:http": "node dist/server.js --http",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:contract": "vitest run tests/contract.test.ts",
+    "apps:harness": "tsx scripts/apps-harness/serve.ts",
+    "apps:capture": "npm run build:ui && tsx scripts/apps-harness/capture.ts",
+    "docs:api": "typedoc",
+    "docs:check": "npm run docs:api && git diff --exit-code docs/api",
+    "server-card:generate": "tsx scripts/generate-server-card.ts",
+    "check": "npm run lint && npm run build && npm run test"
+  },
+  "dependencies": {
+    "@google-cloud/firestore": "^8.7.0",
+    "@google/genai": "^1.51.0",
+    "@modelcontextprotocol/ext-apps": "^1.7.4",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "fast-xml-parser": "^5.7.2",
+    "lru-cache": "^11.3.5",
+    "stripe": "^22.1.0",
+    "zod": "^4.4.1"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.13",
+    "@cyclonedx/cyclonedx-npm": "^4.2.1",
+    "@emnapi/core": "^1.10.0",
+    "@emnapi/runtime": "^1.10.0",
+    "@stryker-mutator/core": "^9.6.1",
+    "@stryker-mutator/typescript-checker": "^9.6.1",
+    "@stryker-mutator/vitest-runner": "^9.6.1",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.6.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@types/supertest": "^7.2.0",
+    "@vitejs/plugin-react": "^6.0.1",
+    "@vitest/coverage-v8": "^4.1.5",
+    "ajv-formats-draft2019": "^1.6.1",
+    "fast-check": "^4.7.0",
+    "libxmljs2": "^0.37.0",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "supertest": "^7.2.2",
+    "tinybench": "^6.0.1",
+    "tsx": "^4.21.0",
+    "typedoc": "^0.28.19",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.10",
+    "vite-plugin-singlefile": "^2.3.3",
+    "vitest": "^4.1.5"
+  }
+}

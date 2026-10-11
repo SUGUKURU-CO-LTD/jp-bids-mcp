@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Results>
+  <Version>1.0</Version>
+  <SearchResults>
+    <SearchHits>1</SearchHits>
+    <SearchResult>
+      <ResultId>2</ResultId>
+      <Key>KKJ-MISSING-001</Key>
+      <ProjectName>添付なし・地域欠損テスト案件</ProjectName>
+      <Date>2026-04-26T09:00:00+09:00</Date>
+      <OrganizationName>テスト市</OrganizationName>
+      <Category>工事</Category>
+    </SearchResult>
+  </SearchResults>
+</Results>
