@@ -72,7 +72,7 @@
     "test:contract": "vitest run tests/contract.test.ts",
     "apps:harness": "tsx scripts/apps-harness/serve.ts",
     "apps:capture": "npm run build:ui && tsx scripts/apps-harness/capture.ts",
-    "docs:api": "typedoc",
+    "docs:api": "LC_ALL=ja_JP.UTF-8 typedoc",
     "docs:check": "npm run docs:api && git diff --exit-code docs/api",
     "server-card:generate": "tsx scripts/generate-server-card.ts",
     "check": "npm run lint && npm run build && npm run test"
