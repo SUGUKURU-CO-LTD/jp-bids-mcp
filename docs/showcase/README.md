@@ -89,19 +89,26 @@ JP Bids MCP は、公式仕様に忠実な設計と厳格な責任境界を採�
 
 MCP Apps 仕様では、UI（sandboxed iframe）はサーバープロセスと直接ソケット通信を行うのではなく、**MCP Host（Claude Desktop）を仲介した `window.postMessage`** によって安全にメッセージを交換します。
 
+また、UI バインディング情報である `_meta.ui.resourceUri` はツールの登録時メタデータ（定義情報）であり、Host は初期化時の `tools/list` 等によって事前に発見・キャッシュします。実際のツール実行（`tools/call search_bids_app`）における返却値は `content`（要約テキスト）と `structuredContent`（構造化検索結果）です。
+
+検索結果データを受け取った後のワークスペース状態管理およびビューモデル変換（`App State & ViewModel Mapping`）は、サーバープロセスではなく **React UI（`src/apps/search-results.tsx` / `bid-workspace-view-model.ts`）側のクライアント責務** として実行されます。
+
 ```mermaid
 flowchart TB
   subgraph Host["MCP Host (Claude Desktop)"]
     Chat["LLM Chat Interface"]
-    HostBroker["MCP Host Controller / Protocol Broker"]
-    UIContainer["Sandboxed iframe (MCP Apps UI Container)"]
+    HostBroker["MCP Host Controller / Protocol Broker\n(Caches tool metadata inc. _meta.ui.resourceUri)"]
+    subgraph UIContainer["Sandboxed iframe (MCP Apps UI Container)"]
+      ReactApp["React UI App\n(src/apps/search-results.tsx)"]
+      ViewModel["App State & ViewModel Mapping\n(src/apps/bid-workspace-view-model.ts)"]
+      ReactApp <--> ViewModel
+    end
   end
 
   subgraph Server["JP Bids MCP Server Process (Node.js)"]
     Stdio["StdioServerTransport (JSON-RPC 2.0)"]
-    Tools["Tools Registry (7 Tools)"]
-    Resources["Resources Registry"]
-    AppLogic["App State & ViewModel Mapping"]
+    Tools["Tools Registry (7 Tools)\n(_meta.ui.resourceUri in tool definition)"]
+    Resources["Resources Registry\n(ui://jp-bids/search-results.html)"]
   end
 
   subgraph DataLayer["Offline Mock / Local Fixtures"]
@@ -109,30 +116,34 @@ flowchart TB
     FetchGuard["Application Fetch Guard\n(Blocks External Traffic)"]
   end
 
+  %% Flow 0: Discovery
+  HostBroker -. "0. tools/list (discovers tools & _meta.ui metadata)" .-> Stdio
+  Stdio -.-> Tools
+
   %% Flow 1: Initial Launch
   Chat -- "1. Natural language prompt" --> HostBroker
   HostBroker -- "2. tools/call search_bids_app\n(via stdio)" --> Stdio
   Stdio --> Tools
   Tools --> DataLayer
   DataLayer --> Tools
-  Tools -- "3. Return structuredContent + _meta.ui" --> Stdio
-  Stdio -- "4. Result + UI Resource URI" --> HostBroker
+  Tools -- "3. Return content + structuredContent" --> Stdio
+  Stdio -- "4. Result payload" --> HostBroker
   HostBroker -- "5. Output summary text" --> Chat
 
   %% Flow 2: UI Resource Retrieval & Mounting
-  HostBroker -- "6. resources/read ui://jp-bids/...\n(via stdio)" --> Stdio
+  HostBroker -- "6. resources/read ui://jp-bids/...\n(referenced from cached tool metadata)" --> Stdio
   Stdio --> Resources
   Resources -- "7. Return HTML (single-file bundle)" --> Stdio
   Stdio -- "8. HTML Content" --> HostBroker
-  HostBroker -- "9. Mount HTML inside iframe" --> UIContainer
+  HostBroker -- "9. Mount HTML & deliver structuredContent" --> ReactApp
 
   %% Flow 3: Bidirectional Tool Invocation
-  UIContainer -- "10. app.callServerTool(search_bids_app)\n(via window.postMessage)" --> HostBroker
+  ReactApp -- "10. app.callServerTool(search_bids_app)\n(via window.postMessage)" --> HostBroker
   HostBroker -- "11. tools/call search_bids_app\n(via stdio broker)" --> Stdio
   Stdio --> Tools
-  Tools -- "12. Updated structuredContent" --> Stdio
+  Tools -- "12. Updated content + structuredContent" --> Stdio
   Stdio -- "13. Result payload" --> HostBroker
-  HostBroker -- "14. Deliver result (via postMessage)" --> UIContainer
+  HostBroker -- "14. Deliver result (via postMessage)" --> ReactApp
 ```
 
 ---
