@@ -36,6 +36,10 @@ Server MCP untuk mencari, memeringkat, mengekstrak persyaratan, dan mengekspor p
 >   - **M3-A**: In-app interactive state changes (row selection, selection counts, CSV/JSON export button activation).
 >   - **M3-B**: Bidirectional UI-to-server tool invocation (in-app search calling `search_bids_app` returning in 2ms and updating UI).
 >   *(Note: M1–M3-B verification was performed via an in-application mock interceptor (`examples/mock-stdio-server.mjs`) resolving KKJ API requests with local XML fixtures and guarding runtime `fetch` calls. This is an application-level runtime mock, not an OS-level sandbox or network firewall isolation. No external KKJ network traffic was observed during verification).*
+> - **Clean Clone Reproduction vs. Automated Tests**:
+>   - **Automated Tests**: 182 Vitest unit/integration tests (`npm test`) verify server schemas, security constraints, UI view models, and protocol invariants.
+>   - **Clean Clone Stdio Verification**: Reproducibility verified on a separate, newly cloned directory without development caches (`npm ci` → `npm run build` → stdio handshake), proving 7-tool registration, mock search response (`KKJ-TEST-001`), and MCP Apps UI HTML bundle retrieval.
+>   - **Desktop App Verification**: Process connection and tool registration verified in Claude Desktop. In-app GUI interaction requires manual client operation.
 > - **Live KKJ Connection & Gate 1 Acceptance**: **IN PREPARATION (準備中)**. Direct queries to the Small and Medium Enterprise Agency KKJ API and formal Gate 1 compliance acceptance (35 test conditions) are scheduled for subsequent verification phases.
 
 ---
@@ -64,12 +68,23 @@ npm run build
 npm test
 ```
 
+> [!TIP]
+> **Windows PowerShell Users**:
+> If script execution is restricted by PowerShell policy (`PSSecurityException` on `npm.ps1`), execute with `npm.cmd` instead:
+> ```bash
+> npm.cmd ci
+> npm.cmd run build
+> npm.cmd test
+> ```
+
 ### 2. Configure Claude Desktop / Claude Desktop 設定
 
 Edit your `claude_desktop_config.json`:
 
 - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+- **Windows (Standard)**: `%APPDATA%\Claude\claude_desktop_config.json`
+- **Windows (Microsoft Store / UWP edition)**: Depending on your installation, configuration may be virtualized in the Store package directory:
+  `%LOCALAPPDATA%\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\Claude\claude_desktop_config.json`
 
 ```json
 {
@@ -82,7 +97,7 @@ Edit your `claude_desktop_config.json`:
 }
 ```
 
-*(Replace `/ABSOLUTE/PATH/TO/jp-bids-mcp` with your actual local repository path).*
+*(Replace `/ABSOLUTE/PATH/TO/jp-bids-mcp` with your actual local repository path. On Windows, if `node` is not resolved by the GUI process, specify the absolute path to `node.exe`, e.g., `"C:\\Program Files\\nodejs\\node.exe"`).*
 
 ### 3. Ask Claude / AIに話しかける
 
