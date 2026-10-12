@@ -8,26 +8,26 @@ English technical overview is available below the Japanese section.
 ## 1. 概要 (Executive Summary)
 
 ### 日本語
-JP Bids MCP（公開リポジトリ: `SUGUKURU-CO-LTD/jp-bids-mcp`）は、経済産業省中小企業庁の官公需情報ポータルサイト（KKJ）の入札・落札情報を検索・分析・活用するための Model Context Protocol (MCP) サーバーです。
+JP Bids MCP（公開リポジトリ: `SUGUKURU-CO-LTD/jp-bids-mcp`）は、経済産業省中小企業庁の官公需情報ポータルサイト（KKJ）の入札公告情報を検索・分析・活用するための Model Context Protocol (MCP) サーバーです。
 
 本プロジェクトでは、従来の「テキストや JSON を返すだけの MCP ツール」にとどまらず、MCP Apps 拡張仕様（`@modelcontextprotocol/ext-apps`）を実装することで、LLM クライアント（Claude Desktop）内に **対話型 HTML ワークスペース（AI Bid Workspace）を直接描画・操作できるアーキテクチャ** を実現しました。
 
-本ドキュメントでは、外部開発者が自身の環境でローカルモックを用いて完全に同じ動作を再現できるよう、**実機スクリーンショット**、**アーキテクチャ解説**、**ソースコード照合**、および **客観的検証結果** を公開します。
+本ドキュメントでは、開発者が自身の環境でローカルモックを用いた動作確認を行えるよう、自己検証結果に基づく**実機スクリーンショット**、**アーキテクチャ解説**、**ソースコード照合**、および **客観的検証結果** を公開します。なお、外部の独立した第三者による再現性検証は現時点で未実施です。
 
 ### English Summary
 JP Bids MCP demonstrates an advanced implementation of the **Model Context Protocol (MCP) and MCP Apps extension specification** (`@modelcontextprotocol/ext-apps`). It enables Claude Desktop to render and interact with a self-contained, interactive HTML/React workspace directly within the chat interface.
 
-Rather than only returning flat text or JSON arrays, the server registers both structured tools and UI resources (`text/html;profile=mcp-app`), allowing bidirectional tool execution between the embedded GUI and the MCP server. This showcase provides verified real-device screenshots, architectural breakdowns, offline reproducible mock procedures, and test evidence.
+Rather than only returning flat text or JSON arrays, the server registers both structured tools and UI resources (`text/html;profile=mcp-app`), allowing bidirectional tool execution between the embedded GUI and the MCP server via the host application. This showcase provides self-verified real-device screenshots, architectural breakdowns, offline mock reproduction procedures, and test evidence. Note that independent third-party verification has not yet been conducted.
 
 ---
 
 ## 2. 実機デモ Showcase (Verified Interactive Demonstration)
 
-以下の画面は、Windows 11 上の Claude Desktop（バージョン 0.9.x）において、ローカルモックサーバー（`examples/mock-stdio-server.mjs`）を接続して実際に操作・検証されたものです。
+以下の画面は、Windows 11 上の Claude Desktop において、ローカルモックサーバー（`examples/mock-stdio-server.mjs`）を接続して実際に操作・検証されたものです。
 
 > [!NOTE]
 > **実機キャプチャの取り扱いについて**
-> - すべてのスクリーンショットは未加工（トリミングおよび個人情報保護のための枠取りのみ、描画内容の加工や修正なし）の実際の実機画面です。
+> - すべてのスクリーンショットは未加工（個人情報保護のための枠取り・トリミングのみ、描画内容の改変なし）の実際の実機画面です。
 > - 表示されているデータは、`tests/fixtures/kkj-search.xml` によるローカルモックデータ（`KKJ-TEST-001`）であり、実 KKJ API との外部通信は行われていません。
 
 ---
@@ -62,7 +62,7 @@ LLM チャットに対して自然言語で入札検索を指示すると、Clau
 
 ### Step 3 (M3-B): UI 内からの双方向ツール呼び出し（再検索・結果更新）
 
-ワークスペースを拡大表示し、ヘッダーの検索入力欄にキーワード **「保守」** を入力して [検索] ボタンを押下します。UI 内部から MCP プロトコル経由でサーバーの `search_bids_app` が呼び出され、返却された結果が画面内リストおよび詳細パネルへ反映されます。
+ワークスペースを拡大表示し、ヘッダーの検索入力欄にキーワード **「保守」** を入力して [検索] ボタンを押下します。UI 内部から MCP プロトコル経由でホストを通じてサーバーの `search_bids_app` が呼び出され、返却された結果が画面内リストおよび詳細パネルへ反映されます。
 
 #### 画面内キーワード入力
 ![M3-B: 拡大画面とキーワード入力](./assets/03-m3b-in-app-search-input.png)
@@ -77,21 +77,24 @@ LLM チャットに対して自然言語で入札検索を指示すると、Clau
 | **確認できる動作** | ① ワークスペースのモーダル拡大表示<br>② キーワード欄「保守」の入力と [検索] ボタンのトリガー<br>③ サーバーからの結果を受け取り、案件一覧および右側詳細パネル（提出期限 2026-05-15、開札 2026-05-20、公告日 2026-04-25）が描画<br>④ 下部アクションボタン（「要件抽出」「詳細取得」「公式」「選択比較」等）が利用可能な状態でレンダリング |
 
 > [!NOTE]
-> M3-B の GUI 操作および検索結果の画面描画は実機操作にて確認済みです。なお、本検証では UI の視覚的成立を主目的としたため、バックエンド通信ログ（JSON-RPC メッセージ）との厳密なミリ秒単位の突合検証はスコープ外としています。
+> M3-B の GUI 操作および検索結果の画面描画は実機操作にて確認済みです。なお、本検証では UI の視覚的成立を主目的としたため、バックエンド通信ログ（JSON-RPC メッセージ）との厳密なミリ秒単位の時系列突合検証はスコープ外としています。
 
 ---
 
 ## 3. アーキテクチャ解説 (Technical Deep Dive)
 
-JP Bids MCP は、公式仕様に忠実な設計と厳格なセキュリティ境界を採用しています。
+JP Bids MCP は、公式仕様に忠実な設計と厳格な責任境界を採用しています。
 
 ### システム構成図
 
+MCP Apps 仕様では、UI（sandboxed iframe）はサーバープロセスと直接ソケット通信を行うのではなく、**MCP Host（Claude Desktop）を仲介した `window.postMessage`** によって安全にメッセージを交換します。
+
 ```mermaid
 flowchart TB
-  subgraph Client["Claude Desktop (MCP Host Client)"]
+  subgraph Host["MCP Host (Claude Desktop)"]
     Chat["LLM Chat Interface"]
-    WebView["Sandboxed WebView / iframe\n(MCP Apps Container)"]
+    HostBroker["MCP Host Controller / Protocol Broker"]
+    UIContainer["Sandboxed iframe (MCP Apps UI Container)"]
   end
 
   subgraph Server["JP Bids MCP Server Process (Node.js)"]
@@ -101,24 +104,35 @@ flowchart TB
     AppLogic["App State & ViewModel Mapping"]
   end
 
-  subgraph DataLayer["Offline Mock / Data Source"]
+  subgraph DataLayer["Offline Mock / Local Fixtures"]
     Fixture["tests/fixtures/kkj-search.xml\n(Local XML Fixture)"]
     FetchGuard["Application Fetch Guard\n(Blocks External Traffic)"]
   end
 
-  Chat -- "1. tools/call search_bids_app" --> Stdio
+  %% Flow 1: Initial Launch
+  Chat -- "1. Natural language prompt" --> HostBroker
+  HostBroker -- "2. tools/call search_bids_app\n(via stdio)" --> Stdio
   Stdio --> Tools
   Tools --> DataLayer
   DataLayer --> Tools
-  Tools -- "2. Return structuredContent + _meta.ui" --> Stdio
-  Stdio -- "3. Deliver tool result" --> Chat
+  Tools -- "3. Return structuredContent + _meta.ui" --> Stdio
+  Stdio -- "4. Result + UI Resource URI" --> HostBroker
+  HostBroker -- "5. Output summary text" --> Chat
 
-  Chat -- "4. resources/read (ui://jp-bids/...)" --> Stdio
+  %% Flow 2: UI Resource Retrieval & Mounting
+  HostBroker -- "6. resources/read ui://jp-bids/...\n(via stdio)" --> Stdio
   Stdio --> Resources
-  Resources -- "5. Return HTML (single-file bundle)" --> Stdio
-  Stdio -- "6. Render UI" --> WebView
+  Resources -- "7. Return HTML (single-file bundle)" --> Stdio
+  Stdio -- "8. HTML Content" --> HostBroker
+  HostBroker -- "9. Mount HTML inside iframe" --> UIContainer
 
-  WebView -- "7. app.callServerTool(search_bids_app)" --> Stdio
+  %% Flow 3: Bidirectional Tool Invocation
+  UIContainer -- "10. app.callServerTool(search_bids_app)\n(via window.postMessage)" --> HostBroker
+  HostBroker -- "11. tools/call search_bids_app\n(via stdio broker)" --> Stdio
+  Stdio --> Tools
+  Tools -- "12. Updated structuredContent" --> Stdio
+  Stdio -- "13. Result payload" --> HostBroker
+  HostBroker -- "14. Deliver result (via postMessage)" --> UIContainer
 ```
 
 ---
@@ -127,12 +141,12 @@ flowchart TB
 
 JP Bids MCP の公開 MVP プロファイルでは、`@modelcontextprotocol/sdk`（v1.32.1）の `McpServer` クラスを利用してツールを登録しています。
 
-- **`search_bids`**: 条件（キーワード、都道府県、省庁、業務区分、日付範囲）に基づく入札案件検索
+- **`search_bids`**: 条件（キーワード、都道府県、省庁、業務区分、日付範囲）に基づく入札公告情報検索
 - **`list_recent_bids`**: 新着・締切間近の入札案件クイック取得
 - **`get_bid_detail`**: 特定案件の詳細情報取得
 - **`rank_bids`**: 自社プロファイルに基づく案件適合度スコアリング・評価
 - **`extract_bid_requirements`**: 参加資格・提出要件・技術要件の抽出
-- **`export_bid_shortlist`**: 追跡候補案件の CSV / JSON / Markdown 出力
+- **`export_bid_shortlist`**: 追跡候補案件の CSV / JSON 出力
 - **`search_bids_app`**: **MCP Apps 対応 UI ツール**（本 Showcase の中核）
 
 ソースコード参照:
@@ -143,13 +157,13 @@ JP Bids MCP の公開 MVP プロファイルでは、`@modelcontextprotocol/sdk`
 
 ### 3.2. MCP Apps 拡張仕様の実装 (`@modelcontextprotocol/ext-apps`)
 
-MCP Apps は、クライアントとサーバー間でセキュアに対話型 UI を共有するための仕様です。
+MCP Apps は、クライアント（Host）とサーバー間でセキュアに対話型 UI を共有するための仕様です。
 
 #### 1. ツール定義と UI リソースの紐付け
 `src/apps/register-search-app.ts` では、`registerAppTool` を使用して `_meta.ui.resourceUri` にリソース URI を宣言しています。
 
 ```typescript
-// src/apps/register-search-app.ts (抜粋)
+// src/apps/register-search-app.ts（主要ロジックの抜粋）
 const SEARCH_RESULTS_APP_URI = "ui://jp-bids/search-results.html";
 
 registerAppTool(
@@ -172,11 +186,11 @@ registerAppTool(
 );
 ```
 
-#### 2. リソース登録と CSP / パーミッション
-UI は `registerAppResource` により、MIME タイプ `text/html;profile=mcp-app` として提供されます。Content Security Policy (CSP) において、外部ドメインへの不正通信を遮断（`connectDomains: []`, `resourceDomains: []`）し、安全性を担保しています。
+#### 2. リソース登録と CSP / パーミッションの責任境界
+UI は `registerAppResource` により、MIME タイプ `text/html;profile=mcp-app` として提供されます。
 
 ```typescript
-// src/apps/register-search-app.ts (抜粋)
+// src/apps/register-search-app.ts（主要ロジックの抜粋）
 registerAppResource(
   server,
   "JP Bids Search Results App",
@@ -207,6 +221,13 @@ registerAppResource(
 );
 ```
 
+> [!IMPORTANT]
+> **CSP 宣言と多層防御の区別**
+> - **UI リソースの CSP 許可設定**: `connectDomains: []` および `resourceDomains: []` は、埋め込み UI が通信または外部アセットを取得できる外部ドメインの許可リストです。空配列を指定することで、外部への接続や追加スクリプト・スタイルのロードを拒否するポリシーを Host に宣言しています。
+> - **Host による CSP 適用**: このメタデータを解釈し、実際の iframe や WebView に Content Security Policy を適用して通信を制限するのは **MCP Host（Claude Desktop）側の責務** です。
+> - **サーバー側の Fetch ガード**: Node.js サーバープロセス側で動作する `examples/mock-stdio-server.mjs` のガード（`globalThis.fetch` の例外送出）は、サーバープロセス自身が外部 KKJ API を誤って呼び出さないためのアプリケーションレベルのインターセプト処理です。
+> - **境界の明確化**: これらはいずれもアプリケーションおよびプロトコル仕様に基づく制御であり、OS レベルのサンドボックスやネットワーク機器による完全な物理・パケット遮断を保証するものではありません。
+
 ---
 
 ### 3.3. フロントエンド設計: 単一 HTML バンドルと双方向通信
@@ -216,17 +237,17 @@ Claude Desktop のようなサンドボックス環境で動作させるため�
 1. **Vite + `vite-plugin-singlefile`**:
    `vite.config.ts` により、すべての CSS、JS、画像アセットを `dist/apps/search-results.html` という 1 つのインライン HTML ファイルにコンパイルします。外部アセット読み込みの失敗や CORS 問題を原理的に排除しています。
 2. **`@modelcontextprotocol/ext-apps/react` による双方向通信**:
-   UI 側は `useApp` フックを通じてホスト環境と通信します。UI 内の [検索] ボタンが押された際、ブラウザの `fetch` ではなく、MCP ホストプロトコル経由でサーバーツールを直接実行します。
+   UI 側は `useApp` フックを通じてホスト環境と通信します。UI 内の [検索] ボタンが押された際、ブラウザの `fetch` ではなく、Host を仲介してサーバーの MCP ツールを実行します。
 
 ```typescript
-// src/apps/search-results.tsx (抜粋)
+// src/apps/search-results.tsx（実装の要点を簡略化した擬似コード / 抜粋）
 import { useApp } from "@modelcontextprotocol/ext-apps/react";
 
 function App() {
   const { app } = useApp();
 
   async function handleSearch(keyword: string) {
-    // UI からサーバーの MCP ツールを双方向呼び出し
+    // UI から Host を介してサーバーの MCP ツールを双方向呼び出し
     const result = await app.callServerTool({
       name: "search_bids_app",
       arguments: { query: keyword },
@@ -259,7 +280,7 @@ function App() {
 | :--- | :--- | :---: | :--- |
 | **自動テスト** | 単体・結合・プロトコル検証 | **PASS** | Vitest 23 スイート / **182 テスト全件合格** |
 | **型検査 & 静的解析** | TypeScript / Biome | **PASS** | `npm run check` エラー 0 件 |
-| **ドキュメント整合** | TypeDoc API ドキュメント生成 | **PASS** | `npm run docs:check` 警告・エラー 0 件 |
+| **ドキュメント整合** | TypeDoc API ドキュメント生成 | **PASS** | `npm run docs:check` 合格（型定義・APIリファレンス整合） |
 | **GitHub Actions** | CI / CodeQL / Dependency Review | **PASS** | 全ワークフロー GREEN ([CI Run #38226024891](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/actions)) |
 | **セキュリティ監査** | 実行時依存パッケージ脆弱性 | **0件** | `npm audit --omit=dev` 検出 0 件 (MCP SDK 1.32.1 / Hono 4.13.13) |
 | **クリーン環境検証** | 新規ディレクトリでのクローン・ビルド | **PASS** | `jp-bids-mcp-clean-verify` でのビルド (152ms) & stdio 疎通 |
