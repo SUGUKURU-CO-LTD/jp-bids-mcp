@@ -36,6 +36,10 @@ Search, rank, extract requirements, and export Japanese public procurement notic
 >   - **M3-A**: Perubahan status interaktif dalam UI (pemilihan baris tender, penghitung item terpilih, aktivasi tombol ekspor CSV/JSON).
 >   - **M3-B**: Komunikasi alat dua arah dari UI ke server (pencarian dalam aplikasi memanggil `search_bids_app` dalam 2ms dan memperbarui UI).
 >   *(Catatan: Verifikasi M1–M3-B dilakukan melalui pencegatan mock tingkat aplikasi (`examples/mock-stdio-server.mjs`) yang menyelesaikan permintaan API KKJ menggunakan fixture XML lokal dan memblokir panggilan fetch tak terduga. Ini adalah guard mock tingkat aplikasi dalam runtime Node.js, bukan isolasi firewall tingkat OS atau sandbox jaringan. Tidak ada lalu lintas jaringan keluar ke KKJ yang teramati selama sesi verifikasi).*
+> - **Reproduksi Kloning Bersih vs. Pengujian Otomatis**:
+>   - **Pengujian Otomatis**: 182 pengujian unit dan integrasi Vitest (`npm test`) memverifikasi skema server, batasan keamanan, view model UI, dan invarian protokol.
+>   - **Verifikasi Stdio Kloning Bersih**: Reproduksibilitas diverifikasi pada direktori baru yang terisolasi tanpa cache pengembangan (`npm ci` → `npm run build` → jabat tangan stdio), membuktikan pendaftaran 7 alat, respon pencarian mock (`KKJ-TEST-001`), dan perolehan bundel UI MCP Apps.
+>   - **Verifikasi Aplikasi Desktop**: Peluncuran proses, koneksi, dan pendaftaran 7 alat terkonfirmasi di Claude Desktop. Tindakan GUI interaktif dalam aplikasi (M2–M3-B) memerlukan operasi manual pengguna di klien desktop dan dilacak terpisah dari bukti pengujian terprogram.
 > - **Koneksi Data KKJ Langsung & Penerimaan Gate 1**: **DALAM PERSIAPAN**. Akses langsung ke API KKJ Badan UKM Jepang dan pengujian kepatuhan resmi Gate 1 (35 kondisi) dijadwalkan pada tahap verifikasi berikutnya.
 
 ---
@@ -62,12 +66,23 @@ npm run build
 npm test
 ```
 
+> [!TIP]
+> **Pengguna Windows PowerShell**:
+> Jika eksekusi skrip dibatasi oleh kebijakan PowerShell (`PSSecurityException` pada `npm.ps1`), jalankan menggunakan `npm.cmd`:
+> ```bash
+> npm.cmd ci
+> npm.cmd run build
+> npm.cmd test
+> ```
+
 ### 2. Konfigurasi Claude Desktop
 
 Edit file `claude_desktop_config.json`:
 
 - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+- **Windows (Instalasi standar)**: `%APPDATA%\Claude\claude_desktop_config.json`
+- **Windows (Edisi Microsoft Store / UWP)**: Pada distribusi Store, file konfigurasi dapat divirtualisasikan ke direktori khusus paket. Meskipun pengidentifikasi paket dapat berbeda di setiap instalasi, jalur berikut telah dikonfirmasi dalam lingkungan pengujian Windows 11 kami sebagai contoh jalur yang teramati:
+  `%LOCALAPPDATA%\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\Claude\claude_desktop_config.json`
 
 ```json
 {
@@ -80,7 +95,7 @@ Edit file `claude_desktop_config.json`:
 }
 ```
 
-*(Ganti `/ABSOLUTE/PATH/TO/jp-bids-mcp` dengan path absolut repositori lokal Anda).*
+*(Ganti `/ABSOLUTE/PATH/TO/jp-bids-mcp` dengan path absolut repositori lokal Anda. Di Windows, jika `node` tidak dapat diselesaikan oleh proses GUI dari PATH lingkungan, menentukan path absolut ke `node.exe`, misalnya `"C:\\Program Files\\nodejs\\node.exe"`, merupakan solusi yang disarankan).*
 
 ### 3. Uji Coba di Claude Desktop
 

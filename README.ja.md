@@ -36,6 +36,10 @@ Server MCP untuk mencari, memeringkat, mengekstrak persyaratan, dan mengekspor p
 >   - **M3-A**: 画面内での動的状態変化（案件選択チェックボックス、選択件数カウント、CSV/JSONエクスポートボタンの有効化）。
 >   - **M3-B**: 画面からサーバーへの双方向ツール呼び出し（画面内検索実行による `search_bids_app` 呼び出し、2ms応答、画面再描画）。
 >   *(※M1〜M3-Bの実証は、アプリケーション内のモック処理（`examples/mock-stdio-server.mjs`）によりKKJ APIリクエストをローカルXMLフィクスチャ応答に差し替え、未承認fetchを例外として遮断するガード下で実施されました。これはNode.jsランタイム内のアプリケーションレベルのモック・傍受処理であり、OSレベルのサンドボックスやネットワークファイアウォールによる通信遮断ではありません。検証期間中に外部KKJへの通信は観測されませんでした)*
+> - **クリーン環境実機検証と自動テスト結果の区別**:
+>   - **自動テスト群 (182件)**: 単体・結合テスト（型定義、セキュリティ制約、UIビューモデル・ハンドラー、モック通信）を Vitest により自動検証 (`npm test`)。
+>   - **新規クローン環境実機検証**: 既存の開発環境とは完全に隔離された新規ディレクトリで `git clone` → `npm ci` → `npm run build` → 子プロセス起動を行い、`initialize`、7ツール登録 (`tools/list`)、モック案件取得 (`tools/call search_bids`)、MCP Apps UI MIME (`resources/read ui://jp-bids/search-results.html`) を検証。
+>   - **Claude Desktop 実機接続**: Claude Desktop プロセスからの正常起動・接続および7ツールの登録を確認済み。デスクトップクライアント上でのチャット検索・UI描画・画面内操作（M2〜M3-B）の実機対話操作は、デスクトップ環境における手動操作・目視確認が必要であり、プログラム的テスト証拠とは区別して管理します。
 > - **実KKJ API接続・Gate 1正式受入**: **準備中**。中小企業庁KKJ APIへの直接通信およびGate 1（35条件）の受入試験は、後続の検証フェーズで実施予定です。
 
 ---
@@ -62,12 +66,23 @@ npm run build
 npm test
 ```
 
+> [!TIP]
+> **Windows PowerShell をお使いの場合**:
+> PowerShellのスクリプト実行ポリシーにより `npm.ps1` がブロックされる場合（`PSSecurityException`）は、`npm.cmd` を使用してください：
+> ```bash
+> npm.cmd ci
+> npm.cmd run build
+> npm.cmd test
+> ```
+
 ### 2. Claude Desktop の設定
 
 `claude_desktop_config.json` を編集します：
 
 - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+- **Windows (通常インストーラー版)**: `%APPDATA%\Claude\claude_desktop_config.json`
+- **Windows (Microsoft Store / UWP 版)**: ストア版では設定ファイルがパッケージ固有の仮想化ディレクトリ配下にリダイレクトされる場合があります。すべての環境で同一のパスになるとは限りませんが、今回の検証環境（Windows 11）では以下のパスが確認されました（パス例）：
+  `%LOCALAPPDATA%\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\Claude\claude_desktop_config.json`
 
 ```json
 {
@@ -80,7 +95,7 @@ npm test
 }
 ```
 
-*(※ `/ABSOLUTE/PATH/TO/jp-bids-mcp` は実際のローカルリポジトリの絶対パスに置き換えてください)*
+*(※ `/ABSOLUTE/PATH/TO/jp-bids-mcp` は実際のローカルリポジトリの絶対パスに置き換えてください。Windows環境でGUIアプリから環境変数PATHの `node` が解決できない場合は、有効な回避策として `node.exe` の絶対パス（例: `"C:\\Program Files\\nodejs\\node.exe"`）を指定してください)*
 
 ### 3. Claude Desktop で確認
 
