@@ -24,6 +24,9 @@ Server MCP untuk mencari, memeringkat, mengekstrak persyaratan, dan mengekspor p
 | **公式 MCP Registry** | **準備中 (Planned)** | 識別名 `io.github.SUGUKURU-CO-LTD/jp-bids` 準拠設定済み。レジストリ登録は別途承認後に実施予定。 |
 | **リモート MCP エンドポイント** | **準備中 (Planned)** | Streamable HTTP エンドポイント (`https://mcp.bid-jp.com/mcp`) はホスティング環境構築後に公開予定。 |
 
+> 💡 **公開技術デモ解説 (Public Technical Showcase)**:  
+> Claude Desktop 内で動作する MCP Apps 対話型ワークスペースの実機スクリーンショット、アーキテクチャ解説、および再現手順は [**docs/showcase/README.md**](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/blob/main/docs/showcase/README.md) をご覧ください。
+
 ---
 
 ## 現在の検証状況 / Current Verification Status
