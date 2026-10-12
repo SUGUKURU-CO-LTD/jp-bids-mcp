@@ -1,0 +1,17 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "jp-bids-mcp",
+  "version": "0.9.0",
+  "displayName": "JP Bids MCP (日本官公需入札探索)",
+  "description": "日本全国の官公需入札情報を検索・要件抽出・適合度スコアリング・エクスポートするMCPサーバー。対話型AI Bid Workspace (MCP Apps) を内蔵。",
+  "author": {
+    "name": "SUGUKURU CO., LTD.",
+    "url": "https://sugu-kuru.co.jp"
+  },
+  "homepage": "https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp",
+  "repository": "https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp",
+  "license": "Apache-2.0",
+  "keywords": ["mcp", "mcp-apps", "bids", "procurement", "japan", "kkj"],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json"
+}

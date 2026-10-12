@@ -1,0 +1,20 @@
+{
+  "name": "sugukuru-jp-bids-marketplace",
+  "interface": {
+    "displayName": "SUGUKURU Public Procurement & Bids Marketplace"
+  },
+  "plugins": [
+    {
+      "name": "jp-bids-mcp",
+      "source": {
+        "source": "local",
+        "path": "./plugins/jp-bids-mcp"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "mcpServers": {
+    "jp-bids-mock": {
+      "command": "node",
+      "args": ["examples/mock-stdio-server.mjs"],
+      "env": {
+        "JP_BIDS_PROFILE": "public_mvp",
+        "JP_BIDS_DOCUMENT_EXTRACTION": "off"
+      },
+      "description": "【デスクトップ専用・ローカルモック】オフラインXMLフィクスチャを用いたstdio MCPサーバー（実KKJ API通信なし・完全無料）。※本方式の利用にはローカル環境でのビルド（npm ci && npm run build）が必要です。"
+    }
+  }
+}
