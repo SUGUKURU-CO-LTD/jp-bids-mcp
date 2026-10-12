@@ -24,6 +24,10 @@ Server MCP untuk mencari, memeringkat, mengekstrak persyaratan, dan mengekspor p
 | **Official MCP Registry** | **Planned (準備中)** | Namespace `io.github.SUGUKURU-CO-LTD/jp-bids` configured; registry listing pending separate approval. |
 | **Remote MCP Endpoint** | **Planned (準備中)** | Streamable HTTP endpoint (`https://mcp.bid-jp.com/mcp`) planned for hosted deployments. |
 
+> 💡 **Public Technical Showcase / 実機デモ技術解説**:  
+> Claude Desktop 内で動作する MCP Apps 対話型ワークスペースの実機スクリーンショット、アーキテクチャ解説、および再現手順は [**docs/showcase/README.md**](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/blob/main/docs/showcase/README.md) をご覧ください。<br>
+> See [**docs/showcase/README.md**](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/blob/main/docs/showcase/README.md) for real-device screenshots, architectural deep-dives, and offline reproduction guides of the interactive MCP Apps workspace running inside Claude Desktop.
+
 ---
 
 ## Current Verification Status / 検証状況

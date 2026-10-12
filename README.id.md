@@ -24,6 +24,9 @@ Search, rank, extract requirements, and export Japanese public procurement notic
 | **Registri MCP Resmi** | **Direncanakan (Planned)** | Metadata namespace `io.github.SUGUKURU-CO-LTD/jp-bids` telah dikonfigurasi; pendaftaran registri menunggu persetujuan terpisah. |
 | **Endpoint MCP Jarak Jauh** | **Direncanakan (Planned)** | Endpoint HTTP streamable (`https://mcp.bid-jp.com/mcp`) direncanakan setelah lingkungan hosting selesai disiapkan. |
 
+> 💡 **Public Technical Showcase / Showcase Teknis Publik**:  
+> Lihat [**docs/showcase/README.md**](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/blob/main/docs/showcase/README.md) untuk tangkapan layar perangkat nyata, penjelasan arsitektur, dan panduan reproduksi offline dari ruang kerja interaktif MCP Apps di dalam Claude Desktop.
+
 ---
 
 ## Status Verifikasi Saat Ini / Current Verification Status
