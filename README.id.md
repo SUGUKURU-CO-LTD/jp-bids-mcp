@@ -1,134 +1,101 @@
 # JP Bids MCP — Panduan Bahasa Indonesia
 
-[![Smithery](https://smithery.ai/badge/a-kabe-1qio/jp-bids-mcp)](https://smithery.ai/servers/a-kabe-1qio/jp-bids-mcp)
+[![CI](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/actions/workflows/codeql.yml/badge.svg)](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/actions/workflows/codeql.yml)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
-## Gambaran Umum / Overview / 概要
-
-JP Bids MCP adalah server MCP untuk mencari, memeringkat, mengekstrak persyaratan, dan mengekspor pengumuman pengadaan pemerintah Jepang dari portal KKJ. Sepenuhnya gratis, read-centric, 7 tools.
-
-JP Bids MCP is an MCP server for searching, ranking, extracting requirements, and exporting Japanese government procurement notices from the SME Agency's KKJ portal (free, read-centric, 7 tools).
-
-JP Bids MCP は、中小企業庁「官公需情報ポータルサイト」の入札情報をMCPで検索・順位付け・要件抽出・出力するサーバーです（完全無料・読み取り中心・7ツール）。
+Server MCP untuk mencari, memeringkat, mengekstrak persyaratan, dan mengekspor pengumuman pengadaan pemerintah Jepang melalui Model Context Protocol (MCP). Sepenuhnya gratis, read-centric, menyediakan 7 tools publik.<br>
+Search, rank, extract requirements, and export Japanese public procurement notices through MCP (free, read-centric, 7 tools).<br>
+日本の官公需入札情報をMCPで検索・順位付け・要件抽出・出力するサーバー（完全無料・読み取り中心・7ツール）。
 
 > **Sepenuhnya Gratis & Read-Centric / Free and Read-Centric**<br>
-> Semua 7 tools publik dapat digunakan gratis tanpa langganan berbayar. Tidak ada pemanggilan Stripe.<br>
-> All 7 public tools are free without subscription or paid tiers.
+> Semua 7 tools publik dapat digunakan gratis tanpa langganan berbayar. Tidak ada pemanggilan penagihan pihak ketiga seperti Stripe.<br>
+> All 7 public tools are available for free without subscription or paid tiers.
 
-## Status Saat Ini & Verifikasi
+---
+
+### Status Proyek & Saluran Distribusi / Project Status & Release Channels
+
+| Saluran / Item | Status | Deskripsi / Penjelasan |
+|---|:---:|---|
+| **GitHub Open Source** | **Aktif (Active)** | [SUGUKURU-CO-LTD/jp-bids-mcp](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp) (Apache 2.0). 182 pengujian lulus, CI/CodeQL lolos, disertai demo mock offline yang dapat direproduksi. |
+| **Demo Mock Lokal** | **Terverifikasi (Verified)** | Verifikasi M1–M3-B selesai (pencarian, panel workspace UI MCP Apps, pemanggilan alat dua arah). |
+| **Paket npm** | **Direncanakan (Planned)** | Validasi pengemasan (`npm pack`) berhasil. Publikasi (`jp-bids-mcp`) menunggu persetujuan rilis terpisah. |
+| **Registri MCP Resmi** | **Direncanakan (Planned)** | Metadata namespace `io.github.SUGUKURU-CO-LTD/jp-bids` telah dikonfigurasi; pendaftaran registri menunggu persetujuan terpisah. |
+| **Endpoint MCP Jarak Jauh** | **Direncanakan (Planned)** | Endpoint HTTP streamable (`https://mcp.bid-jp.com/mcp`) direncanakan setelah lingkungan hosting selesai disiapkan. |
+
+---
+
+## Status Verifikasi Saat Ini / Current Verification Status
 
 > [!IMPORTANT]
-> **Status: Mock Lokal Tervalidasi (M1–M3-B) | Koneksi Langsung & Penerimaan Resmi Sedang Berlangsung**
-> - **Verifikasi Mock Claude Desktop (M1–M3-B)**: **LULUS (Terbukti)**. Diverifikasi di Claude Desktop menggunakan skrip peluncur stdio mock publik (`examples/mock-stdio-server.mjs`) yang menginjeksikan data uji XML offline (`tests/fixtures/kkj-search.xml`, `KKJ-TEST-001`):
->   - **M1**: Pencarian tender lewat chat (`search_bids`) mengembalikan hasil terstruktur.
+> **Status: Mock Lokal Terbukti (M1–M3-B) | Koneksi Langsung KKJ dalam Persiapan**
+> - **Verifikasi Mock Claude Desktop (M1–M3-B)**: **LULUS (Terbukti)**. Diverifikasi di Claude Desktop menggunakan skrip peluncur stdio mock publik (`examples/mock-stdio-server.mjs`) yang menginjeksikan fixture XML offline (`tests/fixtures/kkj-search.xml`, `KKJ-TEST-001`):
+>   - **M1**: Pencarian tender lewat obrolan (`search_bids`) mengembalikan hasil terstruktur.
 >   - **M2**: Tampilan antarmuka AI Bid Workspace (`search_bids_app`) berbasis spesifikasi MCP Apps (`ui://jp-bids/search-results.html`).
->   - **M3-A**: Perubahan status interaktif dalam antarmuka (pilihan baris tender, jumlah terpilih, aktivasi tombol ekspor CSV/JSON).
+>   - **M3-A**: Perubahan status interaktif dalam UI (pemilihan baris tender, penghitung item terpilih, aktivasi tombol ekspor CSV/JSON).
 >   - **M3-B**: Komunikasi alat dua arah dari UI ke server (pencarian dalam aplikasi memanggil `search_bids_app` dalam 2ms dan memperbarui UI).
->   *(Catatan: Verifikasi M1–M3-B dilakukan melalui pencegatan mock tingkat aplikasi (`examples/mock-stdio-server.mjs`) yang menyelesaikan permintaan API KKJ menggunakan fixture XML lokal dan memblokir panggilan fetch tak terduga. Perhatikan bahwa ini adalah guard mock tingkat aplikasi dalam runtime Node.js, bukan isolasi firewall tingkat OS atau sandbox jaringan; tidak ada lalu lintas jaringan keluar ke KKJ yang teramati selama sesi verifikasi).*
-> - **Koneksi Data KKJ Langsung & Penerimaan Gate 1**: **DALAM PROSES (Belum Selesai・Transisi)**. Akses jaringan langsung ke API KKJ Badan UKM Jepang dan pengujian penerimaan resmi Gate 1 (35 kondisi) dijadwalkan pada tahap berikutnya (M4).
->
-> **Pemisahan Lingkungan (Demo Mock vs. Jalur Runtime Standar / Produksi)**:
-> - **Demo Mock Publik (`examples/mock-stdio-server.mjs`)**: Untuk evaluasi UI, pengujian offline, dan mereproduksi M1–M3-B di Claude Desktop. Menggunakan fixture XML lokal (`tests/fixtures/kkj-search.xml`, `KKJ-TEST-001`) dengan pencegatan permintaan HTTP tingkat aplikasi (bukan isolasi jaringan tingkat OS).
-> - **Runtime Lokal Standar (`node dist/server.js`)**: Eksekusi runtime normal. Dapat melakukan kueri ke API KKJ portal resmi (`http://www.kkj.go.jp/api/`) bergantung pada konfigurasi, dengan pembatasan laju token bucket ketat (<= 1 req/dtk), tanpa penyimpanan lampiran PDF/XML, dan tanpa log stdout (hanya stderr).
-> - **Paket Publik (`npx -y jp-bids-mcp`) & MCP Jarak Jauh (`https://mcp.bid-jp.com/mcp`)**: Jalur produksi standar yang berkomunikasi dengan API KKJ resmi atau endpoint layanan jarak jauh.
+>   *(Catatan: Verifikasi M1–M3-B dilakukan melalui pencegatan mock tingkat aplikasi (`examples/mock-stdio-server.mjs`) yang menyelesaikan permintaan API KKJ menggunakan fixture XML lokal dan memblokir panggilan fetch tak terduga. Ini adalah guard mock tingkat aplikasi dalam runtime Node.js, bukan isolasi firewall tingkat OS atau sandbox jaringan. Tidak ada lalu lintas jaringan keluar ke KKJ yang teramati selama sesi verifikasi).*
+> - **Koneksi Data KKJ Langsung & Penerimaan Gate 1**: **DALAM PERSIAPAN**. Akses langsung ke API KKJ Badan UKM Jepang dan pengujian kepatuhan resmi Gate 1 (35 kondisi) dijadwalkan pada tahap verifikasi berikutnya.
 
-## Cukup Bicara dengan AI
+---
 
-```text
-"Cari tender IT di Prefektur Kagoshima, urutkan yang paling cocok untuk kami"
-```
+## Mulai Cepat: Demo Mock Lokal (Direkomendasikan) / Quick Start
 
-→ 14 hasil → Pemeringkatan tender (`rank_bids`) → Lihat di UI workspace (`search_bids_app`).
+Tersedia demo mock lokal yang dapat direproduksi secara mandiri tanpa memerlukan akses jaringan eksternal untuk verifikasi langsung di Claude Desktop maupun klien MCP lainnya.
 
-```text
-"Atur persyaratan wajib dan dokumen dari pengumuman ini"
-```
-
-→ Ekstrak daftar checklist persyaratan (`extract_bid_requirements`).
-
-```text
-"Ekspor 5 tender teratas ke format CSV"
-```
-
-→ Ekspor ke CSV / JSON dengan mempertahankan urutan pilihan (`export_bid_shortlist`).
-
-*(Catatan: Fitur tambahan seperti Investor Radar dan analisis riwayat pemenang hanya tersedia di profil pengembang `full_local`)*
-
-## Mulai Cepat / Quick Start / クイックスタート
-
-```text
-Remote MCP: https://mcp.bid-jp.com/mcp
-npm:        jp-bids-mcp
-Registry metadata name: io.github.SUGUKURU-CO-LTD/jp-bids
-```
-
-### Claude.ai / ChatGPT / Klien MCP
-
-```text
-https://mcp.bid-jp.com/mcp
-```
-
-Endpoint jarak jauh memerlukan OAuth 2.0. Permintaan tanpa header `Authorization` menerima `401` beserta `WWW-Authenticate: Bearer resource_metadata="https://mcp.bid-jp.com/.well-known/oauth-protected-resource/mcp"`. Claude.ai, ChatGPT, dan MCP Inspector menjalankan alur otorisasi secara otomatis (Dynamic Client Registration + PKCE S256), jadi Anda hanya perlu menekan tombol setuju. `curl` biasa memerlukan token. Untuk mencoba tanpa autentikasi, gunakan stdio lokal di bawah.
-
-The remote endpoint requires OAuth 2.0; MCP clients run the flow automatically. Use local stdio below to try without authentication.
-
-リモートエンドポイントは OAuth 2.0 必須です。MCP クライアントは認可フローを自動処理します。認証なしで試すには下のローカル stdio を使ってください。
-
-### Stdio Lokal (tanpa autentikasi)
+### 1. Kloning & Bangun Proyek
 
 ```bash
-npx --yes jp-bids-mcp
+git clone https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp.git
+cd jp-bids-mcp
+npm install
+npm run build
+npm test
 ```
 
-### Ekspor CSV
+### 2. Konfigurasi Claude Desktop
 
-```bash
-npx --yes jp-bids-export --prefecture 鹿児島県 --category 役務 --query システム > tenders.csv
+Edit file `claude_desktop_config.json`:
+
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "jp-bids-mock": {
+      "command": "node",
+      "args": ["/ABSOLUTE/PATH/TO/jp-bids-mcp/examples/mock-stdio-server.mjs"]
+    }
+  }
+}
 ```
 
-### Contoh Konfigurasi Claude Desktop
+*(Ganti `/ABSOLUTE/PATH/TO/jp-bids-mcp` dengan path absolut repositori lokal Anda).*
 
-#### 1. Stdio Lokal (`claude_desktop_config.json`)
+### 3. Uji Coba di Claude Desktop
 
-**A. Demo Mock Publik (Reproduksi Offline M1–M3-B):**
-> [!TIP]
-> Untuk mereproduksi demonstrasi M1–M3-B di Claude Desktop dengan aman tanpa akses jaringan langsung ke KKJ, build repositori secara lokal dan jalankan skrip mock publik:
+Mulai ulang Claude Desktop, lalu tanyakan di obrolan:
 
-1. Clone repositori dan build proyek:
-   ```bash
-   git clone https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp.git
-   cd jp-bids-mcp
-   npm install
-   npm run build
-   ```
-2. Tambahkan konfigurasi ke `claude_desktop_config.json`:
-   ```json
-   {
-     "mcpServers": {
-       "jp-bids-mock": {
-         "command": "node",
-         "args": ["/path/to/jp-bids-mcp/examples/mock-stdio-server.mjs"]
-       }
-     }
-   }
-   ```
-   *(Ganti `/path/to/jp-bids-mcp` dengan path absolut lokal ke repositori hasil clone).*
-3. Muat ulang Claude Desktop dan tanyakan di obrolan:
-   ```text
-   「鹿児島県の入札案件を検索して」
-   ```
-   Server mock menyajikan data `KKJ-TEST-001` (鹿児島市システム保守業務委託) dari fixture lokal `tests/fixtures/kkj-search.xml`, menampilkan panel AI Bid Workspace interaktif lengkap dengan pemilihan dan komunikasi dua arah.
-   *(Catatan: Ini menggunakan pencegatan permintaan tingkat aplikasi untuk mengembalikan data fixture lokal, bukan isolasi sandbox tingkat OS).*
+```text
+「鹿児島県の入札案件を検索して」
+```
 
-**B. Runtime Lokal Standar (Build Node.js):**
-> [!NOTE]
-> `node dist/server.js` adalah jalur runtime server standar. Berbeda dengan skrip demo mock, runtime standar beroperasi dalam mode normal dan dapat melakukan kueri ke API KKJ langsung bergantung pada konfigurasi:
+→ Data fixture lokal `KKJ-TEST-001` (鹿児島市システム保守業務委託) akan ditemukan, dan panel interaktif **AI Bid Workspace** (`ui://jp-bids/search-results.html`) akan terbuka. Pemilihan baris tender, penskoran, dan pencarian dua arah langsung berfungsi di dalam panel.
+
+---
+
+## Runtime Lokal Standar / Standard Local Runtime
+
+Contoh konfigurasi jika Anda ingin menjalankan server hasil build standar secara lokal:
 
 ```json
 {
   "mcpServers": {
     "jp-bids": {
       "command": "node",
-      "args": ["/path/to/jp-bids-mcp/dist/server.js"],
+      "args": ["/ABSOLUTE/PATH/TO/jp-bids-mcp/dist/server.js"],
       "env": {
         "JP_BIDS_PROFILE": "public_mvp"
       }
@@ -137,87 +104,128 @@ npx --yes jp-bids-export --prefecture 鹿児島県 --category 役務 --query シ
 }
 ```
 
-**C. Paket Publik Standar via npx:**
-> [!WARNING]
-> `npx -y jp-bids-mcp` mengunduh paket dari registri npm publik dan berjalan dalam mode standar (bukan demo mock lokal). Paket ini berkomunikasi langsung dengan API KKJ resmi dan versinya mungkin berbeda dari salinan kerja lokal Anda:
-
-```json
-{
-  "mcpServers": {
-    "jp-bids": {
-      "command": "npx",
-      "args": ["-y", "jp-bids-mcp"],
-      "env": {
-        "JP_BIDS_PROFILE": "public_mvp"
-      }
-    }
-  }
-}
+Pemeriksaan versi CLI:
+```bash
+node dist/server.js --version
 ```
 
-*(Catatan: Jangan mencantumkan path absolut Windows pribadi atau rahasia ke dalam file konfigurasi).*
+---
 
-#### 2. Konektor Kustom Jarak Jauh (Claude.ai / Claude Desktop)
+## Saluran Distribusi Mendatang / Planned Deployment Channels
 
-Endpoint jarak jauh dikonfigurasi melalui antarmuka Konektor Kustom resmi Anthropic (bukan di `claude_desktop_config.json`):
+Jalur distribusi berikut telah disiapkan pada manifes metadata dan akan dibuka setelah persetujuan rilis terpisah:
 
-1. Buka Claude (Claude.ai atau Claude Desktop).
-2. Buka menu **Customize / Pengaturan → Connectors** (Konektor).
-3. Tambahkan Konektor Kustom dengan URL:
-   ```text
-   https://mcp.bid-jp.com/mcp
-   ```
-4. Selesaikan otorisasi via OAuth 2.0 (Dynamic Client Registration + PKCE S256).
+### 1. Paket Registri npm Publik
+Setelah dirilis ke registri npm, eksekusi langsung via `npx` akan tersedia:
+```bash
+# (Direncanakan setelah publikasi npm)
+npx -y jp-bids-mcp
+```
 
-## Daftar Alat / Tools / ツール一覧
+### 2. Endpoint HTTP Streamable Jarak Jauh
+Setelah lingkungan hosting dideploy, klien MCP jarak jauh (Claude.ai, ChatGPT, dll.) dapat terhubung melalui OAuth 2.0:
+```text
+https://mcp.bid-jp.com/mcp
+```
+*(Memerlukan otorisasi OAuth 2.0 dengan Dynamic Client Registration + PKCE S256).*
 
-| Alat | Deskripsi | Profil |
+---
+
+## Fitur Utama / What It Provides
+
+- **Pencarian Pengadaan Publik (Read-Only)**: Pencarian cepat pengumuman tender pemerintah Jepang berdasarkan kata kunci, wilayah, dan kategori.
+- **AI Bid Radar**: Membandingkan kecocokan dan memeringkat tender berdasarkan kriteria perusahaan (`rank_bids`).
+- **Ekstraksi Persyaratan & Dokumen**: Mengekstrak daftar periksa kualifikasi dan dokumen yang diperlukan secara terstruktur dari metadata (`extract_bid_requirements`). *Ekstraksi PDF eksternal default NONAKTIF.*
+- **UI MCP Apps (`search_bids_app`)**: Workspace interaktif di dalam Claude Desktop (`ui://jp-bids/search-results.html`). Dibundel dalam satu file HTML mandiri dengan CSP ketat (`connectDomains: []`, `resourceDomains: []`) yang mencegah pemuatan aset eksternal. Mendukung penyaringan dalam aplikasi, pemilihan baris, dan pemanggilan alat dua arah.
+- **Ekspor Shortlist (`export_bid_shortlist`)**: Mengekspor tender terpilih ke format CSV / JSON dengan mempertahankan urutan pilihan.
+- **Sepenuhnya Gratis & Read-Only**: Semua 7 tools publik dapat digunakan gratis tanpa pendaftaran atau langganan berbayar. Tanpa panggilan penagihan Stripe.
+- **Resources & Resource Templates**: Resource statis dan template dinamis untuk injeksi konteks AI.
+- **Desain Aman**: Tanpa penyimpanan file lampiran, pembatasan laju token bucket (<= 1 req/dtk), bebas dari output log stdout (hanya stderr).
+
+Sumber Data: API Pencarian Portal Informasi Pengadaan Pemerintah, Badan UKM Jepang.
+
+---
+
+## Daftar Alat Publik (Public MVP: 7 Tools)
+
+| Alat / Tool | Deskripsi / Description | Profil |
 |---|---|---|
-| `search_bids` | Cari berdasarkan kata kunci, wilayah, kategori | Public MVP |
-| `list_recent_bids` | Daftar pengumuman terbaru (1–30 hari terakhir) | Public MVP |
-| `get_bid_detail` | Detail tender | Public MVP |
-| `rank_bids` | Peringkat berdasarkan kriteria perusahaan | Public MVP |
-| `extract_bid_requirements` | Ekstraksi persyaratan tender (ekstraksi dokumen eksternal default OFF) | Public MVP |
-| `export_bid_shortlist` | Ekspor shortlist CSV/JSON (urutan pemilihan dipertahankan) | Public MVP |
-| `search_bids_app` | Workspace pencarian interaktif dengan UI MCP Apps (`ui://jp-bids/search-results.html`, panel UI bundel HTML mandiri) | Public MVP |
+| `search_bids` | Cari berdasarkan kata kunci, wilayah, kategori / Keyword, region & category search | Public MVP |
+| `list_recent_bids` | Daftar pengumuman terbaru (1–30 hari terakhir) / Recent notices (past 1–30 days) | Public MVP |
+| `get_bid_detail` | Detail tender / Bid detail | Public MVP |
+| `rank_bids` | Peringkat berdasarkan kriteria perusahaan / Score & rank by your criteria | Public MVP |
+| `extract_bid_requirements` | Ekstraksi persyaratan & kualifikasi tender / Requirement extraction | Public MVP |
+| `export_bid_shortlist` | Ekspor shortlist CSV/JSON (urutan dipertahankan) / Export shortlist to CSV/JSON | Public MVP |
+| `search_bids_app` | Workspace pencarian interaktif dengan UI MCP Apps (`ui://jp-bids/search-results.html`) / Interactive search workspace | Public MVP |
 
-## Harga / Pricing / 料金
+---
 
-| Paket | Harga | Fitur |
-|---|---|---|
-| **Public MVP** | Gratis (Free) | 7 alat publik (pencarian, pengumuman terbaru, detail, peringkat, ekstraksi persyaratan, ekspor shortlist, UI MCP Apps) |
+## Dukungan Protokol & Spesifikasi MCP / Protocol Support
 
-Semua fitur publik (7 alat) tersedia gratis tanpa langganan atau tingkatan berbayar. Tidak ada panggilan penagihan Stripe.<br>
-*(※ Tidak termasuk biaya token AI pihak ketiga atau infrastruktur cloud self-hosted)*
+JP Bids MCP diimplementasikan dan diverifikasi dengan pengujian otomatis sesuai spesifikasi standar Model Context Protocol:
 
-## Sumber Data
+- **Versi Protokol**: Mendukung resmi `2025-11-25` (validasi penerimaan header teruji).
+- **Validasi Header Mismatch**: Menolak secara ketat jika header `Mcp-Method` / `Mcp-Name` tidak cocok dengan body JSON-RPC.
+- **Keamanan OAuth 2.0**: Mendukung otorisasi aman dengan menyertakan parameter RFC 9207 `iss` pada respon otorisasi dan token JWT.
+- **Ekstensi MCP Apps**: Pengiriman antarmuka in-line yang aman berbasis `@modelcontextprotocol/ext-apps` (v1.7.4).
 
-API Pencarian Portal Informasi Pengadaan Pemerintah, Badan UKM Jepang. Server ini tidak menyimpan dokumen lampiran tender. Selalu verifikasi dengan dokumen pengadaan resmi sebelum mengajukan penawaran.
+---
 
-## Interoperabilitas / Interoperability / 相互運用
+## Daftar Sumber Daya / Resources
 
-JP Bids MCP berpasangan dengan [J-Grants MCP](https://github.com/digital-go-jp/jgrants-mcp-server) (Badan Digital Jepang) untuk mencakup tender pemerintah dan subsidi dalam satu percakapan.
+- `attribution://kkj`: Data atribusi dan penyangkalan Portal KKJ Badan UKM Jepang
+- `docs://api-reference`: Referensi API untuk 7 tools publik
+- `codes://prefectures`: Daftar kode prefektur Jepang
+- `ui://jp-bids/search-results.html`: Sumber daya antarmuka AI Bid Workspace MCP Apps
+- `prefecture://{lg_code}`: Template informasi pengadaan per pemerintah daerah
 
+---
+
+## Perintah Verifikasi & Pengujian / Verification & Testing
+
+```bash
+# Pemeriksaan menyeluruh (Biome Lint, pengecekan tipe TypeScript, build Vite UI, 182 pengujian Vitest)
+npm run check
+
+# Pembuatan dan pemeriksaan dokumen API TypeDoc (kompatibel Windows & Linux)
+npm run docs:check
+
+# Audit keamanan dependensi runtime produksi (0 kerentanan)
+npm audit --omit=dev
+
+# Pengujian unit verifikasi mock stdio offline
+npx vitest run tests/mock-stdio-verification.test.ts
 ```
-# Cari tender (JP Bids MCP) dan subsidi (J-Grants MCP) secara bersamaan
-"Tolong cari tender pengadaan sistem IT di Kagoshima dan subsidi DX untuk usaha kecil secara bersamaan."
-```
 
-JP Bids MCP dapat dipadukan dengan [J-Grants MCP](https://github.com/digital-go-jp/jgrants-mcp-server) (Digital Agency of Japan) dan [freee MCP](https://www.npmjs.com/package/freee-mcp) (freee K.K.) untuk pencarian terpadu tender dan subsidi, serta otomatisasi pengadaan-ke-akuntansi.
+---
 
-> JP Bids MCP, J-Grants MCP, dan freee MCP adalah server independen yang dioperasikan oleh organisasi berbeda. Hasil adalah informasi referensi; selalu verifikasi dengan dokumen resmi.
+## Interoperabilitas / Interoperability
 
-## Spesifikasi Metadata & Registri
+JP Bids MCP dirancang agar mudah dipadukan dengan server MCP data administrasi dan bisnis di Jepang:
 
-JP Bids MCP memisahkan secara jelas antara manifes katalog registri resmi dan endpoint penemuan runtime:
+- **J-Grants MCP** (Badan Digital Jepang): Menelusuri pengadaan tender (JP Bids MCP) dan subsidi/hibah (J-Grants MCP) dalam satu percakapan AI secara terpadu.
+- **freee MCP** (freee K.K.): Otomatisasi pendaftaran transaksi pasca-menang tender, penerbitan faktur, dan integrasi akuntansi.
 
-1. **Manifes MCP Registry Resmi (`server.json`)**:
-   - Mematuhi `$schema: "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json"`.
-   - Digunakan oleh registri paket resmi (`io.github.SUGUKURU-CO-LTD/jp-bids`) untuk pendaftaran server, verifikasi repositori, dan interoperabilitas.
-2. **Endpoint Penemuan Server Card (`public/.well-known/mcp/server-card.json`)**:
-   - Disediakan di `/.well-known/mcp/server-card.json` untuk introspeksi skema alat yang lengkap dan binding `_meta.ui` MCP Apps.
+> *(Catatan: JP Bids MCP, J-Grants MCP, dan freee MCP adalah server independen yang dioperasikan oleh organisasi berbeda. Selalu verifikasi dokumen resmi pengadaan sebelum keputusan penawaran).*
 
-## Kebijakan / Policies / ポリシー
+---
 
-- [Kebijakan Privasi / Privacy Policy](https://mcp.bid-jp.com/privacy)
-- [Ketentuan Layanan / Terms of Service](https://mcp.bid-jp.com/terms)
+## Spesifikasi Metadata & Registri / Metadata & Specifications
+
+- **Manifes MCP Registry Resmi (`server.json`)**:
+  - Mematuhi `$schema: "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json"`.
+  - Identifier registri: `io.github.SUGUKURU-CO-LTD/jp-bids`
+- **Penemuan Server Card (`public/.well-known/mcp/server-card.json`)**:
+  - Mendefinisikan JSON Schema 7 tools publik, skema autentikasi, dan binding UI MCP Apps.
+
+---
+
+## Catatan Penting / Notes
+
+Server ini tidak menyimpan dokumen lampiran pengadaan dari portal hulu. Hasil pencarian adalah informasi referensi; selalu verifikasi dengan dokumen pengadaan resmi sebelum mengajukan penawaran.<br>
+This server does not store upstream documents or attachment files. Results are reference information and should be verified against official procurement documents before bidding decisions.
+
+- [Kebijakan Privasi / Privacy Policy](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/blob/main/public/privacy.html)
+- [Ketentuan Layanan / Terms of Service](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/blob/main/public/terms.html)
+- [Lisensi / License: Apache-2.0](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/blob/main/LICENSE)
+
