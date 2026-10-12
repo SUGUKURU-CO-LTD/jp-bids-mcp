@@ -44,12 +44,20 @@ Search, rank, extract requirements, and export Japanese public procurement notic
 
 Tersedia demo mock lokal yang dapat direproduksi secara mandiri tanpa memerlukan akses jaringan eksternal untuk verifikasi langsung di Claude Desktop maupun klien MCP lainnya.
 
+> [!NOTE]
+> **Persyaratan Jaringan & Keamanan Mock**:
+> - Koneksi internet aktif diperlukan untuk `git clone` dan instalasi dependensi awal menggunakan `npm ci`.
+> - Setelah dependensi terinstal, menjalankan demo mock lokal (`examples/mock-stdio-server.mjs`) **tidak melakukan permintaan jaringan eksternal ke API KKJ langsung**; seluruh respon disajikan secara offline menggunakan fixture XML lokal (`tests/fixtures/kkj-search.xml`, `KKJ-TEST-001`).
+> - *(Catatan: Mock ini menggunakan pencegatan permintaan tingkat aplikasi di Node.js untuk menjaga pemanggilan fetch dan menyajikan fixture lokal. Ini bukan sandbox atau isolasi firewall tingkat OS).*
+
 ### 1. Kloning & Bangun Proyek
+
+Untuk reproduktibilitas pengujian, gunakan `npm ci` untuk instalasi dependensi:
 
 ```bash
 git clone https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp.git
 cd jp-bids-mcp
-npm install
+npm ci
 npm run build
 npm test
 ```
@@ -87,6 +95,12 @@ Mulai ulang Claude Desktop, lalu tanyakan di obrolan:
 ---
 
 ## Runtime Lokal Standar / Standard Local Runtime
+
+> [!WARNING]
+> **Pemberitahuan Akses API Langsung**:
+> - `node dist/server.js` adalah build server produksi standar, **bukan server mock**.
+> - Menjalankan alat dalam mode ini dapat memicu permintaan HTTP nyata ke API KKJ Badan UKM Jepang (`http://www.kkj.go.jp/api/`).
+> - Untuk menghindari akses langsung yang tidak disengaja selama evaluasi lokal, selalu gunakan demo mock (`examples/mock-stdio-server.mjs`).
 
 Contoh konfigurasi jika Anda ingin menjalankan server hasil build standar secara lokal:
 

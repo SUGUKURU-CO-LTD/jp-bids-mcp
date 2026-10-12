@@ -46,12 +46,20 @@ Server MCP untuk mencari, memeringkat, mengekstrak persyaratan, dan mengekspor p
 
 To safely evaluate JP Bids MCP and reproduce the interactive MCP Apps workspace UI offline without live network dependencies:
 
+> [!NOTE]
+> **Network Requirements & Mock Safety**:
+> - An active internet connection is required for `git clone` and the initial dependency installation via `npm ci`.
+> - Once dependencies are installed, running the local mock demo (`examples/mock-stdio-server.mjs`) performs **no external network requests to the live KKJ API**; all responses are served offline using local XML fixtures (`tests/fixtures/kkj-search.xml`, `KKJ-TEST-001`).
+> - *(Note: This mock uses application-level request interception within Node.js to guard runtime fetch calls and resolve local fixtures. It is not an OS-level sandbox or network firewall isolation).*
+
 ### 1. Clone & Build / リポジトリのビルド
+
+For reproducible builds, use `npm ci` to install pinned dependencies:
 
 ```bash
 git clone https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp.git
 cd jp-bids-mcp
-npm install
+npm ci
 npm run build
 npm test
 ```
@@ -89,6 +97,12 @@ Restart Claude Desktop, and ask:
 ---
 
 ## Standard Local Runtime / 通常ローカル起動
+
+> [!WARNING]
+> **Live API Access Notice**:
+> - `node dist/server.js` is the standard production server build, **not a mock server**.
+> - Executing tools in this mode may initiate real HTTP network requests to the official SME Agency KKJ API (`http://www.kkj.go.jp/api/`).
+> - To avoid unapproved live API traffic or rate limit consumption during local evaluation, use the mock demo (`examples/mock-stdio-server.mjs`) instead.
 
 If you wish to run the standard build server directly:
 

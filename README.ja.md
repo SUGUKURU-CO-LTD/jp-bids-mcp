@@ -44,12 +44,20 @@ Server MCP untuk mencari, memeringkat, mengekstrak persyaratan, dan mengekspor p
 
 外部ネットワークアクセスを行わずに、Claude Desktop および MCP クライアントから直ちに動作確認を行える再現可能なローカルモックデモを提供しています。
 
+> [!NOTE]
+> **ネットワーク要件とモックの安全性**:
+> - `git clone` および初回の依存関係インストール (`npm ci`) の実行にはインターネット接続が必要です。
+> - 依存関係インストール後のローカルモックデモ実行 (`examples/mock-stdio-server.mjs`) では、**実KKJ APIへの外部アクセスは一切発生しません**。すべてローカルXMLフィクスチャ (`tests/fixtures/kkj-search.xml`、`KKJ-TEST-001`) を読み込んでオフラインで安全に応答します。
+> - *(※これはNode.jsアプリケーションレベルで未承認fetchを例外遮断しローカルデータを返すモック処理であり、OSレベルのサンドボックスやネットワークファイアウォールによる通信遮断ではありません)*
+
 ### 1. クローンとビルド
+
+再現性のため、依存関係インストールには `npm ci` を使用します：
 
 ```bash
 git clone https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp.git
 cd jp-bids-mcp
-npm install
+npm ci
 npm run build
 npm test
 ```
@@ -87,6 +95,12 @@ Claude Desktop を再起動し、チャットで以下のように入力しま�
 ---
 
 ## 通常ローカル起動 / Standard Local Runtime
+
+> [!WARNING]
+> **実APIアクセスに関する注意**:
+> - `node dist/server.js` は本番用の通常ビルドであり、**モックサーバーではありません**。
+> - このモードでツールを実行すると、中小企業庁「官公需情報ポータルサイト」の公式API (`http://www.kkj.go.jp/api/`) へ実際にHTTP通信が発生する可能性があります。
+> - 事前検証時や不要・未承認の実アクセスを避けたい場合は、必ずモックデモ (`examples/mock-stdio-server.mjs`) を使用してください。
 
 ビルド済みの通常サーバープロセスをローカルで起動する場合の設定例です：
 
