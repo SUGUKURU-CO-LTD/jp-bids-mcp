@@ -81,7 +81,7 @@
     "@google-cloud/firestore": "^8.7.0",
     "@google/genai": "^1.51.0",
     "@modelcontextprotocol/ext-apps": "^1.7.4",
-    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@modelcontextprotocol/sdk": "^1.32.1",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "fast-xml-parser": "^5.7.2",
