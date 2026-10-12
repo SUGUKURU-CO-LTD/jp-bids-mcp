@@ -39,7 +39,7 @@ Server MCP untuk mencari, memeringkat, mengekstrak persyaratan, dan mengekspor p
 > - **Clean Clone Reproduction vs. Automated Tests**:
 >   - **Automated Tests**: 182 Vitest unit/integration tests (`npm test`) verify server schemas, security constraints, UI view models, and protocol invariants.
 >   - **Clean Clone Stdio Verification**: Reproducibility verified on a separate, newly cloned directory without development caches (`npm ci` → `npm run build` → stdio handshake), proving 7-tool registration, mock search response (`KKJ-TEST-001`), and MCP Apps UI HTML bundle retrieval.
->   - **Desktop App Verification**: Process connection and tool registration verified in Claude Desktop. In-app GUI interaction requires manual client operation.
+>   - **Desktop App Verification**: Process launch, connection, and 7-tool registration confirmed in Claude Desktop. In-app interactive GUI actions (M2–M3-B) require manual user operation in desktop clients and are tracked distinct from programmatic test evidence.
 > - **Live KKJ Connection & Gate 1 Acceptance**: **IN PREPARATION (準備中)**. Direct queries to the Small and Medium Enterprise Agency KKJ API and formal Gate 1 compliance acceptance (35 test conditions) are scheduled for subsequent verification phases.
 
 ---
@@ -82,8 +82,8 @@ npm test
 Edit your `claude_desktop_config.json`:
 
 - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-- **Windows (Standard)**: `%APPDATA%\Claude\claude_desktop_config.json`
-- **Windows (Microsoft Store / UWP edition)**: Depending on your installation, configuration may be virtualized in the Store package directory:
+- **Windows (Standard installer)**: `%APPDATA%\Claude\claude_desktop_config.json`
+- **Windows (Microsoft Store / UWP edition)**: In Store distributions, configuration files may be virtualized under a package-specific directory. While package identifiers can vary across installations, the following path was observed in our Windows 11 verification environment as an observed path example:
   `%LOCALAPPDATA%\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\Claude\claude_desktop_config.json`
 
 ```json
@@ -97,7 +97,7 @@ Edit your `claude_desktop_config.json`:
 }
 ```
 
-*(Replace `/ABSOLUTE/PATH/TO/jp-bids-mcp` with your actual local repository path. On Windows, if `node` is not resolved by the GUI process, specify the absolute path to `node.exe`, e.g., `"C:\\Program Files\\nodejs\\node.exe"`).*
+*(Replace `/ABSOLUTE/PATH/TO/jp-bids-mcp` with your actual local repository path. On Windows, if `node` is not resolved by the GUI process from environment PATH, specifying the absolute path to `node.exe`, e.g., `"C:\\Program Files\\nodejs\\node.exe"`, is a recommended workaround).*
 
 ### 3. Ask Claude / AIに話しかける
 

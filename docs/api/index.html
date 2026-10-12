@@ -66,7 +66,7 @@ All 7 public tools are available for free without subscription or paid tiers.</p
 <ul>
 <li><strong>Automated Tests</strong>: 182 Vitest unit/integration tests (<code>npm test</code>) verify server schemas, security constraints, UI view models, and protocol invariants.</li>
 <li><strong>Clean Clone Stdio Verification</strong>: Reproducibility verified on a separate, newly cloned directory without development caches (<code>npm ci</code> → <code>npm run build</code> → stdio handshake), proving 7-tool registration, mock search response (<code>KKJ-TEST-001</code>), and MCP Apps UI HTML bundle retrieval.</li>
-<li><strong>Desktop App Verification</strong>: Process connection and tool registration verified in Claude Desktop. In-app GUI interaction requires manual client operation.</li>
+<li><strong>Desktop App Verification</strong>: Process launch, connection, and 7-tool registration confirmed in Claude Desktop. In-app interactive GUI actions (M2–M3-B) require manual user operation in desktop clients and are tracked distinct from programmatic test evidence.</li>
 </ul>
 </li>
 <li><strong>Live KKJ Connection &amp; Gate 1 Acceptance</strong>: <strong>IN PREPARATION (準備中)</strong>. Direct queries to the Small and Medium Enterprise Agency KKJ API and formal Gate 1 compliance acceptance (35 test conditions) are scheduled for subsequent verification phases.</li>
@@ -100,14 +100,14 @@ If script execution is restricted by PowerShell policy (<code>PSSecurityExceptio
 <p>Edit your <code>claude_desktop_config.json</code>:</p>
 <ul>
 <li><strong>macOS</strong>: <code>~/Library/Application Support/Claude/claude_desktop_config.json</code></li>
-<li><strong>Windows (Standard)</strong>: <code>%APPDATA%\Claude\claude_desktop_config.json</code></li>
-<li><strong>Windows (Microsoft Store / UWP edition)</strong>: Depending on your installation, configuration may be virtualized in the Store package directory:
+<li><strong>Windows (Standard installer)</strong>: <code>%APPDATA%\Claude\claude_desktop_config.json</code></li>
+<li><strong>Windows (Microsoft Store / UWP edition)</strong>: In Store distributions, configuration files may be virtualized under a package-specific directory. While package identifiers can vary across installations, the following path was observed in our Windows 11 verification environment as an observed path example:
 <code>%LOCALAPPDATA%\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\Claude\claude_desktop_config.json</code></li>
 </ul>
 <pre><code class="json"><span class="hl-1">{</span><br/><span class="hl-1">  </span><span class="hl-3">&quot;mcpServers&quot;</span><span class="hl-1">: {</span><br/><span class="hl-1">    </span><span class="hl-3">&quot;jp-bids-mock&quot;</span><span class="hl-1">: {</span><br/><span class="hl-1">      </span><span class="hl-3">&quot;command&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;node&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">      </span><span class="hl-3">&quot;args&quot;</span><span class="hl-1">: [</span><span class="hl-2">&quot;/ABSOLUTE/PATH/TO/jp-bids-mcp/examples/mock-stdio-server.mjs&quot;</span><span class="hl-1">]</span><br/><span class="hl-1">    }</span><br/><span class="hl-1">  }</span><br/><span class="hl-1">}</span>
 </code><button type="button">Copy</button></pre>
 
-<p><em>(Replace <code>/ABSOLUTE/PATH/TO/jp-bids-mcp</code> with your actual local repository path. On Windows, if <code>node</code> is not resolved by the GUI process, specify the absolute path to <code>node.exe</code>, e.g., <code>&quot;C:\\Program Files\\nodejs\\node.exe&quot;</code>).</em></p>
+<p><em>(Replace <code>/ABSOLUTE/PATH/TO/jp-bids-mcp</code> with your actual local repository path. On Windows, if <code>node</code> is not resolved by the GUI process from environment PATH, specifying the absolute path to <code>node.exe</code>, e.g., <code>&quot;C:\\Program Files\\nodejs\\node.exe&quot;</code>, is a recommended workaround).</em></p>
 <h3 id="3-ask-claude-aiに話しかける" class="tsd-anchor-link">3. Ask Claude / AIに話しかける<a href="#3-ask-claude-aiに話しかける" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <p>Restart Claude Desktop, and ask:</p>
 <pre><code class="text">「鹿児島県の入札案件を検索して」
