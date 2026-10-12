@@ -13,7 +13,9 @@
   "keywords": ["mcp", "mcp-apps", "bids", "procurement", "japan", "kkj"],
   "extensions": {
     "com.openai": {
-      "displayName": "JP Bids MCP (日本官公需入札探索)"
+      "interface": {
+        "displayName": "JP Bids MCP (日本官公需入札探索)"
+      }
     }
   }
 }

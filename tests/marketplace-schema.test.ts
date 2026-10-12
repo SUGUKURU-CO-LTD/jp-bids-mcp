@@ -45,34 +45,47 @@ describe("GitHub Marketplace & Agent Plugins 1.0.0 Compliance", () => {
     expect(fs.existsSync(resolvedPluginDir)).toBe(true);
   });
 
-  it("validates plugins/jp-bids-mcp/plugin.json strictly matches official 1.0.0 schema", () => {
+  it("validates plugins/jp-bids-mcp/plugin.json strictly matches official Agent Plugins 1.0.0 schema", () => {
     expect(fs.existsSync(PLUGIN_PATH)).toBe(true);
     const content = fs.readFileSync(PLUGIN_PATH, "utf8");
     const json = JSON.parse(content);
 
     const valid = validatePlugin(json);
-    if (!valid) {
-      console.error(validatePlugin.errors);
-    }
     expect(valid).toBe(true);
     expect(json.name).toBe("jp-bids-mcp");
     expect(json.$schema).toBe("https://agent-plugins.org/schemas/1.0.0/plugin.schema.json");
 
-    // Verify root is clean of non-schema properties
-    expect((json as Record<string, unknown>).displayName).toBeUndefined();
-    expect((json as Record<string, unknown>).skills).toBeUndefined();
-    expect((json as Record<string, unknown>).mcpServers).toBeUndefined();
+    // Verify root is clean of non-schema properties (strict additionalProperties: false)
+    const raw = json as Record<string, unknown>;
+    expect(raw.displayName).toBeUndefined();
+    expect(raw.interface).toBeUndefined();
+    expect(raw.skills).toBeUndefined();
+    expect(raw.mcpServers).toBeUndefined();
+    expect(raw.apps).toBeUndefined();
 
-    // Verify OpenAI specific extension
-    expect(json.extensions?.["com.openai"]?.displayName).toBeDefined();
-
-    // Verify Agent Skill exists in skills directory
-    expect(fs.existsSync(SKILL_PATH)).toBe(true);
-    const skillContent = fs.readFileSync(SKILL_PATH, "utf8");
-    expect(skillContent).toContain("name: jp-bids-procurement-search");
+    // Verify extensions exists and is an object
+    expect(typeof json.extensions).toBe("object");
+    expect(json.extensions).not.toBeNull();
   });
 
-  it("negative test: rejects invalid plugin.json variations", () => {
+  it("validates OpenAI-specific extension structure (extensions.com.openai.interface.displayName)", () => {
+    const content = fs.readFileSync(PLUGIN_PATH, "utf8");
+    const json = JSON.parse(content);
+
+    const openAiExt = json.extensions?.["com.openai"];
+    expect(openAiExt).toBeDefined();
+    expect(typeof openAiExt).toBe("object");
+
+    // Display name must be nested under interface in OpenAI extension spec
+    expect(openAiExt.interface).toBeDefined();
+    expect(typeof openAiExt.interface).toBe("object");
+    expect(openAiExt.interface.displayName).toBe("JP Bids MCP (日本官公需入札探索)");
+
+    // Legacy direct displayName under com.openai must not exist
+    expect(openAiExt.displayName).toBeUndefined();
+  });
+
+  it("negative test: rejects invalid plugin.json variations against official schema", () => {
     // 1. Root displayName is not allowed (additionalProperties: false)
     const withDisplayName = {
       $schema: "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
@@ -81,7 +94,17 @@ describe("GitHub Marketplace & Agent Plugins 1.0.0 Compliance", () => {
     };
     expect(validatePlugin(withDisplayName)).toBe(false);
 
-    // 2. Root mcpServers is not allowed in plugin.json
+    // 2. Root interface is not allowed (must be inside extensions.com.openai)
+    const withRootInterface = {
+      $schema: "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+      name: "jp-bids-mcp",
+      interface: {
+        displayName: "Invalid Root Interface",
+      },
+    };
+    expect(validatePlugin(withRootInterface)).toBe(false);
+
+    // 3. Root mcpServers is not allowed in plugin.json
     const withMcpServers = {
       $schema: "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
       name: "jp-bids-mcp",
@@ -89,7 +112,7 @@ describe("GitHub Marketplace & Agent Plugins 1.0.0 Compliance", () => {
     };
     expect(validatePlugin(withMcpServers)).toBe(false);
 
-    // 3. Invalid name format (uppercase, special chars, double hyphens)
+    // 4. Invalid name format (uppercase, special chars, double hyphens)
     const withInvalidName = {
       $schema: "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
       name: "JP_Bids_MCP--Invalid",
@@ -149,12 +172,31 @@ describe("GitHub Marketplace & Agent Plugins 1.0.0 Compliance", () => {
     expect(validateMcp(withDescription)).toBe(false);
   });
 
-  it("ensures no unverified mcp.json is distributed in plugins/jp-bids-mcp/", () => {
+  it("validates that the distributed package provides Skill-only without unverified mcp.json or unverified .app.json", () => {
+    // 1. Ensure no unverified mcp.json is distributed
     const distributedMcpJson = path.join(PLUGIN_DIR, "mcp.json");
     expect(fs.existsSync(distributedMcpJson)).toBe(false);
+
+    // 2. Ensure no unregistered .app.json or app.json is distributed
+    const distributedAppDotJson = path.join(PLUGIN_DIR, ".app.json");
+    const distributedAppJson = path.join(PLUGIN_DIR, "app.json");
+    expect(fs.existsSync(distributedAppDotJson)).toBe(false);
+    expect(fs.existsSync(distributedAppJson)).toBe(false);
+
+    // 3. Ensure plugin.json does not reference apps or mcpServers
+    const pluginContent = JSON.parse(fs.readFileSync(PLUGIN_PATH, "utf8"));
+    expect(pluginContent.apps).toBeUndefined();
+    expect(pluginContent.mcpServers).toBeUndefined();
+
+    // 4. Ensure Skill exists and has mode differentiation
+    expect(fs.existsSync(SKILL_PATH)).toBe(true);
+    const skillContent = fs.readFileSync(SKILL_PATH, "utf8");
+    expect(skillContent).toContain("name: jp-bids-procurement-search");
+    expect(skillContent).toContain("モード A");
+    expect(skillContent).toContain("モード B");
   });
 
-  it("simulates plugin installation in an isolated cache directory and verifies self-containment", () => {
+  it("simulates plugin installation in an isolated cache directory and verifies self-containment (Skill-only distribution)", () => {
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "chatgpt-plugin-cache-"));
     try {
       // Copy only plugins/jp-bids-mcp/ contents to the isolated cache directory
@@ -167,22 +209,26 @@ describe("GitHub Marketplace & Agent Plugins 1.0.0 Compliance", () => {
       expect(fs.existsSync(cachedPluginJson)).toBe(true);
       expect(fs.existsSync(cachedSkillPath)).toBe(true);
 
+      // Verify no unverified runtime configs were copied
+      expect(fs.existsSync(path.join(tempDir, "mcp.json"))).toBe(false);
+      expect(fs.existsSync(path.join(tempDir, ".app.json"))).toBe(false);
+      expect(fs.existsSync(path.join(tempDir, "app.json"))).toBe(false);
+
       const skillContent = fs.readFileSync(cachedSkillPath, "utf8");
       expect(skillContent).toContain("name: jp-bids-procurement-search");
-
-      // Verify that the skill explicitly mentions mode differentiation
       expect(skillContent).toContain("モード A");
       expect(skillContent).toContain("モード B");
 
       // Verify the cached plugin does not contain broken relative references to outer repository
       const pluginManifest = JSON.parse(fs.readFileSync(cachedPluginJson, "utf8"));
       expect(pluginManifest.mcpServers).toBeUndefined();
+      expect(pluginManifest.apps).toBeUndefined();
     } finally {
       fs.rmSync(tempDir, { recursive: true, force: true });
     }
   });
 
-  it("ensures no absolute user paths or secrets are leaked in manifests", () => {
+  it("ensures no absolute user paths, unregistered app IDs, or secrets are leaked in manifests", () => {
     const filesToCheck = [MARKETPLACE_PATH, PLUGIN_PATH];
 
     for (const filePath of filesToCheck) {
@@ -196,6 +242,10 @@ describe("GitHub Marketplace & Agent Plugins 1.0.0 Compliance", () => {
       // Check for exposed tokens or keys
       expect(content).not.toMatch(/sk-[a-zA-Z0-9_-]{20,}/);
       expect(content).not.toMatch(/bearer\s+/i);
+
+      // Check for fake/unregistered app IDs
+      expect(content).not.toMatch(/asdk_app_[a-zA-Z0-9_-]+/);
+      expect(content).not.toMatch(/connector_[a-zA-Z0-9_-]+/);
     }
   });
 });
