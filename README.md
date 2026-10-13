@@ -18,32 +18,36 @@ Server MCP untuk mencari, memeringkat, mengekstrak persyaratan, dan mengekspor p
 
 | Channel / 項目 | Status / 状態 | Description / 内容 |
 |---|:---:|---|
-| **GitHub Open Source** | **Active (公開中)** | [SUGUKURU-CO-LTD/jp-bids-mcp](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp) (Apache 2.0). 182 tests, CI/CodeQL pass, reproducible offline mock demo. |
-| **Local Mock Demo** | **Verified (実証済)** | Offline M1–M3-B verification (search, MCP Apps workspace UI, bidirectional tool calls). |
+| **GitHub Open Source** | **Active (公開中)** | [SUGUKURU-CO-LTD/jp-bids-mcp](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp) (Apache 2.0). 190 tests (24 files), CI/CodeQL pass, reproducible offline mock demo. |
+| **Local Mock & Cross-Client** | **Verified (実証済)** | Offline M1–M3-B (Claude Desktop stdio) & Gate B (ChatGPT Secure Tunnel) verification (7 tools, MCP Apps UI, bidirectional tool calls). |
 | **npm Package** | **Planned (準備中)** | Packaging (`npm pack`) validated; publication (`jp-bids-mcp`) pending separate release approval. |
 | **Official MCP Registry** | **Planned (準備中)** | Namespace `io.github.SUGUKURU-CO-LTD/jp-bids` configured; registry listing pending separate approval. |
 | **Remote MCP Endpoint** | **Planned (準備中)** | Streamable HTTP endpoint (`https://mcp.bid-jp.com/mcp`) planned for hosted deployments. |
 
 > 💡 **Public Technical Showcase / 実機デモ技術解説**:  
-> Claude Desktop 内で動作する MCP Apps 対話型ワークスペースの実機スクリーンショット、アーキテクチャ解説、および再現手順は [**docs/showcase/README.md**](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/blob/main/docs/showcase/README.md) をご覧ください。<br>
-> See [**docs/showcase/README.md**](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/blob/main/docs/showcase/README.md) for real-device screenshots, architectural deep-dives, and offline reproduction guides of the interactive MCP Apps workspace running inside Claude Desktop.
+> Claude Desktop および ChatGPT 内で動作する MCP Apps 対話型ワークスペースの実機スクリーンショット、アーキテクチャ解説、および再現手順は [**docs/showcase/README.md**](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/blob/main/docs/showcase/README.md) をご覧ください。<br>
+> See [**docs/showcase/README.md**](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/blob/main/docs/showcase/README.md) for real-device screenshots, architectural deep-dives, and offline reproduction guides of the interactive MCP Apps workspace running inside Claude Desktop and ChatGPT.
 
 ---
 
 ## Current Verification Status / 検証状況
 
 > [!IMPORTANT]
-> **Status: Local Mock Validated (M1–M3-B) | Live KKJ Connection in Preparation**
-> - **Claude Desktop Mock Verification (M1–M3-B)**: **PASSED (実証完了)**. Verified inside Claude Desktop using the local mock stdio launcher script (`examples/mock-stdio-server.mjs`) injecting offline XML fixtures (`tests/fixtures/kkj-search.xml`, `KKJ-TEST-001`):
+> **Status: Cross-Client Mock Validated (Claude Desktop M1–M3-B & ChatGPT Gate B) | Live KKJ Connection in Preparation**
+> - **Claude Desktop Mock Verification (M1–M3-B)**: **PASSED (実証完了)**. Verified inside Claude Desktop using local stdio mock launcher (`examples/mock-stdio-server.mjs`) with offline XML fixtures (`tests/fixtures/kkj-search.xml`, `KKJ-TEST-001`):
 >   - **M1**: Search bids via chat (`search_bids`) returning structured results.
 >   - **M2**: Interactive UI workspace rendering (`search_bids_app`) via MCP Apps specification (`ui://jp-bids/search-results.html`).
 >   - **M3-A**: In-app interactive state changes (row selection, selection counts, CSV/JSON export button activation).
 >   - **M3-B**: Bidirectional UI-to-server tool invocation (in-app search calling `search_bids_app` returning in 2ms and updating UI).
->   *(Note: M1–M3-B verification was performed via an in-application mock interceptor (`examples/mock-stdio-server.mjs`) resolving KKJ API requests with local XML fixtures and guarding runtime `fetch` calls. This is an application-level runtime mock, not an OS-level sandbox or network firewall isolation. No external KKJ network traffic was observed during verification).*
+> - **ChatGPT Cross-Client Verification (Gate B)**: **PASSED (実機受入合格)**. Verified inside ChatGPT via OpenAI Secure MCP Tunnel with the same JP Bids MCP codebase:
+>   - **7 Tools Discovered & Executed**: `search_bids`, `get_bid_detail`, `list_recent_bids`, `extract_bid_requirements`, `rank_bids`, `export_bid_shortlist`, `search_bids_app`.
+>   - **Inline MCP Apps Workspace**: `search_bids_app` renders full 2-pane interactive AI Bid Workspace (`ui://jp-bids/search-results.html`).
+>   - **Bidirectional In-App Interactions**: In-app item selection (0 -> 1 selected), direct tool invocation via `app.callServerTool` (`rank_bids` scoring update), chat coordination via `app.sendMessage` (requirement extraction), and in-app re-search with instant UI re-rendering.
+>   - *(Operational Notes: 2 cumulative HTTP 409 Conflict events were recorded during tunnel initialization and remain documented as cause-unspecified without impacting acceptance. Verified against offline XML fixtures; live KKJ API access and third-party independent verification remain in preparation).*
 > - **Clean Clone Reproduction vs. Automated Tests**:
->   - **Automated Tests**: 182 Vitest unit/integration tests (`npm test`) verify server schemas, security constraints, UI view models, and protocol invariants.
+>   - **Automated Tests**: 190 Vitest unit/integration tests (24 test files, `npm test`) verify server schemas, security constraints, UI view models, and protocol invariants.
 >   - **Clean Clone Stdio Verification**: Reproducibility verified on a separate, newly cloned directory without development caches (`npm ci` → `npm run build` → stdio handshake), proving 7-tool registration, mock search response (`KKJ-TEST-001`), and MCP Apps UI HTML bundle retrieval.
->   - **Desktop App Verification**: Process launch, connection, and 7-tool registration confirmed in Claude Desktop. In-app interactive GUI actions (M2–M3-B) require manual user operation in desktop clients and are tracked distinct from programmatic test evidence.
+>   - **Desktop & Web Client Verification**: Process launch, connection, and 7-tool registration confirmed in Claude Desktop and ChatGPT. In-app interactive GUI actions require manual user operation in desktop/web clients and are tracked distinct from programmatic test evidence.
 > - **Live KKJ Connection & Gate 1 Acceptance**: **IN PREPARATION (準備中)**. Direct queries to the Small and Medium Enterprise Agency KKJ API and formal Gate 1 compliance acceptance (35 test conditions) are scheduled for subsequent verification phases.
 
 ---
@@ -219,7 +223,7 @@ JP Bids MCP は Model Context Protocol の標準仕様に基づき実装およ�
 ## Verification & Testing / 検証コマンド
 
 ```bash
-# 全体チェック (Biome Lint, TypeScript型検査, Vite UIビルド, Vitest 182テスト全件)
+# 全体チェック (Biome Lint, TypeScript型検査, Vite UIビルド, Vitest 190テスト全件)
 npm run check
 
 # TypeDoc API ドキュメント生成・差分検査 (Windows & Linux 両対応)
