@@ -71,7 +71,7 @@ See <a href="https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/blob/main/docs/showc
 <li><strong>7 Tools Discovered &amp; Executed</strong>: <code>search_bids</code>, <code>get_bid_detail</code>, <code>list_recent_bids</code>, <code>extract_bid_requirements</code>, <code>rank_bids</code>, <code>export_bid_shortlist</code>, <code>search_bids_app</code>.</li>
 <li><strong>Inline MCP Apps Workspace</strong>: <code>search_bids_app</code> renders full 2-pane interactive AI Bid Workspace (<code>ui://jp-bids/search-results.html</code>).</li>
 <li><strong>Bidirectional In-App Interactions</strong>: In-app item selection (0 -&gt; 1 selected), direct tool invocation via <code>app.callServerTool</code> (<code>rank_bids</code> scoring update), chat coordination via <code>app.sendMessage</code> (requirement extraction), and in-app re-search with instant UI re-rendering.</li>
-<li><em>(Operational Notes: 2 cumulative HTTP 409 Conflict events were recorded during tunnel initialization and remain documented as cause-unspecified without impacting acceptance. Verified against offline XML fixtures; live KKJ API access and third-party independent verification remain in preparation).</em></li>
+<li><em>(Operational Notes: 2 cumulative HTTP 409 Conflict events were observed during Gate B verification. As individual response bodies and correlation IDs were unavailable, the cause remains unspecified. No additional failures were observed in subsequent acceptance testing. Verified against offline XML fixtures; live KKJ API access and third-party independent verification remain in preparation).</em></li>
 </ul>
 </li>
 <li><strong>Clean Clone Reproduction vs. Automated Tests</strong>:

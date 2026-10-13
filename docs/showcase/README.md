@@ -187,7 +187,7 @@ Gate B の最終検証として、ChatGPT 内の AI Bid Workspace ヘッダー�
 - **ChatGPT UI 上の「CSPオフ」バッジ表示について**:
   ChatGPT 画面の右上（キャプチャ参照）に「CSPオフ」というバッジが表示されていることを観測事実として記録しています。当サーバーのメタデータ定義では `connectDomains: []`, `resourceDomains: []` を宣言していますが、この表示の技術的理由やホスト側の保護状態については推測を行わず、安全性の根拠として扱わない検証境界として明記します。
 - **累積 HTTP 409 Conflict（2件）の継続記録**:  
-  トンネル稼働中に記録された累積 2 件の HTTP 409 Conflict については、個別リクエストのエラー本文や相関 ID が取得できないため、**原因未特定（既知事項）** として継続記録しています（初期化順序やプロトコルレースコンディション等の可能性が考えられるものの、特定には至っていません）。本実機検証において新たな失敗は 0 件であり、Gate B 機能受入合格を妨げるものではありませんが、本番運用の完全な信頼性が実証されたという意味ではありません。
+  Gate B 検証中に累積 HTTP 409 が 2 件観測されました。個別のエラー本文と相関 ID が不足しているため、**原因未特定（既知事項）** として継続記録しています。後半の受入試験で追加失敗は観測されておらず、機能受入合格を妨げるものではありませんが、本番運用の完全な信頼性が実証されたという意味ではありません。
 
 ---
 
@@ -203,7 +203,7 @@ MCP Apps 仕様では、UI（sandboxed iframe）はサーバープロセスと�
 
 検索結果データを受け取った後のワークスペース状態管理およびビューモデル変換（`App State & ViewModel Mapping`）は、サーバープロセスではなく **React UI（`src/apps/search-results.tsx` / `bid-workspace-view-model.ts`）側のクライアント責務** として実行されます。
 
-Claude Desktop と ChatGPT の双方が、それぞれ独立した stdio サーバープロセスを起動しながら、同一のリポジトリコードベースとインライン UI バンドルを共有します。また、OpenAI Secure MCP Tunnel 方式におけるローカル `tunnel-client` と OpenAI 制御プレーン間の通信は、WebSocket ではなく公式プロトコル仕様に基づく HTTPS ロングポーリング（`GET /request`）および応答 POST（`POST /response`）により行われます。
+Claude Desktop と ChatGPT の双方が、それぞれ独立した stdio サーバープロセスを起動しながら、同一のリポジトリコードベースとインライン UI バンドルを共有します。また、OpenAI Secure MCP Tunnel 方式におけるローカル `tunnel-client` と OpenAI 制御プレーン間の通信は、WebSocket ではなく[公式プロトコル仕様](https://github.com/openai/tunnel-client/blob/master/docs/protocol.md)に基づく HTTPS ロングポーリング（`GET /v1/tunnels/{tunnel_id}/poll`）および応答 POST（`POST /v1/tunnels/{tunnel_id}/response`）により行われます（いずれのリクエストもローカル `tunnel-client` から OpenAI 制御プレーンへアウトバウンド送信されます）。
 
 ```mermaid
 flowchart TB
@@ -237,8 +237,8 @@ flowchart TB
     ChatB <--> HostB
     HostB <--"window.postMessage"--> ReactAppB
     HostB <--> TunnelCloud
-    TunnelCloud -- "HTTPS Long-Polling (GET /request)" --> TunnelClient
-    TunnelClient -- "HTTPS Response (POST /response)" --> TunnelCloud
+    TunnelClient -- "HTTPS Long-Polling: GET /v1/tunnels/{tunnel_id}/poll" --> TunnelCloud
+    TunnelClient -- "HTTPS Response: POST /v1/tunnels/{tunnel_id}/response" --> TunnelCloud
     TunnelClient <=="stdio child process (JSON-RPC 2.0)"==> ServerB
   end
 
