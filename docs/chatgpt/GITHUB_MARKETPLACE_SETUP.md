@@ -87,19 +87,34 @@ OpenAI の「GitHub プラグインマーケットプレイス連携」におけ
 | **MCP サーバーの起動・常駐・再起動** | **対象外** | サーバープロセスのライフサイクル管理は一切行われません。 |
 
 > [!IMPORTANT]
-> GitHub 日次同期は、**静的なプラグイン定義と Skill の自動配布メカニズム** であり、MCP サーバーのビルドや実行環境を提供するものではありません。MCP サーバーの稼働は、ローカルホスト（Claude Desktop 等）または独立したクラウド基盤（将来のホスト型 Streamable HTTP）が担います。
+> **日次自動同期の検証境界について**
+> - GitHub 日次同期は、**静的なプラグイン定義と Skill の自動配布メカニズム** であり、MCP サーバーのビルドや実行環境を提供するものではありません。
+> - プラグインマーケットプレイス連携の仕様上は日次同期機能が提供されていますが、本プロジェクトにおける実機検証（Gate A）では**手動インポート直後の即時同期（初期メタデータ・Skill 検出）のみを確認**しています。定期的な日次同期デーモンによる定時更新の実動作は**現時点では未検証**であり、仕様上の機能定義と実機検証結果を明確に区別しています。
 
 ---
 
-## 5. 将来の MCP アプリ参照方式としての `.app.json` 調査結果
+## 5. 将来の MCP アプリ参照方式としての設定仕様照合（`.app.json` とマニフェスト拡張）
 
-OpenAI Plugins / Apps SDK におけるインタラクティブ UI および外部連携の定義方式について調査を実施しました。
+OpenAI Plugins / Apps SDK におけるインタラクティブ UI および外部連携の定義方式について公式仕様と照合を実施しました。
 
 ### 調査結果の要約
 
-1. **命名規則と配置**:
-   - プラグインルートに配置する設定ファイル名は **`.app.json`**（先頭にドットが必要）です。拡張子のみの `app.json` はサポートされません。
-   - プラグインマニフェスト（`plugin.json`）の `apps` フィールドから `"./.app.json"` として参照されます。
+1. **マニフェスト形式による `apps` 宣言場所の違い（公式仕様適合）**:
+   - **Portable Agent Plugins (`plugin.json`)**:  
+     `agent-plugins.org/schemas/1.0.0/plugin.schema.json` スキーマに準拠するルート `plugin.json` では、ルート階層に `apps` を配置することはスキーマ違反（`additionalProperties: false`）となります。そのため、OpenAI 固有の拡張設定として **`extensions.com.openai.apps`** にネストして配置します：
+     ```json
+     {
+       "extensions": {
+         "com.openai": {
+           "apps": "./.app.json"
+         }
+       }
+     }
+     ```
+   - **Codex / OpenAI 互換プラグイン形式 (`.codex-plugin/plugin.json`)**:  
+     Codex 互換形式やレガシーな OpenAI プラグイン形式では、ルートプロパティに直接 `apps`（例: `"apps": "./.app.json"` またはアプリ定義オブジェクト）を指定することが許容されています。
+   - **`.app.json` ファイルの配置と命名**:  
+     いずれの形式から参照する場合でも、参照先ファイル名は **`.app.json`**（先頭ドット付き）とし、プラグインルートに配置します。拡張子のみの `app.json` はサポートされません。
 2. **ファイル内部構造**:
    ```json
    {
@@ -114,7 +129,7 @@ OpenAI Plugins / Apps SDK におけるインタラクティブ UI および外�
    - 各アプリ定義には、OpenAI Apps エコシステムで発行された正規の **App ID**（例: `asdk_app_...`）の指定が必要です。
 3. **未登録のアプリ ID を作成しない方針（厳格遵守）**:
    - App ID は OpenAI プラットフォーム上で正式にアプリを登録・審査を経て発行される実 ID であり、**未登録の架空 ID やモック ID を `.app.json` に設定・コミットすると、ChatGPT のインポート時バリデーション失敗や公開審査での即時リジェクトの原因** となります。
-   - したがって、現段階（Gate A 実機検証）では `.app.json` の作成・コミットは一切行いません。
+   - したがって、現段階（Gate A 実機検証）では `.app.json` の作成・コミットは一切行わず、Skill 単体配布構成を維持します。
    - 将来、ホスト型 Streamable HTTP サーバーが本番稼働し、OpenAI Apps への正式登録を行う段階で、正規の App ID を紐付ける拡張パスとして設計します。
 
 ---
@@ -166,5 +181,19 @@ OpenAI Plugins / Apps SDK におけるインタラクティブ UI および外�
 | **OpenAI `interface.displayName` 構造適合** | **PASS** | 独立した構造アサーションテスト通過 |
 | **未検証構成の隔離（Skill 単体配布）** | **PASS** | `mcp.json` / `.app.json` 除外とキャッシュ隔離テスト通過 |
 | **秘密情報・ユーザーパス・架空 ID の非混入** | **PASS** | 静的マニフェストスキャンテスト通過 |
-| **ChatGPT Marketplace への Gate A 実インポート** | **未検証 (準備完了)** | 人間による実機インポート操作待ち |
-| **ChatGPT からの MCP サーバー接続** | **未実装** | 将来の Streamable HTTP 移行フェーズで検証予定 |
+| **ChatGPT Marketplace への Gate A 実インポート** | **PASS (実機確認済)** | 組織ワークスペースへのインポートおよび Skill 認識を確認 |
+| **GitHub 日次自動同期の実動作** | **未検証** | インポート時の初期同期のみ確認、定期サイクルの実動作は未確認 |
+| **ChatGPT からの MCP サーバー接続 (Gate B)** | **PASS (実機受入合格)** | OpenAI Secure MCP Tunnel 経由での 7 ツール実行、MCP Apps UI 描画、双方向操作を実機確認 |
+
+---
+
+## 9. 公式仕様および参照リンク (References)
+
+- **OpenAI Agent Plugins Specification**:  
+  https://developers.openai.com/plugins/build/plugins
+- **OpenAI Secure MCP Tunnels Guide**:  
+  https://developers.openai.com/api/docs/guides/secure-mcp-tunnels
+- **MCP Apps Extension Specification**:  
+  https://apps.extensions.modelcontextprotocol.io/
+- **Agent Plugins 1.0.0 JSON Schema**:  
+  https://agent-plugins.org/schemas/1.0.0/plugin.schema.json

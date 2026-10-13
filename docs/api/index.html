@@ -24,12 +24,12 @@ All 7 public tools are available for free without subscription or paid tiers.</p
 <tr>
 <td><strong>GitHub Open Source</strong></td>
 <td style="text-align:center"><strong>Active (公開中)</strong></td>
-<td><a href="https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp">SUGUKURU-CO-LTD/jp-bids-mcp</a> (Apache 2.0). 182 tests, CI/CodeQL pass, reproducible offline mock demo.</td>
+<td><a href="https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp">SUGUKURU-CO-LTD/jp-bids-mcp</a> (Apache 2.0). 190 tests (24 files), CI/CodeQL pass, reproducible offline mock demo.</td>
 </tr>
 <tr>
-<td><strong>Local Mock Demo</strong></td>
+<td><strong>Local Mock &amp; Cross-Client</strong></td>
 <td style="text-align:center"><strong>Verified (実証済)</strong></td>
-<td>Offline M1–M3-B verification (search, MCP Apps workspace UI, bidirectional tool calls).</td>
+<td>Offline M1–M3-B (Claude Desktop stdio) &amp; Gate B (ChatGPT Secure Tunnel) verification (7 tools, MCP Apps UI, bidirectional tool calls).</td>
 </tr>
 <tr>
 <td><strong>npm Package</strong></td>
@@ -50,28 +50,35 @@ All 7 public tools are available for free without subscription or paid tiers.</p
 </table>
 <blockquote>
 <p>💡 <strong>Public Technical Showcase / 実機デモ技術解説</strong>:<br>
-Claude Desktop 内で動作する MCP Apps 対話型ワークスペースの実機スクリーンショット、アーキテクチャ解説、および再現手順は <a href="https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/blob/main/docs/showcase/README.md"><strong>docs/showcase/README.md</strong></a> をご覧ください。<br>
-See <a href="https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/blob/main/docs/showcase/README.md"><strong>docs/showcase/README.md</strong></a> for real-device screenshots, architectural deep-dives, and offline reproduction guides of the interactive MCP Apps workspace running inside Claude Desktop.</p>
+Claude Desktop および ChatGPT 内で動作する MCP Apps 対話型ワークスペースの実機スクリーンショット、アーキテクチャ解説、および再現手順は <a href="https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/blob/main/docs/showcase/README.md"><strong>docs/showcase/README.md</strong></a> をご覧ください。<br>
+See <a href="https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/blob/main/docs/showcase/README.md"><strong>docs/showcase/README.md</strong></a> for real-device screenshots, architectural deep-dives, and offline reproduction guides of the interactive MCP Apps workspace running inside Claude Desktop and ChatGPT.</p>
 </blockquote>
 <hr>
 <h2 id="current-verification-status-検証状況" class="tsd-anchor-link">Current Verification Status / 検証状況<a href="#current-verification-status-検証状況" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
 <div class="tsd-alert tsd-alert-important"><div class="tsd-alert-title"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><use href="assets/icons.svg#icon-alertImportant"></use></svg><span>Important</span></div><p>
-<strong>Status: Local Mock Validated (M1–M3-B) | Live KKJ Connection in Preparation</strong></p>
+<strong>Status: Cross-Client Mock Validated (Claude Desktop M1–M3-B &amp; ChatGPT Gate B) | Live KKJ Connection in Preparation</strong></p>
 <ul>
-<li><strong>Claude Desktop Mock Verification (M1–M3-B)</strong>: <strong>PASSED (実証完了)</strong>. Verified inside Claude Desktop using the local mock stdio launcher script (<code>examples/mock-stdio-server.mjs</code>) injecting offline XML fixtures (<code>tests/fixtures/kkj-search.xml</code>, <code>KKJ-TEST-001</code>):
+<li><strong>Claude Desktop Mock Verification (M1–M3-B)</strong>: <strong>PASSED (実証完了)</strong>. Verified inside Claude Desktop using local stdio mock launcher (<code>examples/mock-stdio-server.mjs</code>) with offline XML fixtures (<code>tests/fixtures/kkj-search.xml</code>, <code>KKJ-TEST-001</code>):
 <ul>
 <li><strong>M1</strong>: Search bids via chat (<code>search_bids</code>) returning structured results.</li>
 <li><strong>M2</strong>: Interactive UI workspace rendering (<code>search_bids_app</code>) via MCP Apps specification (<code>ui://jp-bids/search-results.html</code>).</li>
 <li><strong>M3-A</strong>: In-app interactive state changes (row selection, selection counts, CSV/JSON export button activation).</li>
-<li><strong>M3-B</strong>: Bidirectional UI-to-server tool invocation (in-app search calling <code>search_bids_app</code> returning in 2ms and updating UI).
-<em>(Note: M1–M3-B verification was performed via an in-application mock interceptor (<code>examples/mock-stdio-server.mjs</code>) resolving KKJ API requests with local XML fixtures and guarding runtime <code>fetch</code> calls. This is an application-level runtime mock, not an OS-level sandbox or network firewall isolation. No external KKJ network traffic was observed during verification).</em></li>
+<li><strong>M3-B</strong>: Bidirectional UI-to-server tool invocation (in-app search calling <code>search_bids_app</code> returning in 2ms and updating UI).</li>
+</ul>
+</li>
+<li><strong>ChatGPT Cross-Client Verification (Gate B)</strong>: <strong>PASSED (実機受入合格)</strong>. Verified inside ChatGPT via OpenAI Secure MCP Tunnel with the same JP Bids MCP codebase:
+<ul>
+<li><strong>7 Tools Discovered &amp; Executed</strong>: <code>search_bids</code>, <code>get_bid_detail</code>, <code>list_recent_bids</code>, <code>extract_bid_requirements</code>, <code>rank_bids</code>, <code>export_bid_shortlist</code>, <code>search_bids_app</code>.</li>
+<li><strong>Inline MCP Apps Workspace</strong>: <code>search_bids_app</code> renders full 2-pane interactive AI Bid Workspace (<code>ui://jp-bids/search-results.html</code>).</li>
+<li><strong>Bidirectional In-App Interactions</strong>: In-app item selection (0 -&gt; 1 selected), direct tool invocation via <code>app.callServerTool</code> (<code>rank_bids</code> scoring update), chat coordination via <code>app.sendMessage</code> (requirement extraction), and in-app re-search with instant UI re-rendering.</li>
+<li><em>(Operational Notes: 2 cumulative HTTP 409 Conflict events were observed during Gate B verification. As individual response bodies and correlation IDs were unavailable, the cause remains unspecified. No additional failures were observed in subsequent acceptance testing. Verified against offline XML fixtures; live KKJ API access and third-party independent verification remain in preparation).</em></li>
 </ul>
 </li>
 <li><strong>Clean Clone Reproduction vs. Automated Tests</strong>:
 <ul>
-<li><strong>Automated Tests</strong>: 182 Vitest unit/integration tests (<code>npm test</code>) verify server schemas, security constraints, UI view models, and protocol invariants.</li>
+<li><strong>Automated Tests</strong>: 190 Vitest unit/integration tests (24 test files, <code>npm test</code>) verify server schemas, security constraints, UI view models, and protocol invariants.</li>
 <li><strong>Clean Clone Stdio Verification</strong>: Reproducibility verified on a separate, newly cloned directory without development caches (<code>npm ci</code> → <code>npm run build</code> → stdio handshake), proving 7-tool registration, mock search response (<code>KKJ-TEST-001</code>), and MCP Apps UI HTML bundle retrieval.</li>
-<li><strong>Desktop App Verification</strong>: Process launch, connection, and 7-tool registration confirmed in Claude Desktop. In-app interactive GUI actions (M2–M3-B) require manual user operation in desktop clients and are tracked distinct from programmatic test evidence.</li>
+<li><strong>Desktop &amp; Web Client Verification</strong>: Process launch, connection, and 7-tool registration confirmed in Claude Desktop and ChatGPT. In-app interactive GUI actions require manual user operation in desktop/web clients and are tracked distinct from programmatic test evidence.</li>
 </ul>
 </li>
 <li><strong>Live KKJ Connection &amp; Gate 1 Acceptance</strong>: <strong>IN PREPARATION (準備中)</strong>. Direct queries to the Small and Medium Enterprise Agency KKJ API and formal Gate 1 compliance acceptance (35 test conditions) are scheduled for subsequent verification phases.</li>
@@ -232,7 +239,7 @@ If script execution is restricted by PowerShell policy (<code>PSSecurityExceptio
 </ul>
 <hr>
 <h2 id="verification-testing--検証コマンド" class="tsd-anchor-link">Verification &amp; Testing / 検証コマンド<a href="#verification-testing--検証コマンド" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
-<pre><code class="bash"><span class="hl-5"># 全体チェック (Biome Lint, TypeScript型検査, Vite UIビルド, Vitest 182テスト全件)</span><br/><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">run</span><span class="hl-1"> </span><span class="hl-2">check</span><br/><br/><span class="hl-5"># TypeDoc API ドキュメント生成・差分検査 (Windows &amp; Linux 両対応)</span><br/><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">run</span><span class="hl-1"> </span><span class="hl-2">docs:check</span><br/><br/><span class="hl-5"># 本番実行時依存のセキュリティ監査 (脆弱性 0 件)</span><br/><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">audit</span><span class="hl-1"> </span><span class="hl-4">--omit=dev</span><br/><br/><span class="hl-5"># オフラインモック stdio 単体検証テスト</span><br/><span class="hl-0">npx</span><span class="hl-1"> </span><span class="hl-2">vitest</span><span class="hl-1"> </span><span class="hl-2">run</span><span class="hl-1"> </span><span class="hl-2">tests/mock-stdio-verification.test.ts</span>
+<pre><code class="bash"><span class="hl-5"># 全体チェック (Biome Lint, TypeScript型検査, Vite UIビルド, Vitest 190テスト全件)</span><br/><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">run</span><span class="hl-1"> </span><span class="hl-2">check</span><br/><br/><span class="hl-5"># TypeDoc API ドキュメント生成・差分検査 (Windows &amp; Linux 両対応)</span><br/><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">run</span><span class="hl-1"> </span><span class="hl-2">docs:check</span><br/><br/><span class="hl-5"># 本番実行時依存のセキュリティ監査 (脆弱性 0 件)</span><br/><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">audit</span><span class="hl-1"> </span><span class="hl-4">--omit=dev</span><br/><br/><span class="hl-5"># オフラインモック stdio 単体検証テスト</span><br/><span class="hl-0">npx</span><span class="hl-1"> </span><span class="hl-2">vitest</span><span class="hl-1"> </span><span class="hl-2">run</span><span class="hl-1"> </span><span class="hl-2">tests/mock-stdio-verification.test.ts</span>
 </code><button type="button">Copy</button></pre>
 
 <hr>
