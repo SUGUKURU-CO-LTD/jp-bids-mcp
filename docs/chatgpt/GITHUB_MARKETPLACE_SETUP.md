@@ -101,7 +101,16 @@ OpenAI Plugins / Apps SDK におけるインタラクティブ UI および外�
 
 1. **マニフェスト形式による `apps` 宣言場所の違い（公式仕様適合）**:
    - **Portable Agent Plugins (`plugin.json`)**:  
-     `agent-plugins.org/schemas/1.0.0/plugin.schema.json` スキーマに準拠するルート `plugin.json` では、ルート階層に `apps` を配置することはスキーマ違反（`additionalProperties: false`）となります。そのため、OpenAI 固有の拡張設定として **`extensions.com.openai.apps`** に配置します（例: `"extensions": { "com.openai.apps": "./.app.json" }`）。
+     `agent-plugins.org/schemas/1.0.0/plugin.schema.json` スキーマに準拠するルート `plugin.json` では、ルート階層に `apps` を配置することはスキーマ違反（`additionalProperties: false`）となります。そのため、OpenAI 固有の拡張設定として **`extensions.com.openai.apps`** にネストして配置します：
+     ```json
+     {
+       "extensions": {
+         "com.openai": {
+           "apps": "./.app.json"
+         }
+       }
+     }
+     ```
    - **Codex / OpenAI 互換プラグイン形式 (`.codex-plugin/plugin.json`)**:  
      Codex 互換形式やレガシーな OpenAI プラグイン形式では、ルートプロパティに直接 `apps`（例: `"apps": "./.app.json"` またはアプリ定義オブジェクト）を指定することが許容されています。
    - **`.app.json` ファイルの配置と命名**:  

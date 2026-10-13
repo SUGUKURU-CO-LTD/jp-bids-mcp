@@ -21,7 +21,9 @@ Rather than only returning flat text or JSON arrays, the server registers both s
 
 ---
 
-## 2. 実機デモ Showcase: Claude Desktop (Verified Interactive Demonstration)
+## 2. 実機デモ Showcase (Verified Interactive Demonstration)
+
+### 2.1. Claude Desktop 実機デモ (M1〜M3-B)
 
 以下の画面は、Windows 11 上の Claude Desktop において、ローカルモックサーバー（`examples/mock-stdio-server.mjs`）を接続して実際に操作・検証されたものです。
 
@@ -32,7 +34,7 @@ Rather than only returning flat text or JSON arrays, the server registers both s
 
 ---
 
-### Step 1 (M1 & M2): チャット指示からのインライン Workspace 描画
+#### Step 1 (M1 & M2): チャット指示からのインライン Workspace 描画
 
 LLM チャットに対して自然言語で入札検索を指示すると、Claude が `search_bids_app` ツールを選択・実行します。サーバーは構造化サマリーテキストを返すと同時に、メタデータで指定された UI リソース（`ui://jp-bids/search-results.html`）を Claude が読み込み、チャットの応答上部に **AI Bid Workspace** がインライン描画されます。
 
@@ -46,7 +48,7 @@ LLM チャットに対して自然言語で入札検索を指示すると、Clau
 
 ---
 
-### Step 2 (M3-A): UI 内でのインタラクティブな状態管理（選択・集計・活性化）
+#### Step 2 (M3-A): UI 内でのインタラクティブな状態管理（選択・集計・活性化）
 
 描画されたワークスペースは単なる静的 HTML プレビューではなく、独立した React アプリケーションとして動作しています。ユーザーがカード左のチェックボックスをクリックすると、ワークスペース内の状態が即座に更新されます。
 
@@ -60,14 +62,14 @@ LLM チャットに対して自然言語で入札検索を指示すると、Clau
 
 ---
 
-### Step 3 (M3-B): UI 内からの双方向ツール呼び出し（再検索・結果更新）
+#### Step 3 (M3-B): UI 内からの双方向ツール呼び出し（再検索・結果更新）
 
 ワークスペースを拡大表示し、ヘッダーの検索入力欄にキーワード **「保守」** を入力して [検索] ボタンを押下します。UI 内部から MCP プロトコル経由でホストを通じてサーバーの `search_bids_app` が呼び出され、返却された結果が画面内リストおよび詳細パネルへ反映されます。
 
-#### 画面内キーワード入力
+##### 画面内キーワード入力
 ![M3-B: 拡大画面とキーワード入力](./assets/03-m3b-in-app-search-input.png)
 
-#### 検索実行と結果描画
+##### 検索実行と結果描画
 ![M3-B: 画面内再検索・結果更新](./assets/04-m3b-in-app-search-expanded.png)
 
 | 項目 | 内容 |
@@ -81,16 +83,16 @@ LLM チャットに対して自然言語で入札検索を指示すると、Clau
 
 ---
 
-## 3. 実機デモ Showcase: ChatGPT (Cross-Client Verification — Gate B)
+### 2.2. ChatGPT クロスクライアント実機デモ (Cross-Client Verification — Gate B)
 
 JP Bids MCP は、Claude Desktop だけでなく、OpenAI Secure MCP Tunnel を介して **ChatGPT 上でも全く同一の MCP Apps UI（AI Bid Workspace）を動作させることができること** を実機検証（Gate B 機能受入）により実証しました。
 
 同一の TypeScript コードベースから生成された単一 HTML バンドル（`ui://jp-bids/search-results.html`）が、ホスト環境の差異を吸収してシームレスに機能します。
 
-### 3.1. 接続方式と同一コードベースの共有
+#### 接続方式と同一コードベースの共有
 
 - **Claude Desktop**: ローカル stdio トランスポート（`examples/mock-stdio-server.mjs`）
-- **ChatGPT**: OpenAI Secure MCP Tunnel 方式（公式 `tunnel-client` を介してローカル Node.js サーバープロセスと暗号化トンネルで接続）
+- **ChatGPT**: OpenAI Secure MCP Tunnel 方式（公式 `tunnel-client` を介してローカル Node.js サーバープロセスと接続）
 - **共通資産**:
   - 全 7 種の公開 MCP 業務ツール（`search_bids`, `get_bid_detail`, `list_recent_bids`, `extract_bid_requirements`, `rank_bids`, `export_bid_shortlist`, `search_bids_app`）
   - MCP Apps UI リソース (`ui://jp-bids/search-results.html`)
@@ -104,7 +106,7 @@ JP Bids MCP は、Claude Desktop だけでなく、OpenAI Secure MCP Tunnel を�
 
 ---
 
-### Step 1 (Gate B-B5): チャット指示からのインライン Workspace 描画
+#### Step 1 (Gate B-B5): チャット指示からのインライン Workspace 描画
 
 ChatGPT のチャット入力欄において自然言語で入札検索を指示すると、ChatGPT が `search_bids_app` ツールを検出・実行します。レスポンスに含まれる UI リソースメタデータを解釈し、チャット応答内に **AI Bid Workspace**（2 ペイン対話型ワークスペース）がインライン描画されます。
 
@@ -118,7 +120,7 @@ ChatGPT のチャット入力欄において自然言語で入札検索を指示
 
 ---
 
-### Step 2 (Gate B-B5-⑤): UI 内でのインタラクティブな状態管理（案件選択）
+#### Step 2 (Gate B-B5-⑤): UI 内でのインタラクティブな状態管理（案件選択）
 
 描画されたワークスペース内で案件カードのチェックボックスをクリックすると、React アプリケーション内部の選択状態が即座に同期されます。
 
@@ -132,7 +134,7 @@ ChatGPT のチャット入力欄において自然言語で入札検索を指示
 
 ---
 
-### Step 3 (Gate B-B5-⑥): UI 内からの双方向ツール直接呼び出し（`app.callServerTool`）
+#### Step 3 (Gate B-B5-⑥): UI 内からの双方向ツール直接呼び出し（`app.callServerTool`）
 
 ワークスペース左上の [選択比較 (rank)] ボタンをクリックすると、UI 内部から `@modelcontextprotocol/ext-apps` の **`app.callServerTool`** を通じてサーバーの `rank_bids` ツールが直接呼び出されます。
 
@@ -148,7 +150,7 @@ ChatGPT のチャット入力欄において自然言語で入札検索を指示
 
 ---
 
-### Step 4 (Gate B-B5-⑥): UI からチャットへの要件抽出依頼（`app.sendMessage`）
+#### Step 4 (Gate B-B5-⑥): UI からチャットへの要件抽出依頼（`app.sendMessage`）
 
 詳細パネル下部の [要件抽出] ボタンをクリックすると、UI は **`app.sendMessage`** を呼び出し、ホストである ChatGPT のチャット入力へ要件抽出リクエストを送信します。
 
@@ -162,11 +164,11 @@ ChatGPT のチャット入力欄において自然言語で入札検索を指示
 
 ---
 
-### 3.3. UI 内再検索の実機検証と証拠の解釈（誠実な開示）
+#### UI 内再検索の実機検証と証拠の解釈（誠実な開示）
 
 Gate B の最終検証として、ChatGPT 内の AI Bid Workspace ヘッダー検索入力欄にキーワード **「保守」** を入力し、[検索] ボタンを押下する UI 内再検索試験を実施しました。
 
-#### 実機検証の結果
+##### 実機検証の結果
 - **画面側の挙動**: UI 内で案件一覧が即座に更新され、モック案件 `KKJ-TEST-001` がエラーなく再描画されたことを実機上で確認。
 - **Tunnel 通信メトリクスの変化**:
   - `tools/call` HTTP 200: **16 → 17（+1件）**
@@ -174,22 +176,22 @@ Gate B の最終検証として、ChatGPT 内の AI Bid Workspace ヘッダー�
   - `dispatcher.failures`: **2 → 2（新規失敗 0 件）**
   - `response_delivery.completed`: **66 → 69（+3件）**
 
-#### 証拠の境界と誠実な記載
+##### 証拠の境界と誠実な記載
 - **ツール特定の根拠**: トンネルメトリクス単独では個別ツール名（`search_bids_app`）を識別するリクエスト本文ログが存在しないため、「メトリクス単独で `search_bids_app` と特定した」とは断定しません。UI 上での検索ボタン押下・案件再描画の実機確認と、その直後に観測された Tunnel 上の `tools/call` HTTP 200 の 1 件増加が整合している事実を以て、再検索処理の成立証拠とします。
 - **ディスパッチ完了数**: `dispatcher.completed: 69` は、トンネル経由で処理された全ライフサイクルイベント（`initialize`: 23、`notifications/initialized`: 21、`tools/call`: 19、`resources/read`: 4、`tools/list`: 1、`server/discover`: 1）の総計です。「69件すべてが HTTP 200 成功」という意味ではなく、後述する累積 HTTP 409（2件）とは別に厳格に集計・記録しています。
 
 ---
 
-### 3.4. CSP とセキュリティ境界の誠実な開示
+#### 画面表示と検証境界の開示（CSPオフ・累積409）
 
-- **ChatGPT UI 上の「CSPオフ」表示について**:  
-  ChatGPT 画面の右上（キャプチャ参照）に「CSPオフ」というバッジが表示されています。これはホストである ChatGPT 側のプレビュー環境における表示であり、当サーバーが CSP を無効化したものではありません。サーバー側マニフェストでは `connectDomains: []`, `resourceDomains: []` を厳格に宣言していますが、ChatGPT 内部のサンドボックス分離の実態はクライアント管理外であるため、これを以て安全性を過大評価せず、検証境界として明記します。
+- **ChatGPT UI 上の「CSPオフ」バッジ表示について**:
+  ChatGPT 画面の右上（キャプチャ参照）に「CSPオフ」というバッジが表示されていることを観測事実として記録しています。当サーバーのメタデータ定義では `connectDomains: []`, `resourceDomains: []` を宣言していますが、この表示の技術的理由やホスト側の保護状態については推測を行わず、安全性の根拠として扱わない検証境界として明記します。
 - **累積 HTTP 409 Conflict（2件）の継続記録**:  
-  トンネル初期稼働時に発生した累積 2 件の HTTP 409 Conflict については、個別リクエストのエラー本文・相関 ID が不足しているため、**原因未特定（既知事項）** として継続記録しています。OpenAI 公式 Tunnel Client では stdio 初期化未完了時のツール呼び出し等で 409 が返ることが報告されています。本実機検証において新たな失敗は 0 件であり、Gate B 機能受入合格を妨げるものではありませんが、本番運用の完全な信頼性が実証されたという意味ではありません。
+  トンネル稼働中に記録された累積 2 件の HTTP 409 Conflict については、個別リクエストのエラー本文や相関 ID が取得できないため、**原因未特定（既知事項）** として継続記録しています（初期化順序やプロトコルレースコンディション等の可能性が考えられるものの、特定には至っていません）。本実機検証において新たな失敗は 0 件であり、Gate B 機能受入合格を妨げるものではありませんが、本番運用の完全な信頼性が実証されたという意味ではありません。
 
 ---
 
-## 4. アーキテクチャ解説 (Technical Deep Dive)
+## 3. アーキテクチャ解説 (Technical Deep Dive)
 
 JP Bids MCP は、公式仕様に忠実な設計と厳格な責任境界を採用しています。
 
@@ -199,53 +201,61 @@ MCP Apps 仕様では、UI（sandboxed iframe）はサーバープロセスと�
 
 また、UI バインディング情報である `_meta.ui.resourceUri` はツールの登録時メタデータ（定義情報）であり、Host は初期化時の `tools/list` 等によって事前に発見・キャッシュします。実際のツール実行（`tools/call search_bids_app`）における返却値は `content`（要約テキスト）と `structuredContent`（構造化検索結果）です。
 
-検索結果データを受け取った後のワークスペース状態管理およびビューモデル変換（`App State & ViewModel Mapping`）は、サーバープロセスではなく **React UI（`src/apps/search-results.tsx` / `bid-workspace-view-model.ts`）側のクライアント責務** として実行されます。同一のサーバーおよび UI バンドルが、異なる 2 つのホスト環境でシームレスに機能します。
+検索結果データを受け取った後のワークスペース状態管理およびビューモデル変換（`App State & ViewModel Mapping`）は、サーバープロセスではなく **React UI（`src/apps/search-results.tsx` / `bid-workspace-view-model.ts`）側のクライアント責務** として実行されます。
+
+Claude Desktop と ChatGPT の双方が、それぞれ独立した stdio サーバープロセスを起動しながら、同一のリポジトリコードベースとインライン UI バンドルを共有します。また、OpenAI Secure MCP Tunnel 方式におけるローカル `tunnel-client` と OpenAI 制御プレーン間の通信は、WebSocket ではなく公式プロトコル仕様に基づく HTTPS ロングポーリング（`GET /request`）および応答 POST（`POST /response`）により行われます。
 
 ```mermaid
 flowchart TB
-  subgraph HostA["MCP Host A: Claude Desktop (ローカル実行)"]
+  subgraph Shared["同一 JP Bids MCP コードベース & UI バンドル (共通資産)"]
+    Codebase["JP Bids MCP 実装\n(7 Tools & ui://jp-bids/search-results.html)"]
+  end
+
+  subgraph ClientA["検証環境 A: Claude Desktop (ローカル実行)"]
     ChatA["LLM Chat Interface"]
-    HostBrokerA["Host Protocol Broker\n(Claude Desktop stdio)"]
-    subgraph UIContainerA["Sandboxed iframe (Claude Desktop)"]
+    HostA["MCP Host Broker (Claude Desktop)"]
+    subgraph UIContainerA["Sandboxed iframe A"]
       ReactAppA["React UI App (AI Bid Workspace)"]
     end
-    ChatA <--> HostBrokerA
-    HostBrokerA <--> ReactAppA
+    ServerA["独立 Node.js stdio サーバープロセス A"]
+
+    ChatA <--> HostA
+    HostA <--"window.postMessage"--> ReactAppA
+    HostA <=="stdio (JSON-RPC 2.0)"==> ServerA
   end
 
-  subgraph HostB["MCP Host B: ChatGPT (クラウド + Secure Tunnel)"]
+  subgraph ClientB["検証環境 B: ChatGPT (Secure MCP Tunnel 経由)"]
     ChatB["ChatGPT Web Interface"]
-    TunnelCloud["OpenAI Secure Tunnel Control Plane"]
-    TunnelClient["tunnel-client (Local Agent)"]
-    subgraph UIContainerB["Sandboxed iframe (ChatGPT)"]
+    HostB["MCP Host Broker (ChatGPT Web)"]
+    subgraph UIContainerB["Sandboxed iframe B"]
       ReactAppB["React UI App (AI Bid Workspace)"]
     end
-    ChatB <--> TunnelCloud
-    TunnelCloud <== "Encrypted WebSocket Tunnel" ==> TunnelClient
-    TunnelClient <--> ReactAppB
+    TunnelCloud["OpenAI Tunnel Control Plane"]
+    TunnelClient["ローカル tunnel-client (Go Agent)"]
+    ServerB["独立 Node.js stdio サーバープロセス B"]
+
+    ChatB <--> HostB
+    HostB <--"window.postMessage"--> ReactAppB
+    HostB <--> TunnelCloud
+    TunnelCloud -- "HTTPS Long-Polling (GET /request)" --> TunnelClient
+    TunnelClient -- "HTTPS Response (POST /response)" --> TunnelCloud
+    TunnelClient <=="stdio child process (JSON-RPC 2.0)"==> ServerB
   end
 
-  subgraph Server["JP Bids MCP Server Process (Node.js)"]
-    Stdio["StdioServerTransport (JSON-RPC 2.0)"]
-    Tools["Tools Registry (7 Tools)\n(_meta.ui.resourceUri in tool definition)"]
-    Resources["Resources Registry\n(ui://jp-bids/search-results.html)"]
-    Stdio <--> Tools
-    Stdio <--> Resources
+  subgraph DataLayer["ローカルオフラインモック"]
+    Fixture["tests/fixtures/kkj-search.xml (KKJ-TEST-001)"]
+    FetchGuard["Application Fetch Guard"]
   end
 
-  subgraph DataLayer["Offline Mock / Local Fixtures"]
-    Fixture["tests/fixtures/kkj-search.xml\n(Local XML Fixture)"]
-    FetchGuard["Application Fetch Guard\n(Blocks External Traffic)"]
-    Tools <--> Fixture
-  end
-
-  HostBrokerA <== "stdio" ==> Stdio
-  TunnelClient <== "stdio child process" ==> Stdio
+  Codebase -.-> ServerA
+  Codebase -.-> ServerB
+  ServerA <--> Fixture
+  ServerB <--> Fixture
 ```
 
 ---
 
-### 4.1. MCP SDK によるツール登録と公開 7 ツール
+### 3.1. MCP SDK によるツール登録と公開 7 ツール
 
 JP Bids MCP の公開 MVP プロファイルでは、`@modelcontextprotocol/sdk`（v1.32.1）の `McpServer` クラスを利用してツールを登録しています。
 
@@ -263,7 +273,7 @@ JP Bids MCP の公開 MVP プロファイルでは、`@modelcontextprotocol/sdk`
 
 ---
 
-### 4.2. MCP Apps 拡張仕様の実装 (`@modelcontextprotocol/ext-apps`)
+### 3.2. MCP Apps 拡張仕様の実装 (`@modelcontextprotocol/ext-apps`)
 
 MCP Apps は、クライアント（Host）とサーバー間でセキュアに対話型 UI を共有するための仕様です。
 
@@ -338,7 +348,7 @@ registerAppResource(
 
 ---
 
-### 4.3. フロントエンド設計: 単一 HTML バンドルと双方向通信
+### 3.3. フロントエンド設計: 単一 HTML バンドルと双方向通信
 
 Claude Desktop や ChatGPT のようなサンドボックス環境で動作させるため、フロントエンド（React 19）は以下の構成をとっています。
 
@@ -366,18 +376,24 @@ function App() {
     }
   }
 
-  async function handleSendExtractPrompt(bidKey: string) {
-    // UI から Host のチャットへメッセージを連携
-    await app.sendMessage({
-      text: `案件 ${bidKey} の入札参加要件と提出書類を抽出してください。`,
-    });
+  async function handleSendExtractPrompt(promptText: string) {
+    // Host のメッセージ送信機能宣言（message.text）を確認した上で連携
+    if (app?.getHostCapabilities()?.message?.text) {
+      const result = await app.sendMessage({
+        role: "user",
+        content: [{ type: "text", text: promptText }],
+      });
+      if (!result.isError) {
+        setActionMessage("要件抽出リクエストをchatへ送信しました。");
+      }
+    }
   }
 }
 ```
 
 ---
 
-### 4.4. オフラインモックと安全設計 (`examples/mock-stdio-server.mjs`)
+### 3.4. オフラインモックと安全設計 (`examples/mock-stdio-server.mjs`)
 
 外部開発者が実環境と同じ体験を安全に検証できるよう、リポジトリには専用のモック stdio サーバーが同梱されています。
 
@@ -387,7 +403,7 @@ function App() {
 
 ---
 
-## 5. 客観的検証結果 (Verification Matrix)
+## 4. 客観的検証結果 (Verification Matrix)
 
 信頼性の高いオープンソース公開のため、各検証レイヤーの結果を厳格に区分して管理しています。
 
@@ -396,7 +412,8 @@ function App() {
 | **自動テスト** | 単体・結合・プロトコル検証 | **PASS** | Vitest 24 テストファイル / **190 テスト全件合格** |
 | **型検査 & 静的解析** | TypeScript / Biome | **PASS** | `npm run build` (tsc) エラー 0 件 |
 | **ドキュメント整合** | TypeDoc API ドキュメント生成 | **PASS** | `npm run docs:check` 合格（型定義・APIリファレンス整合） |
-| **GitHub Actions** | CI / CodeQL / Dependency Review | **PASS** | 全ワークフロー GREEN ([CI Run #38226024891](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/actions)) |
+| **GitHub Actions (main)** | CI / CodeQL / Dependency Review | **PASS** | 過去 main 検証 GREEN ([CI Run #38226024891](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/actions)) |
+| **GitHub Actions (PR #10)** | CI check / CodeQL / Review | **更新中** | CodeQL・Dependency Review PASS / check ジョブ（TypeDoc 同期）対応中 |
 | **セキュリティ監査** | 実行時依存パッケージ脆弱性 | **0件** | `npm audit --omit=dev` 検出 0 件 (MCP SDK 1.32.1 / Hono 4.13.13) |
 | **クリーン環境検証** | 新規ディレクトリでのクローン・ビルド | **PASS** | `jp-bids-mcp-clean-verify` でのビルド (125ms) & stdio 疎通 |
 | **Claude Desktop 実機** | M1〜M3-B の GUI 操作・UI 描画 | **PASS** | ユーザー実操作および本 Showcase 掲載スクリーンショット (01〜04) |
@@ -408,7 +425,7 @@ function App() {
 
 ---
 
-## 6. 再現手順 (Quick Start for Developers)
+## 5. 再現手順 (Quick Start for Developers)
 
 外部の開発者が自身のローカル環境でこのデモを再現するための最短手順です。
 
@@ -470,7 +487,7 @@ Claude Desktop の設定ファイル（`claude_desktop_config.json`）に、モ�
 
 ---
 
-## 7. 公開表現と免責事項 (Transparency & Disclaimer)
+## 6. 公開表現と免責事項 (Transparency & Disclaimer)
 
 1. **実入札データとの関係**: 本 Showcase に掲載されているスクリーンショットおよびデモデータは、すべてオフライン XML フィクスチャ（`tests/fixtures/kkj-search.xml`）に基づく模擬データです。官公需情報ポータルサイトからリアルタイムに取得した最新の入札案件ではありません。
 2. **公式認定に関する注記**: 本リポジトリはオープンソースの Model Context Protocol 仕様に基づいて独自に開発されたものであり、Anthropic 社、OpenAI 社、または中小企業庁による公式認定、推薦、または提携を意味するものではありません。
@@ -479,7 +496,7 @@ Claude Desktop の設定ファイル（`claude_desktop_config.json`）に、モ�
 
 ---
 
-## 8. 公式仕様および参照リンク (References)
+## 7. 公式仕様および参照リンク (References)
 
 - **Model Context Protocol (MCP) Official Specification**:  
   https://spec.modelcontextprotocol.io/specification/
@@ -491,5 +508,7 @@ Claude Desktop の設定ファイル（`claude_desktop_config.json`）に、モ�
   https://developers.openai.com/plugins/build/plugins
 - **OpenAI Secure MCP Tunnels Guide**:  
   https://developers.openai.com/api/docs/guides/secure-mcp-tunnels
+- **OpenAI Tunnel Client Protocol Specification**:
+  https://github.com/openai/tunnel-client/blob/master/docs/protocol.md
 - **中小企業庁 官公需情報ポータルサイト (KKJ)**:  
   http://www.kkj.go.jp/
