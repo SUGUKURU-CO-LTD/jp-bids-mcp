@@ -10,4 +10,4 @@
 //
 // Saat diperbarui, sinkronkan juga package.json, server.json, dan .well-known/*.json
 // ke nilai yang sama (konsistensi diberlakukan oleh CI).
-export const VERSION = "0.9.0";
+export const VERSION = "0.10.0";

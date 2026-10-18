@@ -1,6 +1,6 @@
 {
   "name": "JP Bids",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "日本の官公需公告をMCPで検索・順位付け・要件抽出・出力する（完全無料・読み取り中心・7ツール）。Search, rank, extract requirements, and export Japanese public procurement notices through MCP (free, read-centric, 7 tools).",
   "homepage": "https://mcp.bid-jp.com",
   "repository": "https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp",

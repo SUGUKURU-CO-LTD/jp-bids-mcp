@@ -7,12 +7,12 @@
     "url": "https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp",
     "source": "github"
   },
-  "version": "0.9.0",
+  "version": "0.10.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "jp-bids-mcp",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "transport": {
         "type": "stdio"
       }
