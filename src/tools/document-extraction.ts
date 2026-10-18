@@ -10,7 +10,6 @@ import {
   VertexGeminiClient,
 } from "../api/vertex-gemini-client.js";
 import type { BidRequirementExtraction, ExtractedBidRequirements } from "../domain/bid.js";
-import { isBillingEnabled, recordPdfExtractionUsage } from "../lib/billing.js";
 import type { ServerProfile } from "../lib/profile.js";
 
 export type DocumentExtractionMode = "off" | "vertex";
@@ -92,7 +91,7 @@ export async function enrichWithDocumentExtraction(
   server: McpServer,
   extraction: BidRequirementExtraction,
   targetUris: string[] | undefined,
-  stripeCustomerId?: string,
+  _stripeCustomerId?: string,
   profile: ServerProfile = "public_mvp",
   vertexClient?: VertexGeminiClient,
 ): Promise<BidRequirementExtraction> {
@@ -222,14 +221,6 @@ export async function enrichWithDocumentExtraction(
         "fetch_documents=true でしたが、対象書類を取得できなかったため、公告メタデータのみで生成しました。",
       ],
     };
-  }
-
-  // F03: In public_mvp, Stripe billing is strictly disabled regardless of env variables
-  if (profile !== "public_mvp") {
-    const billingCustomerId = stripeCustomerId ?? process.env.STRIPE_DEFAULT_CUSTOMER_ID;
-    if (isBillingEnabled() && billingCustomerId) {
-      void recordPdfExtractionUsage(billingCustomerId);
-    }
   }
 
   const extractedFromDocuments = documents.map((document) => ({
