@@ -161,12 +161,23 @@ Once published to the npm registry, execution will be available directly via `np
 npx -y jp-bids-mcp
 ```
 
-### 2. Remote Streamable HTTP Endpoint
-Once the hosted environment is deployed, remote MCP clients (Claude.ai, ChatGPT, etc.) will connect via OAuth 2.0:
+### 2. Remote Streamable HTTP Endpoint (Claude / ChatGPT)
+In hosted environments, remote MCP clients connect via OAuth 2.0:
 ```text
 https://mcp.bid-jp.com/mcp
 ```
 *(Requires OAuth 2.0 with Dynamic Client Registration + PKCE S256).*
+
+> [!NOTE]
+> **Remote Connection Verification Status (2026-10-20 JST)**
+> - **Protocol Verification on Canonical URL**:
+>   On the canonical URL (`https://mcp.bid-jp.com/mcp`), OAuth authorization, MCP session initialization, 7 tool definitions retrieval, and UI resource retrieval (`ui://jp-bids/search-results.html`) were verified successfully.
+> - **Claude Custom Connection Verification**:
+>   In Claude, adding a custom connector and specifying the URL confirmed recognition of the 7 tool definitions (`search_bids`, `list_recent_bids`, `get_bid_detail`, `rank_bids`, `extract_bid_requirements`, `export_bid_shortlist`, `search_bids_app`).
+> - **Existing Connection vs. Custom Connection**:
+>   In the test environment, the existing connection only recognized 4 tools, whereas the new custom connection recognized all 7 tools. The root cause for this difference is currently under investigation.
+> - **Out of Scope for This Verification**:
+>   Execution of business tools, live KKJ API network communication, in-app UI rendering, and ChatGPT connection were out of scope for this verification.
 
 ---
 
