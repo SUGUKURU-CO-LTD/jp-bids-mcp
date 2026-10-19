@@ -11,7 +11,7 @@ import { capSearchResult } from "./search-bids.js";
 
 const inputSchema = {
   prefecture: PrefectureNameSchema.optional().describe("都道府県名で絞り込む。例: 鹿児島県。"),
-  category: CategorySchema.optional().describe("入札区分。物品、役務、工事、その他。"),
+  category: CategorySchema.optional().describe("入札区分。物品・工事・役務。"),
   days: z
     .number()
     .int()

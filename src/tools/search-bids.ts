@@ -25,9 +25,9 @@ export const searchBidsInputSchema = {
     .union([PrefectureNameSchema, z.array(PrefectureNameSchema)])
     .optional()
     .describe("都道府県名で絞り込む。配列で複数指定可。例: 鹿児島県、東京都。"),
-  category: CategorySchema.optional().describe("入札区分。物品、役務、工事、その他。"),
+  category: CategorySchema.optional().describe("入札区分。物品・工事・役務。"),
   procedure_type: ProcedureTypeSchema.optional().describe(
-    "公示種別。一般競争入札、指名競争入札、随意契約など。",
+    "公示種別。一般競争入札・簡易公募型競争入札・簡易公募型指名競争入札。",
   ),
   certification: z
     .array(CertificationSchema)
