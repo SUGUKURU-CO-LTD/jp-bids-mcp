@@ -154,12 +154,23 @@ npm レジストリへの公開後は、`npx` コマンドで直接実行可能�
 npx -y jp-bids-mcp
 ```
 
-### 2. リモート Streamable HTTP エンドポイント
-ホスティング環境へのデプロイ完了後は、リモートMCPクライアント（Claude.ai、ChatGPT等）から OAuth 2.0 経由で接続可能になります：
+### 2. リモート Streamable HTTP エンドポイント（Claude / ChatGPT）
+ホスティング環境において、リモートMCPクライアントから OAuth 2.0 経由で接続可能です：
 ```text
 https://mcp.bid-jp.com/mcp
 ```
-*(Dynamic Client Registration + PKCE S256 による OAuth 2.0 認可が必要です)*
+*(Dynamic Client Registration + PKCE S256 による OAuth 2.0 認可に対応)*
+
+> [!NOTE]
+> **リモート接続の確認状況（2026-10-20 JST）**
+> - **正規URLでのプロトコル確認**:
+>   正規URL（`https://mcp.bid-jp.com/mcp`）において、OAuth 認可、MCP セッション初期化、7ツールの定義取得、および UI リソース（`ui://jp-bids/search-results.html`）の取得が成功することを確認済みです。
+> - **Claude での接続確認**:
+>   Claude にて「カスタムコネクタを追加し、URLを指定」する新規カスタム接続において、公開 7 ツール（`search_bids`, `list_recent_bids`, `get_bid_detail`, `rank_bids`, `extract_bid_requirements`, `export_bid_shortlist`, `search_bids_app`）の定義認識を確認しました。
+> - **既存接続とディレクトリの状況**:
+>   今回の既存接続では 4 ツールのみ認識され、新規カスタム接続では 7 ツールを認識しました。この差異の原因については調査中です。
+> - **今回の検証対象外事項**:
+>   業務ツール実行、実 KKJ 通信、UI 描画、および ChatGPT 接続は今回の検証対象外（未検証）です。
 
 ---
 
