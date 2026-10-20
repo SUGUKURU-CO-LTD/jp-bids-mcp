@@ -115,10 +115,7 @@ describe("CSV Pipeline Fidelity & Pass-through Verification (No External Calls)"
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
     await server.connect(serverTransport);
 
-    const client = new Client(
-      { name: "test-client", version: "1.0.0" },
-      { capabilities: {} },
-    );
+    const client = new Client({ name: "test-client", version: "1.0.0" }, { capabilities: {} });
     await client.connect(clientTransport);
 
     try {
@@ -229,10 +226,7 @@ describe("CSV Pipeline Fidelity & Pass-through Verification (No External Calls)"
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
     await server.connect(serverTransport);
 
-    const client = new Client(
-      { name: "test-client", version: "1.0.0" },
-      { capabilities: {} },
-    );
+    const client = new Client({ name: "test-client", version: "1.0.0" }, { capabilities: {} });
     await client.connect(clientTransport);
 
     try {
@@ -272,4 +266,3 @@ describe("CSV Pipeline Fidelity & Pass-through Verification (No External Calls)"
     }
   });
 });
-

@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { createAttribution } from "../../src/domain/attribution.js";
 import type { Bid, BidSearchResult } from "../../src/domain/bid.js";
 import { rankBid, rankBidSearchResult, rankSelectionBids } from "../../src/domain/bid-ranking.js";
 import { exportBidShortlist } from "../../src/domain/bid-shortlist.js";
-import { createAttribution } from "../../src/domain/attribution.js";
 
 const multiOrgBids: Bid[] = [
   {
@@ -130,7 +130,9 @@ describe("Multi-Organization Reason & Parity Defense", () => {
 
       // Simple CSV split (note: fit_reasons is quoted)
       const matches = [...line.matchAll(/(?:^|,)(?:"([^"]*(?:""[^"]*)*)"|([^",]*))/g)];
-      const cells = matches.map((m) => (m[1] !== undefined ? m[1].replaceAll('""', '"') : (m[2] ?? "")));
+      const cells = matches.map((m) =>
+        m[1] !== undefined ? m[1].replaceAll('""', '"') : (m[2] ?? ""),
+      );
 
       const orgName = cells[orgColIdx];
       const fitReasons = cells[reasonsColIdx];
