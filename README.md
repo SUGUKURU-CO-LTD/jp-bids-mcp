@@ -169,15 +169,15 @@ https://mcp.bid-jp.com/mcp
 *(Requires OAuth 2.0 with Dynamic Client Registration + PKCE S256).*
 
 > [!NOTE]
-> **Remote Connection Verification Status (2026-10-20 JST)**
-> - **Protocol Verification on Canonical URL**:
->   On the canonical URL (`https://mcp.bid-jp.com/mcp`), OAuth authorization, MCP session initialization, 7 tool definitions retrieval, and UI resource retrieval (`ui://jp-bids/search-results.html`) were verified successfully.
-> - **Claude Custom Connection Verification**:
->   In Claude, adding a custom connector and specifying the URL confirmed recognition of the 7 tool definitions (`search_bids`, `list_recent_bids`, `get_bid_detail`, `rank_bids`, `extract_bid_requirements`, `export_bid_shortlist`, `search_bids_app`).
-> - **Existing Connection vs. Custom Connection**:
->   In the test environment, the existing connection only recognized 4 tools, whereas the new custom connection recognized all 7 tools. The root cause for this difference is currently under investigation.
-> - **Out of Scope for This Verification**:
->   Execution of business tools, live KKJ API network communication, in-app UI rendering, and ChatGPT connection were out of scope for this verification.
+> **Remote Connection Verification & Standard Workflow (2026-10-21 JST)**
+> - **Connection, OAuth 2.0 & Pricing**:
+>   Register `https://mcp.bid-jp.com/mcp` as a custom connector in Claude. Completing OAuth 2.0 authorization grants access to all 7 public tools. JP Bids MCP is free to use (AI client usage fees may apply separately).
+> - **Standard Workflow (CSV Export)**:
+>   **Search** (`search_bids_app` to retrieve notices and display UI) → **Select candidates via checkboxes** → Click **"選択CSV"** → **Obtain CSV** (16-column CSV data)
+> - **CSV Verification & Host Environment Behavior**:
+>   In this verification, we obtained a CSV file containing two selected bid notices and verified the correspondence between the notices, issuing agencies, and reasons. The specific action following the "選択CSV" click (such as triggering a file download dialog or copying to clipboard) depends on the host AI client and OS environment. Retrieve the CSV data according to your client's supported mechanism without assuming a specific action.
+> - **Official Source Verification**:
+>   This tool organizes public procurement metadata and official document URLs. Always verify bidding qualifications, submission deadlines, and formal specifications directly against the official tender notices published by the contracting authority.
 
 ---
 

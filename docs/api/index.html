@@ -159,16 +159,16 @@ If script execution is restricted by PowerShell policy (<code>PSSecurityExceptio
 
 <p><em>(Requires OAuth 2.0 with Dynamic Client Registration + PKCE S256).</em></p>
 <div class="tsd-alert tsd-alert-note"><div class="tsd-alert-title"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><use href="assets/icons.svg#icon-alertNote"></use></svg><span>Note</span></div><p>
-<strong>Remote Connection Verification Status (2026-10-20 JST)</strong></p>
+<strong>Remote Connection Verification &amp; Standard Workflow (2026-10-21 JST)</strong></p>
 <ul>
-<li><strong>Protocol Verification on Canonical URL</strong>:
-On the canonical URL (<code>https://mcp.bid-jp.com/mcp</code>), OAuth authorization, MCP session initialization, 7 tool definitions retrieval, and UI resource retrieval (<code>ui://jp-bids/search-results.html</code>) were verified successfully.</li>
-<li><strong>Claude Custom Connection Verification</strong>:
-In Claude, adding a custom connector and specifying the URL confirmed recognition of the 7 tool definitions (<code>search_bids</code>, <code>list_recent_bids</code>, <code>get_bid_detail</code>, <code>rank_bids</code>, <code>extract_bid_requirements</code>, <code>export_bid_shortlist</code>, <code>search_bids_app</code>).</li>
-<li><strong>Existing Connection vs. Custom Connection</strong>:
-In the test environment, the existing connection only recognized 4 tools, whereas the new custom connection recognized all 7 tools. The root cause for this difference is currently under investigation.</li>
-<li><strong>Out of Scope for This Verification</strong>:
-Execution of business tools, live KKJ API network communication, in-app UI rendering, and ChatGPT connection were out of scope for this verification.</li>
+<li><strong>Connection, OAuth 2.0 &amp; Pricing</strong>:
+Register <code>https://mcp.bid-jp.com/mcp</code> as a custom connector in Claude. Completing OAuth 2.0 authorization grants access to all 7 public tools. JP Bids MCP is free to use (AI client usage fees may apply separately).</li>
+<li><strong>Standard Workflow (CSV Export)</strong>:
+<strong>Search</strong> (<code>search_bids_app</code> to retrieve notices and display UI) → <strong>Select candidates via checkboxes</strong> → Click <strong>&quot;選択CSV&quot;</strong> → <strong>Obtain CSV</strong> (16-column CSV data)</li>
+<li><strong>CSV Verification &amp; Host Environment Behavior</strong>:
+In this verification, we obtained a CSV file containing two selected bid notices and verified the correspondence between the notices, issuing agencies, and reasons. The specific action following the &quot;選択CSV&quot; click (such as triggering a file download dialog or copying to clipboard) depends on the host AI client and OS environment. Retrieve the CSV data according to your client's supported mechanism without assuming a specific action.</li>
+<li><strong>Official Source Verification</strong>:
+This tool organizes public procurement metadata and official document URLs. Always verify bidding qualifications, submission deadlines, and formal specifications directly against the official tender notices published by the contracting authority.</li>
 </ul>
 </div>
 <hr>
