@@ -6,7 +6,7 @@ import { createAttribution } from "../../src/domain/attribution.js";
 import type { Bid, BidSearchResult } from "../../src/domain/bid.js";
 import { createJpBidsServer } from "../../src/mcp.js";
 
-// RFC 4180 compliant CSV parser for test assertions
+// Test utility CSV parser handling quotes, escaped quotes, commas, and newlines (for row and cell inspection)
 function parseCsvRows(csvText: string): string[][] {
   const clean = csvText.startsWith("\ufeff") ? csvText.slice(1) : csvText;
   const rows: string[][] = [];
@@ -94,7 +94,7 @@ const mockBids: Bid[] = [
 ];
 
 describe("CSV Pipeline Fidelity & Pass-through Verification (No External Calls)", () => {
-  it("CPF-01: MCP export_bid_shortlist response fidelity and exact UI pass-through match", async () => {
+  it("CPF-01: MCP export_bid_shortlist search-mode response fidelity and simulated BOM pass-through", async () => {
     // Setup Mock KKJ Client (Returns deterministic mock data without network)
     const mockSearchResult: BidSearchResult = {
       searchHits: mockBids.length,
@@ -119,7 +119,7 @@ describe("CSV Pipeline Fidelity & Pass-through Verification (No External Calls)"
     await client.connect(clientTransport);
 
     try {
-      // 1. Call export_bid_shortlist via MCP
+      // 1. Call export_bid_shortlist via MCP in search mode
       const result = await client.callTool({
         name: "export_bid_shortlist",
         arguments: {
@@ -142,22 +142,26 @@ describe("CSV Pipeline Fidelity & Pass-through Verification (No External Calls)"
       expect(typeof structured.csv).toBe("string");
       const rawServerCsv = structured.csv as string;
 
-      // 2. Verify UI Pass-Through Logic (search-results.tsx: handleDownloadCsv)
-      // UI transforms raw CSV by adding UTF-8 BOM if not already present
-      const uiDownloadText = rawServerCsv.startsWith("\ufeff")
+      // 2. Simulated BOM Pass-Through Verification (simulating search-results.tsx handleExportBids)
+      // NOTE: This verifies string handling and BOM attachment logic in isolation, NOT actual browser UI or dialog interactions.
+      const simulatedDownloadText = rawServerCsv.startsWith("\ufeff")
         ? rawServerCsv
         : `\ufeff${rawServerCsv}`;
 
       // Strict equality: removing BOM reproduces exact server CSV string
-      expect(uiDownloadText.slice(1)).toBe(rawServerCsv);
+      expect(simulatedDownloadText.slice(1)).toBe(rawServerCsv);
 
       // Verify line break encoding: exactly LF (\n)
       expect(rawServerCsv).not.toContain("\r\n");
       expect(rawServerCsv.split("\n").length).toBe(mockBids.length + 1); // 1 header + 3 data
 
-      // 3. RFC 4180 Parse Verification for exact key-to-organization mapping
+      // 3. 16-column structure, row count, and key-to-organization mapping inspection
       const rows = parseCsvRows(rawServerCsv);
       const header = rows[0];
+
+      // Verify header has exactly 16 columns
+      expect(header.length).toBe(16);
+
       const keyCol = header.indexOf("key");
       const orgCol = header.indexOf("organization_name");
       const reasonsCol = header.indexOf("fit_reasons");
@@ -167,7 +171,18 @@ describe("CSV Pipeline Fidelity & Pass-through Verification (No External Calls)"
       expect(reasonsCol).toBeGreaterThanOrEqual(0);
 
       const dataRows = rows.slice(1);
+      // Verify data row count matches expected count
       expect(dataRows.length).toBe(mockBids.length);
+
+      // Verify each data row has exactly 16 columns
+      for (const row of dataRows) {
+        expect(row.length).toBe(16);
+      }
+
+      // Verify bid keys match expected keys in order
+      const expectedKeys = mockBids.map((b) => b.key);
+      const actualKeys = dataRows.map((r) => r[keyCol]);
+      expect(actualKeys).toEqual(expectedKeys);
 
       for (const row of dataRows) {
         const key = row[keyCol];
@@ -210,14 +225,23 @@ describe("CSV Pipeline Fidelity & Pass-through Verification (No External Calls)"
   });
 
   it("CPF-02: Selection mode (bid_refs) export fidelity across mixed organizations", async () => {
-    const { signBidRef } = await import("../../src/domain/bid-ref.js");
+    const originalSecret = process.env.JP_BIDS_OAUTH_SECRET;
     process.env.JP_BIDS_OAUTH_SECRET = "test-secret-at-least-32-bytes-long-for-signing";
+
+    const { signBidRef } = await import("../../src/domain/bid-ref.js");
 
     const refMof = signBidRef(mockBids[0]);
     const refMod = signBidRef(mockBids[1]);
     const refEnv = signBidRef(mockBids[2]);
 
+    let kkjSearchCalls = 0;
     const kkjClient = new KkjClient();
+    // Replace search method with non-network mock that fails if unexpectedly called
+    kkjClient.search = async () => {
+      kkjSearchCalls++;
+      throw new Error("kkjClient.search must not be called during selection mode export");
+    };
+
     const server = createJpBidsServer({
       kkjClient,
       profile: "public_mvp",
@@ -240,13 +264,40 @@ describe("CSV Pipeline Fidelity & Pass-through Verification (No External Calls)"
       });
 
       expect(result.isError).toBeFalsy();
+
+      // Ensure search method was not called at all (0 network/search calls)
+      expect(kkjSearchCalls).toBe(0);
+
       const structured = result.structuredContent as { csv?: string };
       const rawCsv = structured.csv as string;
 
       const rows = parseCsvRows(rawCsv);
       const header = rows[0];
+
+      // Verify header has exactly 16 columns
+      expect(header.length).toBe(16);
+
+      const keyCol = header.indexOf("key");
       const orgCol = header.indexOf("organization_name");
       const reasonsCol = header.indexOf("fit_reasons");
+
+      expect(keyCol).toBeGreaterThanOrEqual(0);
+      expect(orgCol).toBeGreaterThanOrEqual(0);
+      expect(reasonsCol).toBeGreaterThanOrEqual(0);
+
+      const dataRows = rows.slice(1);
+      // Verify data count matches the 3 selected items
+      expect(dataRows.length).toBe(3);
+
+      // Verify each data row has exactly 16 columns
+      for (const row of dataRows) {
+        expect(row.length).toBe(16);
+      }
+
+      // Verify candidate keys match the expected selection order
+      const expectedSelectionKeys = ["key_env_1", "key_mod_1", "key_mof_1"];
+      const actualSelectionKeys = dataRows.map((r) => r[keyCol]);
+      expect(actualSelectionKeys).toEqual(expectedSelectionKeys);
 
       // Verify row 1 (Env)
       expect(rows[1][orgCol]).toBe("環境省");
@@ -263,6 +314,12 @@ describe("CSV Pipeline Fidelity & Pass-through Verification (No External Calls)"
     } finally {
       await client.close();
       await server.close();
+      // Reliably restore original environment variable
+      if (originalSecret === undefined) {
+        delete process.env.JP_BIDS_OAUTH_SECRET;
+      } else {
+        process.env.JP_BIDS_OAUTH_SECRET = originalSecret;
+      }
     }
   });
 });
