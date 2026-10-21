@@ -10,7 +10,7 @@ Server MCP untuk mencari, memeringkat, mengekstrak persyaratan, dan mengekspor p
 
 > **完全無料・読み取り中心 / Free and Read-Centric**<br>
 > 会員登録・有料プランなしで全公開機能（7ツール）を無料で利用できます。Stripe等の課金呼出しは行いません。<br>
-> All 7 public tools are available for free without subscription or paid tiers.
+> All 7 public tools are available for free without subscription or paid tiers. AI client usage fees may apply separately.
 
 ---
 
@@ -18,11 +18,11 @@ Server MCP untuk mencari, memeringkat, mengekstrak persyaratan, dan mengekspor p
 
 | Channel / 項目 | Status / 状態 | Description / 内容 |
 |---|:---:|---|
-| **GitHub Open Source** | **Active (公開中)** | [SUGUKURU-CO-LTD/jp-bids-mcp](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp) (Apache 2.0). 190 tests (24 files), CI/CodeQL pass, reproducible offline mock demo. |
+| **GitHub Open Source** | **Active (公開中)** | [SUGUKURU-CO-LTD/jp-bids-mcp](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp) (Apache 2.0). See the CI/CodeQL badges for automated checks; a reproducible offline mock demo is included. |
 | **Local Mock & Cross-Client** | **Verified (実証済)** | Offline M1–M3-B (Claude Desktop stdio) & Gate B (ChatGPT Secure Tunnel) verification (7 tools, MCP Apps UI, bidirectional tool calls). |
-| **npm Package** | **Planned (準備中)** | Packaging (`npm pack`) validated; publication (`jp-bids-mcp`) pending separate release approval. |
+| **npm Package** | **Published (公開済み)** | [`jp-bids-mcp@0.10.0`](https://www.npmjs.com/package/jp-bids-mcp) is published. Package availability and live client verification are tracked separately. |
 | **Official MCP Registry** | **Planned (準備中)** | Namespace `io.github.SUGUKURU-CO-LTD/jp-bids` configured; registry listing pending separate approval. |
-| **Remote MCP Endpoint** | **Planned (準備中)** | Streamable HTTP endpoint (`https://mcp.bid-jp.com/mcp`) planned for hosted deployments. |
+| **Remote MCP Endpoint** | **Available (提供中)** | `https://mcp.bid-jp.com/mcp` supports OAuth authorization. Live search, initial UI, snapshot detail, and a two-notice selected CSV were verified on Claude's production custom connection. |
 
 > 💡 **Public Technical Showcase / 実機デモ技術解説**:  
 > Claude Desktop および ChatGPT 内で動作する MCP Apps 対話型ワークスペースの実機スクリーンショット、アーキテクチャ解説、および再現手順は [**docs/showcase/README.md**](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/blob/main/docs/showcase/README.md) をご覧ください。<br>
@@ -30,10 +30,29 @@ Server MCP untuk mencari, memeringkat, mengekstrak persyaratan, dan mengekspor p
 
 ---
 
-## Current Verification Status / 検証状況
+## Start with Claude / Claudeで使い始める
+
+1. Open **Customize → Connectors** in Claude and add a custom connector with URL `https://mcp.bid-jp.com/mcp`.
+2. Complete OAuth authorization and enable JP Bids in the conversation. Organization-managed accounts may require an administrator to add the connector first; see [Claude's official instructions](https://support.claude.com/en/articles/11175166).
+3. Ask: **JP Bidsのsearch_bids_appで、東京都・役務、件名に「システム」を含む公告を最大3件検索し、AI Bid Workspaceを表示してください。**
+4. Select notices using their checkboxes and click **「選択CSV」**. Confirm that you actually obtained the file or CSV text and that it contains the selected notices.
+
+Host behavior varies: a supported host can save or copy the CSV; another host may send an export request to chat or copy an instruction instead. A request-sent notification is not proof that a CSV was obtained. Search hit totals can exceed the number of notices retrieved. **「全件CSV」 exports the current retrieved notices, not every portal search hit** (up to 50 notices).
+
+[Japanese user guide and troubleshooting](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/blob/main/docs/USER_GUIDE.ja.md) · [Functional specification](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/blob/main/docs/FUNCTIONAL_SPEC.md) · [Operations](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/blob/main/docs/OPERATIONS.md)
+
+## Current Verification Status / 現在の検証状況
+
+As of **2026-10-21 JST**, Claude's production custom connection has been used for live notice search and initial UI rendering (`search_bids_app`), signed snapshot restoration (`get_bid_detail`), and obtaining a CSV containing two selected notices. The notices, issuing agencies, and reasons in that file were checked for correspondence.
+
+The earlier reported agency/reason mismatch remains **unresolved in origin**: fixed-data regression tests did not reproduce it, and independent raw transport evidence is unavailable. This is not a claim that all UI paths, all clients, document-body extraction, or formal Gate 1 acceptance have passed.
+
+[Verification scope and known limitations](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/blob/main/docs/VERIFICATION_STATUS.md) is the maintained status reference.
+
+## Historical Offline Verification / 過去のモック実証
 
 > [!IMPORTANT]
-> **Status: Cross-Client Mock Validated (Claude Desktop M1–M3-B & ChatGPT Gate B) | Live KKJ Connection in Preparation**
+> **Historical scope: offline fixtures in Claude Desktop M1–M3-B and ChatGPT Gate B. These records do not establish current production interoperability for every client.**
 > - **Claude Desktop Mock Verification (M1–M3-B)**: **PASSED (実証完了)**. Verified inside Claude Desktop using local stdio mock launcher (`examples/mock-stdio-server.mjs`) with offline XML fixtures (`tests/fixtures/kkj-search.xml`, `KKJ-TEST-001`):
 >   - **M1**: Search bids via chat (`search_bids`) returning structured results.
 >   - **M2**: Interactive UI workspace rendering (`search_bids_app`) via MCP Apps specification (`ui://jp-bids/search-results.html`).
@@ -43,16 +62,16 @@ Server MCP untuk mencari, memeringkat, mengekstrak persyaratan, dan mengekspor p
 >   - **7 Tools Discovered & Executed**: `search_bids`, `get_bid_detail`, `list_recent_bids`, `extract_bid_requirements`, `rank_bids`, `export_bid_shortlist`, `search_bids_app`.
 >   - **Inline MCP Apps Workspace**: `search_bids_app` renders full 2-pane interactive AI Bid Workspace (`ui://jp-bids/search-results.html`).
 >   - **Bidirectional In-App Interactions**: In-app item selection (0 -> 1 selected), direct tool invocation via `app.callServerTool` (`rank_bids` scoring update), chat coordination via `app.sendMessage` (requirement extraction), and in-app re-search with instant UI re-rendering.
->   - *(Operational Notes: 2 cumulative HTTP 409 Conflict events were observed during Gate B verification. As individual response bodies and correlation IDs were unavailable, the cause remains unspecified. No additional failures were observed in subsequent acceptance testing. Verified against offline XML fixtures; live KKJ API access and third-party independent verification remain in preparation).*
+>   - *(Operational Notes: 2 cumulative HTTP 409 Conflict events were observed during Gate B verification. As individual response bodies and correlation IDs were unavailable, the cause remains unspecified. No additional failures were observed in subsequent acceptance testing. This Gate B record used offline XML fixtures; it does not establish live KKJ behavior or independent third-party verification).*
 > - **Clean Clone Reproduction vs. Automated Tests**:
->   - **Automated Tests**: 190 Vitest unit/integration tests (24 test files, `npm test`) verify server schemas, security constraints, UI view models, and protocol invariants.
+>   - **Automated Tests**: Vitest unit/integration tests (`npm test`; see CI for the result at a particular commit) verify server schemas, security constraints, UI view models, and protocol invariants.
 >   - **Clean Clone Stdio Verification**: Reproducibility verified on a separate, newly cloned directory without development caches (`npm ci` → `npm run build` → stdio handshake), proving 7-tool registration, mock search response (`KKJ-TEST-001`), and MCP Apps UI HTML bundle retrieval.
 >   - **Desktop & Web Client Verification**: Process launch, connection, and 7-tool registration confirmed in Claude Desktop and ChatGPT. In-app interactive GUI actions require manual user operation in desktop/web clients and are tracked distinct from programmatic test evidence.
-> - **Live KKJ Connection & Gate 1 Acceptance**: **IN PREPARATION (準備中)**. Direct queries to the Small and Medium Enterprise Agency KKJ API and formal Gate 1 compliance acceptance (35 test conditions) are scheduled for subsequent verification phases.
+> - **Formal Gate 1 Acceptance**: The live checks summarized above do not establish completion of the separate 35-condition Gate 1 acceptance plan. Do not infer its completion from mock records or a successful CI run.
 
 ---
 
-## Quick Start: Local Mock Demo (Recommended) / クイックスタート
+## Optional Local Mock Demo / 開発者向けオフラインデモ
 
 誰でもネットワークアクセスなしで Claude Desktop および MCP クライアントから直ちに動作検証を行える、再現可能なローカルモックデモを提供しています。
 
@@ -150,18 +169,19 @@ node dist/server.js --version
 
 ---
 
-## Planned Deployment Channels (Coming Soon) / 今後の配信予定
+## Distribution and Runtime Options / 配信・起動方法
 
-The following production channels are prepared in manifests and will be opened following separate release approvals:
+The npm package and hosted endpoint are available. Directory listings have their own status and are not implied by package publication.
 
 ### 1. Published npm Package
-Once published to the npm registry, execution will be available directly via `npx`:
+Install the published version in a project directory and check the CLI version:
 ```bash
-# (Planned post-npm release)
-npx -y jp-bids-mcp
+npm install jp-bids-mcp@0.10.0
+node ./node_modules/jp-bids-mcp/dist/server.js --version
 ```
+Installation accesses npm. Starting the normal server and calling search tools may access KKJ; the local mock demo above is a separate mode. Publication and package checks do not establish live UI behavior in every local client.
 
-### 2. Remote Streamable HTTP Endpoint (Claude / ChatGPT)
+### 2. Remote Streamable HTTP Endpoint
 In hosted environments, remote MCP clients connect via OAuth 2.0:
 ```text
 https://mcp.bid-jp.com/mcp
@@ -175,7 +195,7 @@ https://mcp.bid-jp.com/mcp
 > - **Standard Workflow (CSV Export)**:
 >   **Search** (`search_bids_app` to retrieve notices and display UI) → **Select candidates via checkboxes** → Click **"選択CSV"** → **Obtain CSV** (16-column CSV data)
 > - **CSV Verification & Host Environment Behavior**:
->   In this verification, we obtained a CSV file containing two selected bid notices and verified the correspondence between the notices, issuing agencies, and reasons. The specific action following the "選択CSV" click (such as triggering a file download dialog or copying to clipboard) depends on the host AI client and OS environment. Retrieve the CSV data according to your client's supported mechanism without assuming a specific action.
+>   In this verification, we obtained a CSV file containing two selected bid notices and verified the correspondence between the notices, issuing agencies, and reasons. The specific action following the "選択CSV" click (such as triggering a file download dialog or copying to clipboard) depends on the host AI client and OS environment. When direct server-tool calls are unavailable, the UI may instead send a request to chat or copy an instruction. These notifications do not prove CSV receipt. Confirm the resulting file or CSV text and its selected notices; see the user guide for notification-specific steps.
 > - **Official Source Verification**:
 >   This tool organizes public procurement metadata and official document URLs. Always verify bidding qualifications, submission deadlines, and formal specifications directly against the official tender notices published by the contracting authority.
 
@@ -190,7 +210,7 @@ https://mcp.bid-jp.com/mcp
 - **ショートリスト出力 (`export_bid_shortlist`)**: 選択した案件をCSV / JSON形式でエクスポート。
 - **完全無料・読み取り専用**: 会員登録や有料プランなしで全公開機能（7ツール）を無料で利用可能。提供側の課金（Stripe等）は一切行いません。
 - **Resources・Resource Templates**: コンテキスト注入用の静的リソースおよび動的テンプレート。
-- **安全設計**: 添付ファイルの一時保存なし、トークンバケット型レート制限 (<= 1 req/sec)、stdoutへのログ出力完全排除（stderrのみ）。
+- **安全設計**: 添付ファイルの永続保存なし（有効化された抽出時はメモリ上で一時処理する場合があります）、トークンバケット型レート制限 (<= 1 req/sec)、stdoutへのログ出力完全排除（stderrのみ）。
 
 データ出典 / Data source: 中小企業庁 官公需情報ポータルサイト 検索API.
 
@@ -234,7 +254,7 @@ JP Bids MCP は Model Context Protocol の標準仕様に基づき実装およ�
 ## Verification & Testing / 検証コマンド
 
 ```bash
-# 全体チェック (Biome Lint, TypeScript型検査, Vite UIビルド, Vitest 190テスト全件)
+# 全体チェック (Biome Lint, TypeScript型検査, Vite UIビルド, Vitest)
 npm run check
 
 # TypeDoc API ドキュメント生成・差分検査 (Windows & Linux 両対応)

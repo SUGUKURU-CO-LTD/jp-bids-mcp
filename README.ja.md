@@ -11,6 +11,7 @@ Server MCP untuk mencari, memeringkat, mengekstrak persyaratan, dan mengekspor p
 > **完全無料・読み取り中心 / Free and Read-Centric**<br>
 > 会員登録や有料プランなしで全公開機能（7ツール）を無料で利用できます。提供側によるStripe等の課金呼出しは一切行いません。<br>
 > All 7 public tools are available for free without subscription or paid tiers.
+> JP Bids MCP自体の利用料は無料です。Claude等のAIクライアント利用料は別途発生する場合があります。
 
 ---
 
@@ -18,21 +19,40 @@ Server MCP untuk mencari, memeringkat, mengekstrak persyaratan, dan mengekspor p
 
 | 配信チャネル / 項目 | 状態 / Status | 説明 / 内容 |
 |---|:---:|---|
-| **GitHub オープンソース** | **公開中 (Active)** | [SUGUKURU-CO-LTD/jp-bids-mcp](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp) (Apache 2.0)。182件のテスト全件成功、CI・CodeQL合格、再現可能なオフラインモックデモ同梱。 |
+| **GitHub オープンソース** | **公開中 (Active)** | [SUGUKURU-CO-LTD/jp-bids-mcp](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp) (Apache 2.0)。自動検査の最新結果はCI・CodeQLバッジを参照。再現可能なオフラインモックデモ同梱。 |
 | **ローカルモックデモ** | **実証済 (Verified)** | M1〜M3-Bの動作実証完了（検索、MCP AppsワークスペースUI描画、双方向ツール呼び出し）。 |
-| **npm パッケージ** | **準備中 (Planned)** | パッケージ生成 (`npm pack`) 検証済み。公開版 (`jp-bids-mcp`) の配信は別途承認後に実施予定。 |
+| **npm パッケージ** | **公開済み (Published)** | [`jp-bids-mcp@0.10.0`](https://www.npmjs.com/package/jp-bids-mcp) を公開済み。配布確認と実クライアントの検証範囲は区別します。 |
 | **公式 MCP Registry** | **準備中 (Planned)** | 識別名 `io.github.SUGUKURU-CO-LTD/jp-bids` 準拠設定済み。レジストリ登録は別途承認後に実施予定。 |
-| **リモート MCP エンドポイント** | **準備中 (Planned)** | Streamable HTTP エンドポイント (`https://mcp.bid-jp.com/mcp`) はホスティング環境構築後に公開予定。 |
+| **リモート MCP エンドポイント** | **提供中 (Available)** | `https://mcp.bid-jp.com/mcp` をOAuth認可後に利用できます。本番Claudeで実公告検索・UI初期表示・詳細復元・選択2件のCSV取得を確認。 |
 
 > 💡 **公開技術デモ解説 (Public Technical Showcase)**:  
 > Claude Desktop 内で動作する MCP Apps 対話型ワークスペースの実機スクリーンショット、アーキテクチャ解説、および再現手順は [**docs/showcase/README.md**](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/blob/main/docs/showcase/README.md) をご覧ください。
 
 ---
 
+## Claudeで使い始める / Quick Start
+
+1. Claudeの **「カスタマイズ → コネクタ」** でカスタムコネクタを追加し、URLに `https://mcp.bid-jp.com/mcp` を入力します。
+2. OAuth認可を完了し、会話内でJP Bidsを有効にします。組織管理のアカウントでは管理者による事前追加が必要な場合があります。[Claude公式手順](https://support.claude.com/ja/articles/11175166)もご確認ください。
+3. **「JP Bidsのsearch_bids_appで、東京都・役務、件名に『システム』を含む公告を最大3件検索し、AI Bid Workspaceを表示してください。」** と依頼します。
+4. 案件のチェックボックスを選び、**「選択CSV」** を押します。ファイルまたはCSV本文を実際に取得できたことと、選択した案件が含まれることを確認します。
+
+ホストにより、CSV保存・コピーのほか、チャットへの実行依頼や操作文コピーに切り替わります。「依頼を送信した」という通知だけでCSV取得完了とは判断しません。検索ヒット総数と取得件数は別で、**「全件CSV」は今回取得した案件が対象**です（最大50件）。
+
+[使用説明書とFAQ](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/blob/main/docs/USER_GUIDE.ja.md) · [機能仕様書](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/blob/main/docs/FUNCTIONAL_SPEC.md) · [運用手順書](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/blob/main/docs/OPERATIONS.md)
+
 ## 現在の検証状況 / Current Verification Status
 
+**2026-10-21 JST時点**：Claudeの本番カスタム接続で、実公告検索・UI初期表示（`search_bids_app`）、署名付きスナップショットの復元（`get_bid_detail`）、選択した2案件を含むCSVファイルの取得を確認しました。取得CSVの案件・発注機関・理由の対応も確認しています。
+
+過去のCSVにおける発注機関と理由の不整合は、固定データ試験では再現せず、独立した通信生応答がないため**原因未確定**です。全UI経路・全クライアント・資料本文抽出・正式Gate 1受入が合格したという意味ではありません。
+
+最新の確認範囲と既知の制約は[検証状況](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/blob/main/docs/VERIFICATION_STATUS.md)で管理します。
+
+## 過去のオフライン実証 / Historical Offline Verification
+
 > [!IMPORTANT]
-> **ステータス: ローカルモック実証完了 (M1〜M3-B) | 実データ接続・正式受入は準備中**
+> **以下はローカルフィクスチャによるM1〜M3-Bの過去の実証記録です。現在の本番接続の確認範囲とは分けて扱います。**
 > - **Claude Desktopでのモック実証 (M1〜M3-B)**: **合格（実証完了）**。公開モックstdio起動スクリプト (`examples/mock-stdio-server.mjs`) を用いてオフラインXMLフィクスチャ (`tests/fixtures/kkj-search.xml`、`KKJ-TEST-001`) を注入し、Claude Desktop 内での動作を検証済み：
 >   - **M1**: チャットからの入札検索 (`search_bids`) による構造化結果取得。
 >   - **M2**: MCP Apps仕様 (`ui://jp-bids/search-results.html`) に基づくAI Bid Workspaceパネル画面の描画 (`search_bids_app`)。
@@ -40,14 +60,14 @@ Server MCP untuk mencari, memeringkat, mengekstrak persyaratan, dan mengekspor p
 >   - **M3-B**: 画面からサーバーへの双方向ツール呼び出し（画面内検索実行による `search_bids_app` 呼び出し、2ms応答、画面再描画）。
 >   *(※M1〜M3-Bの実証は、アプリケーション内のモック処理（`examples/mock-stdio-server.mjs`）によりKKJ APIリクエストをローカルXMLフィクスチャ応答に差し替え、未承認fetchを例外として遮断するガード下で実施されました。これはNode.jsランタイム内のアプリケーションレベルのモック・傍受処理であり、OSレベルのサンドボックスやネットワークファイアウォールによる通信遮断ではありません。検証期間中に外部KKJへの通信は観測されませんでした)*
 > - **クリーン環境実機検証と自動テスト結果の区別**:
->   - **自動テスト群 (182件)**: 単体・結合テスト（型定義、セキュリティ制約、UIビューモデル・ハンドラー、モック通信）を Vitest により自動検証 (`npm test`)。
+>   - **自動テスト群（対象コミットの結果はCIを参照）**: 単体・結合テスト（型定義、セキュリティ制約、UIビューモデル・ハンドラー、モック通信）を Vitest により自動検証 (`npm test`)。
 >   - **新規クローン環境実機検証**: 既存の開発環境とは完全に隔離された新規ディレクトリで `git clone` → `npm ci` → `npm run build` → 子プロセス起動を行い、`initialize`、7ツール登録 (`tools/list`)、モック案件取得 (`tools/call search_bids`)、MCP Apps UI MIME (`resources/read ui://jp-bids/search-results.html`) を検証。
 >   - **Claude Desktop 実機接続**: Claude Desktop プロセスからの正常起動・接続および7ツールの登録を確認済み。デスクトップクライアント上でのチャット検索・UI描画・画面内操作（M2〜M3-B）の実機対話操作は、デスクトップ環境における手動操作・目視確認が必要であり、プログラム的テスト証拠とは区別して管理します。
-> - **実KKJ API接続・Gate 1正式受入**: **準備中**。中小企業庁KKJ APIへの直接通信およびGate 1（35条件）の受入試験は、後続の検証フェーズで実施予定です。
+> - **Gate 1正式受入**: 上記の本番確認は、別管理のGate 1（35条件）の完了判定を意味しません。モック実証やCI成功から正式受入全体の合格を推定しません。
 
 ---
 
-## クイックスタート: ローカルモックデモ (推奨) / Quick Start
+## 開発者向けローカルモックデモ / Optional Local Mock Demo
 
 外部ネットワークアクセスを行わずに、Claude Desktop および MCP クライアントから直ちに動作確認を行える再現可能なローカルモックデモを提供しています。
 
@@ -143,18 +163,19 @@ node dist/server.js --version
 
 ---
 
-## 今後の配信予定チャネル / Planned Deployment Channels
+## 配信・起動方法 / Distribution and Runtime Options
 
-以下の公開・配信経路はメタデータおよびマニフェスト準備済みであり、個別のリリース承認を経て順次公開されます：
+npmパッケージと本番リモート接続は提供中です。各ディレクトリの掲載・審査状況は、パッケージ公開とは別に管理します。
 
 ### 1. 公開 npm パッケージ
-npm レジストリへの公開後は、`npx` コマンドで直接実行可能になります：
+作業用ディレクトリで公開済みの版をインストールし、CLIの版数を確認できます：
 ```bash
-# (npm 公開後に利用可能予定)
-npx -y jp-bids-mcp
+npm install jp-bids-mcp@0.10.0
+node ./node_modules/jp-bids-mcp/dist/server.js --version
 ```
+インストールにはnpmへの通信が発生します。通常サーバーで検索ツールを呼ぶとKKJ通信が発生する場合があり、上記のモックデモとは別のモードです。配布・パッケージ検査は、すべてのローカルクライアントでの実公告UI動作を保証するものではありません。
 
-### 2. リモート Streamable HTTP エンドポイント（Claude / ChatGPT）
+### 2. リモート Streamable HTTP エンドポイント
 ホスティング環境において、リモートMCPクライアントから OAuth 2.0 経由で接続可能です：
 ```text
 https://mcp.bid-jp.com/mcp
@@ -168,7 +189,7 @@ https://mcp.bid-jp.com/mcp
 > - **標準利用手順（CSV取得）**:
 >   **検索**（`search_bids_app` 等で案件検索・UI表示） → **チェックボックスで案件選択** → **「選択CSV」** ボタンをクリック → **CSV取得**（16列のCSVデータ）
 > - **CSV取得の検証と動作について**:
->   今回の検証では、選択した2案件を含むCSVファイルを取得し、案件・発注機関・理由の対応を確認しました。「選択CSV」クリック後の動作（ダウンロードダイアログの表示、クリップボードへのコピー等）はお使いのクライアントやOS環境によって異なります。特定動作に限定・断定せず、ご利用環境に応じた方法でCSVデータを受け取ってください。
+>   今回の検証では、選択した2案件を含むCSVファイルを取得し、案件・発注機関・理由の対応を確認しました。「選択CSV」クリック後の動作（ダウンロードダイアログの表示、クリップボードへのコピー等）はお使いのクライアントやOS環境によって異なります。直接ツール呼出に非対応のホストでは、チャットへ実行依頼を送るか、操作文をコピーする場合があります。これらの通知だけではCSV取得完了ではありません。実際に得たファイルまたはCSV本文と選択案件を確認してください。通知別の対処は使用説明書に記載しています。
 > - **公式原本での確認**:
 >   本ツールは公告メタデータと公式資料URLを整理するものです。入札参加資格や提出期限等の最終確認は、必ず発注機関が提示する公式原本にて行ってください。
 
@@ -183,7 +204,7 @@ https://mcp.bid-jp.com/mcp
 - **ショートリスト出力 (`export_bid_shortlist`)**: 選択した案件をCSV / JSON形式でエクスポート（選択順序を保持）。
 - **完全無料・読み取り専用**: 会員登録や有料プランなしで全公開機能（7ツール）を無料で利用可能。提供側の課金（Stripe等）は一切行いません。
 - **Resources・Resource Templates**: コンテキスト注入用の静的リソースおよび動的テンプレート。
-- **安全設計**: 添付ファイルの一時保存なし、トークンバケット型レート制限 (<= 1 req/sec)、stdoutへのログ出力完全排除（stderrのみ）。
+- **安全設計**: 添付ファイルの永続保存なし（有効化された抽出時はメモリ上で一時処理する場合があります）、トークンバケット型レート制限 (<= 1 req/sec)、stdoutへのログ出力完全排除（stderrのみ）。
 
 データ出典: 中小企業庁 官公需情報ポータルサイト 検索API.
 
@@ -227,7 +248,7 @@ JP Bids MCP は Model Context Protocol の標準仕様に基づき実装およ�
 ## 検証・テストコマンド / Verification & Testing
 
 ```bash
-# 全体チェック (Biome Lint, TypeScript型検査, Vite UIビルド, Vitest 182テスト全件)
+# 全体チェック (Biome Lint, TypeScript型検査, Vite UIビルド, Vitest)
 npm run check
 
 # TypeDoc API ドキュメント生成・差分検査 (Windows & Linux 両対応)
