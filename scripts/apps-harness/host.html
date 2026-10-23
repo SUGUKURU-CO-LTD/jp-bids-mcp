@@ -27,6 +27,7 @@ const theme = params.get("theme") === "dark" ? "dark" : "light";
 const displayMode = params.get("displayMode") ?? "inline";
 const denyMessage = params.get("denyMessage") === "1";
 const denyDownload = params.get("denyDownload") === "1";
+const denyClipboard = params.get("denyClipboard") === "1";
 const autoResult = params.get("autoResult") !== "0";
 const openEvidence = params.get("openEvidence") === "1";
 const clickAction = params.get("clickAction");
@@ -35,6 +36,19 @@ const selectBids = params.get("selectBids");
 if (theme === "dark") document.body.classList.add("dark");
 
 const frame = document.getElementById("frame");
+if (denyClipboard) {
+  frame.removeAttribute("allow");
+  frame.addEventListener("load", () => {
+    try {
+      if (frame.contentWindow?.navigator?.clipboard) {
+        frame.contentWindow.navigator.clipboard.writeText = () =>
+          Promise.reject(new DOMException("Clipboard write permission denied by test harness", "NotAllowedError"));
+      }
+    } catch (e) {
+      console.warn("Could not patch iframe clipboard:", e);
+    }
+  });
+}
 const send = (message) => frame.contentWindow.postMessage(message, "*");
 
 const ACCESSED_AT = "2026-07-26T09:00:00.000Z";
@@ -485,15 +499,22 @@ window.addEventListener("message", (event) => {
         const matched = refs.map((ref) => bids.find((b) => b.bidRef === ref));
         const format = toolArgs.format || "csv";
         const columns = [
+          "priority",
+          "score",
           "key",
-          "projectName",
-          "organizationName",
-          "prefectureName",
+          "project_name",
+          "organization_name",
+          "prefecture",
+          "city",
           "category",
-          "procedureType",
-          "cftIssueDate",
-          "tenderSubmissionDeadline",
-          "officialUrl",
+          "procedure_type",
+          "notice_date",
+          "tender_submission_deadline",
+          "opening_tenders_event",
+          "fit_reasons",
+          "risks",
+          "next_action",
+          "official_url",
         ];
 
         let exportContent;
@@ -503,17 +524,28 @@ window.addEventListener("message", (event) => {
             filename: "jp-bids-export.json",
             rankedCount: matched.length,
             columns,
-            jsonContent: matched.map((b) => ({
-              key: b.key,
-              projectName: b.projectName,
-              organizationName: b.organizationName,
-              prefectureName: b.prefectureName,
-              category: b.category,
-              procedureType: b.procedureType,
-              cftIssueDate: b.cftIssueDate,
-              tenderSubmissionDeadline: b.tenderSubmissionDeadline,
-              officialUrl: b.officialUrl,
-            })),
+            jsonContent: matched.map((b, idx) => {
+              const score = 95 - (idx * 3);
+              const priority = score >= 80 ? "pursue" : score >= 60 ? "review" : "skip";
+              return {
+                priority,
+                score,
+                key: b.key,
+                project_name: b.projectName,
+                organization_name: b.organizationName ?? "",
+                prefecture: b.prefectureName ?? "",
+                city: b.cityName ?? "",
+                category: b.category ?? "",
+                procedure_type: b.procedureType ?? "",
+                notice_date: b.cftIssueDate ?? "",
+                tender_submission_deadline: b.tenderSubmissionDeadline ?? "",
+                opening_tenders_event: b.openingTendersEvent ?? "",
+                fit_reasons: `適合度スコア (${score}点) - 要件合致`,
+                risks: "特になし",
+                next_action: "参加要件の確認",
+                official_url: b.officialUrl ?? "",
+              };
+            }),
             attribution,
             scoringPolicy: {
               version: "1.0",
@@ -521,10 +553,44 @@ window.addEventListener("message", (event) => {
             },
           };
         } else {
+          function escapeCsvCell(value) {
+            let cell = String(value ?? "");
+            if (/^[=+\-@\t\r]/.test(cell)) {
+              cell = `'${cell}`;
+            }
+            if (!/[",\n\r]/.test(cell)) {
+              return cell;
+            }
+            return `"${cell.replaceAll('"', '""')}"`;
+          }
+
           const header = columns.join(",");
-          const rows = matched.map((b) =>
-            columns.map((c) => JSON.stringify(b[c] ?? "")).join(","),
-          );
+          const rows = matched.map((b, idx) => {
+            const score = 95 - (idx * 3);
+            const priority = score >= 80 ? "pursue" : score >= 60 ? "review" : "skip";
+            const rowValues = [
+              priority,
+              String(score),
+              b.key,
+              b.projectName,
+              b.organizationName ?? "",
+              b.prefectureName ?? "",
+              b.cityName ?? "",
+              b.category ?? "",
+              b.procedureType ?? "",
+              b.cftIssueDate ?? "",
+              b.tenderSubmissionDeadline ?? "",
+              b.openingTendersEvent ?? "",
+              // Include double quotes, commas, and internal newlines for strict parser validation
+              idx === 0
+                ? `適合度スコア (95点)\n"要件合致", 高評価`
+                : `適合度スコア (${score}点) - 要件合致`,
+              "特になし",
+              "参加要件の確認",
+              b.officialUrl ?? "",
+            ];
+            return rowValues.map(escapeCsvCell).join(",");
+          });
           exportContent = {
             format: "csv",
             filename: "jp-bids-export.csv",
