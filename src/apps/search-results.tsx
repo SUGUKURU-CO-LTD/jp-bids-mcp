@@ -1,8 +1,58 @@
 import { useApp } from "@modelcontextprotocol/ext-apps/react";
-import { useEffect, useMemo, useState } from "react";
+import { Component, type ErrorInfo, type ReactNode, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { type Bid, type BidSearchResult, BidSearchResultSchema } from "../domain/bid.js";
 import { VERSION } from "../lib/version.js";
+
+interface ErrorBoundaryProps {
+  children: ReactNode;
+  onReset?: () => void;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  errorMessage: string | null;
+}
+
+export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  override state: ErrorBoundaryState = {
+    hasError: false,
+    errorMessage: null,
+  };
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, errorMessage: error.message };
+  }
+
+  override componentDidCatch(error: Error, info: ErrorInfo): void {
+    console.error("[JP Bids Workspace] Uncaught rendering error:", error, info);
+  }
+
+  handleReset = () => {
+    this.setState({ hasError: false, errorMessage: null });
+    this.props.onReset?.();
+  };
+
+  override render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: "16px", color: "#dc2626", background: "#fef2f2", borderRadius: "8px", margin: "16px" }}>
+          <h3 style={{ margin: "0 0 8px 0" }}>AI Bid Workspace 初期化エラー</h3>
+          <p style={{ margin: "0 0 12px 0", fontSize: "14px" }}>{this.state.errorMessage ?? "予期せぬエラーが発生しました。"}</p>
+          <button
+            type="button"
+            onClick={this.handleReset}
+            style={{ padding: "6px 12px", background: "#2563eb", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer" }}
+          >
+            再試行
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 import {
   type BidCardViewModel,
   toWorkspaceViewModel,
@@ -55,7 +105,11 @@ function WelcomeScreen() {
   );
 }
 
-function App() {
+export interface WorkspaceContentProps {
+  onRetry?: () => void;
+}
+
+export function WorkspaceContent({ onRetry }: WorkspaceContentProps) {
   const [result, setResult] = useState<BidSearchResult | null>(null);
   const [workspace, setWorkspace] = useState<WorkspaceViewModel | null>(null);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
@@ -66,10 +120,14 @@ function App() {
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [displayMode, setDisplayMode] = useState<string | null>(null);
   const [availableDisplayModes, setAvailableDisplayModes] = useState<string[]>([]);
+  const [hasReceivedInitialResult, setHasReceivedInitialResult] = useState(false);
+  const [isWaitingTooLong, setIsWaitingTooLong] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [searchInput, setSearchInput] = useState("");
 
   const applySearchResult = (structuredContent: unknown) => {
+    setHasReceivedInitialResult(true);
+    setIsWaitingTooLong(false);
     if (!isBidSearchResult(structuredContent)) {
       setError("Tool result did not include JP Bids structured content.");
       return;
@@ -99,6 +157,9 @@ function App() {
     strict: true,
     onAppCreated: (app) => {
       app.onteardown = async () => ({});
+      app.onerror = (err: unknown) => {
+        console.warn("[JP Bids Workspace] App error:", err);
+      };
       app.addEventListener("toolinput", () => {
         setIsSearching(true);
         setError(null);
@@ -158,6 +219,17 @@ function App() {
   useEffect(() => {
     if (appError) setError(appError.message);
   }, [appError]);
+
+  useEffect(() => {
+    if (!isConnected || hasReceivedInitialResult) {
+      setIsWaitingTooLong(false);
+      return;
+    }
+    const timer = setTimeout(() => {
+      setIsWaitingTooLong(true);
+    }, 6000);
+    return () => clearTimeout(timer);
+  }, [isConnected, hasReceivedInitialResult]);
 
   useEffect(() => {
     if (!app) return;
@@ -220,12 +292,73 @@ function App() {
         </div>
       </header>
 
+      {appError ? (
+        <div className="notice error">
+          <p>ホストとの接続に失敗しました: {appError.message}</p>
+          {onRetry && (
+            <button
+              type="button"
+              className="btn-retry"
+              onClick={onRetry}
+              style={{
+                marginTop: "8px",
+                padding: "6px 12px",
+                background: "#2563eb",
+                color: "#fff",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
+            >
+              再接続
+            </button>
+          )}
+        </div>
+      ) : null}
+
       {error && <div className="notice error">{error}</div>}
       {actionMessage && <div className="notice compact">{actionMessage}</div>}
       {isSearching && !workspace && <div className="notice">検索中…</div>}
 
       {!workspace ? (
-        !isSearching && <WelcomeScreen />
+        !appError && (
+          !isConnected ? (
+            <div className="notice connecting">ワークスペースに接続中…</div>
+          ) : !hasReceivedInitialResult ? (
+            <div className="notice waiting">
+              <p>検索結果を受信中…</p>
+              {isWaitingTooLong && (
+                <div style={{ marginTop: "8px", fontSize: "13px", color: "#475569" }}>
+                  <p>ホストからの初期化応答または検索結果の送信に時間がかかっています。</p>
+                  {onRetry && (
+                    <button
+                      type="button"
+                      className="btn-retry"
+                      onClick={onRetry}
+                      style={{
+                        marginTop: "6px",
+                        padding: "4px 10px",
+                        background: "#2563eb",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      再接続を試す
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          ) : isSearching ? (
+            <div className="notice">検索中…</div>
+          ) : error ? (
+            <div className="notice error">{error}</div>
+          ) : (
+            <WelcomeScreen />
+          )
+        )
       ) : (
         <div className={`ws-body${isSearching ? " ws-body--loading" : ""}`}>
           {/* Priority Lane */}
@@ -1185,7 +1318,7 @@ async function handleDownloadCsv(
       successMessage: "CSV出力をHostへリクエストしました。",
       emptyMessage: "エクスポート対象がありません。",
       copiedMessage: "CSVをクリップボードにコピーしました。",
-      blockedMessage: "CSV出力・コピーがHostにブロックされました。",
+      blockedMessage: "この画面からCSVの保存・コピーを完了できませんでした。チャットで対象案件と評価条件を指定して、CSV出力を依頼してください。",
     },
     setActionMessage,
   );
@@ -1205,7 +1338,7 @@ async function handleDownloadJson(
       successMessage: "JSON出力をHostへリクエストしました。",
       emptyMessage: "エクスポート対象がありません。",
       copiedMessage: "JSONをクリップボードにコピーしました。",
-      blockedMessage: "JSON出力・コピーがHostにブロックされました。",
+      blockedMessage: "この画面からJSONの保存・コピーを完了できませんでした。チャットで対象案件を指定して、JSON出力を依頼してください。",
     },
     setActionMessage,
   );
@@ -1282,6 +1415,19 @@ function formatModelContextSummary(
     `Accessed at: ${workspace.accessedAt}`,
   ];
   return lines.join("\n");
+}
+
+export function App() {
+  const [sessionKey, setSessionKey] = useState(0);
+  const handleRetry = () => {
+    setSessionKey((prev) => prev + 1);
+  };
+
+  return (
+    <ErrorBoundary onReset={handleRetry}>
+      <WorkspaceContent key={sessionKey} onRetry={handleRetry} />
+    </ErrorBoundary>
+  );
 }
 
 if (typeof document !== "undefined") {

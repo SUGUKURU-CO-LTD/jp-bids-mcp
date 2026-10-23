@@ -70,6 +70,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:contract": "vitest run tests/contract.test.ts",
+    "test:ui-resilience": "tsx scripts/apps-harness/test-ui-resilience.ts",
     "apps:harness": "tsx scripts/apps-harness/serve.ts",
     "apps:capture": "npm run build:ui && tsx scripts/apps-harness/capture.ts",
     "docs:api": "node scripts/generate-docs.mjs",

@@ -114,14 +114,20 @@ export function registerSearchResultsApp(server: McpServer, client: KkjClient): 
   );
 }
 
+let cachedAppHtml: string | null = null;
+
 async function readSearchResultsAppHtml(): Promise<string> {
+  if (cachedAppHtml) {
+    return cachedAppHtml;
+  }
   const candidateUrls = [
     new URL("./search-results.html", import.meta.url),
     new URL("../../dist/apps/search-results.html", import.meta.url),
   ];
   for (const url of candidateUrls) {
     try {
-      return await readFile(url, "utf8");
+      cachedAppHtml = await readFile(url, "utf8");
+      return cachedAppHtml;
     } catch (error) {
       if (!isFileNotFound(error)) {
         throw error;
