@@ -78,7 +78,11 @@ describe("MCP Apps Lifecycle & Initialization Verification (Offline / No KKJ)", 
       }
     });
 
-    const app = new App(dummyAppInfo, { availableDisplayModes: ["inline", "fullscreen"] }, { strict: true });
+    const app = new App(
+      dummyAppInfo,
+      { availableDisplayModes: ["inline", "fullscreen"] },
+      { strict: true },
+    );
 
     // onAppCreated equivalent: register handlers BEFORE connect
     app.addEventListener("toolresult", (result: unknown) => {
@@ -114,8 +118,10 @@ describe("MCP Apps Lifecycle & Initialization Verification (Offline / No KKJ)", 
 
     // Verification: Tool result was received intact without throwing strict mode timing error
     expect(toolResultReceived).toBeDefined();
-    expect((toolResultReceived as { structuredContent?: typeof sampleStructuredContent })?.structuredContent)
-      .toEqual(sampleStructuredContent);
+    expect(
+      (toolResultReceived as { structuredContent?: typeof sampleStructuredContent })
+        ?.structuredContent,
+    ).toEqual(sampleStructuredContent);
 
     await app.close();
   });
@@ -141,7 +147,11 @@ describe("MCP Apps Lifecycle & Initialization Verification (Offline / No KKJ)", 
       }
     });
 
-    const app = new App(dummyAppInfo, { availableDisplayModes: ["inline", "fullscreen"] }, { strict: true });
+    const app = new App(
+      dummyAppInfo,
+      { availableDisplayModes: ["inline", "fullscreen"] },
+      { strict: true },
+    );
 
     let capturedError: Error | null = null;
     try {
@@ -152,7 +162,9 @@ describe("MCP Apps Lifecycle & Initialization Verification (Offline / No KKJ)", 
 
     // Verification: Connect threw explicit error, transport closed, state transitioned to error
     expect(capturedError).not.toBeNull();
-    expect(capturedError?.message).toContain("Host security policy denied iframe app initialization");
+    expect(capturedError?.message).toContain(
+      "Host security policy denied iframe app initialization",
+    );
     expect(transport.closed).toBe(true);
   });
 
@@ -228,8 +240,10 @@ describe("MCP Apps Lifecycle & Initialization Verification (Offline / No KKJ)", 
     // Verification:
     // 1. New app received the result
     expect(app2ResultReceived).toBeDefined();
-    expect((app2ResultReceived as { structuredContent?: { bids: Array<{ key: string }> } })?.structuredContent?.bids[0]?.key)
-      .toBe("RETRY-SUCCESS");
+    expect(
+      (app2ResultReceived as { structuredContent?: { bids: Array<{ key: string }> } })
+        ?.structuredContent?.bids[0]?.key,
+    ).toBe("RETRY-SUCCESS");
     // 2. Old app listener was NOT invoked
     expect(app1ListenerCalled).toBe(false);
 

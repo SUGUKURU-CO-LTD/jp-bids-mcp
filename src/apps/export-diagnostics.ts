@@ -32,9 +32,20 @@ export type AllowedErrorName =
   | "UnknownError";
 
 export function normalizeErrorName(err: unknown): AllowedErrorName {
-  if (typeof err === "object" && err !== null && "name" in err && typeof (err as { name: unknown }).name === "string") {
+  if (
+    typeof err === "object" &&
+    err !== null &&
+    "name" in err &&
+    typeof (err as { name: unknown }).name === "string"
+  ) {
     const name = (err as { name: string }).name;
-    if (name === "NotAllowedError" || name === "SecurityError" || name === "AbortError" || name === "TypeError" || name === "NetworkError") {
+    if (
+      name === "NotAllowedError" ||
+      name === "SecurityError" ||
+      name === "AbortError" ||
+      name === "TypeError" ||
+      name === "NetworkError"
+    ) {
       return name;
     }
   }
@@ -137,8 +148,9 @@ export function updateDiagnosticReport(
 
   activeDiagnosticReport = updated;
   if (typeof window !== "undefined") {
-    (window as unknown as { __lastExportDiagnostic?: ExportDiagnosticReport }).__lastExportDiagnostic =
-      activeDiagnosticReport;
+    (
+      window as unknown as { __lastExportDiagnostic?: ExportDiagnosticReport }
+    ).__lastExportDiagnostic = activeDiagnosticReport;
   }
   return activeDiagnosticReport;
 }
@@ -149,8 +161,9 @@ export function resetDiagnosticReport(): void {
     tokensAudit: { count: 0, tokens: [] },
   };
   if (typeof window !== "undefined") {
-    (window as unknown as { __lastExportDiagnostic?: ExportDiagnosticReport }).__lastExportDiagnostic =
-      activeDiagnosticReport;
+    (
+      window as unknown as { __lastExportDiagnostic?: ExportDiagnosticReport }
+    ).__lastExportDiagnostic = activeDiagnosticReport;
   }
 }
 
@@ -316,7 +329,7 @@ export function parseCsvRows(csvText: string): ParseCsvResult {
       if (char === '"') {
         return {
           success: false,
-          error: "非引用フィールドの途中に不正な引用符 (\") が含まれています。",
+          error: '非引用フィールドの途中に不正な引用符 (") が含まれています。',
           line: lineNum,
           column: colNum,
         };
@@ -350,7 +363,12 @@ export function parseCsvRows(csvText: string): ParseCsvResult {
     };
   }
 
-  if (state === "AFTER_QUOTE" || state === "UNQUOTED" || currentCell.length > 0 || currentRow.length > 0) {
+  if (
+    state === "AFTER_QUOTE" ||
+    state === "UNQUOTED" ||
+    currentCell.length > 0 ||
+    currentRow.length > 0
+  ) {
     currentRow.push(currentCell);
     if (currentRow.length > 1 || (currentRow[0] && currentRow[0].length > 0)) {
       rows.push(currentRow);
@@ -392,11 +410,7 @@ export function extractCsvFromToolResult(result: unknown): ExtractedCsvResult {
   }
 
   // Strictly require integer rankedCount >= 0 without fallback to 0
-  if (
-    typeof s.rankedCount !== "number" ||
-    !Number.isInteger(s.rankedCount) ||
-    s.rankedCount < 0
-  ) {
+  if (typeof s.rankedCount !== "number" || !Number.isInteger(s.rankedCount) || s.rankedCount < 0) {
     return {
       valid: false,
       reason: `structuredContent 内の rankedCount が不正または未設定です (${String(s.rankedCount)})。`,
@@ -478,7 +492,8 @@ export function extractCsvFromToolResult(result: unknown): ExtractedCsvResult {
     };
   }
 
-  const filename = typeof s.filename === "string" && s.filename ? s.filename : "jp-bids-workspace.csv";
+  const filename =
+    typeof s.filename === "string" && s.filename ? s.filename : "jp-bids-workspace.csv";
   const displayText = rawCsv;
   const downloadText = rawCsv.startsWith("\ufeff") ? rawCsv : `\ufeff${rawCsv}`;
 

@@ -553,7 +553,7 @@ window.addEventListener("message", (event) => {
             },
           };
         } else {
-          function escapeCsvCell(value) {
+          const escapeCsvCell = (value) => {
             let cell = String(value ?? "");
             if (/^[=+\-@\t\r]/.test(cell)) {
               cell = `'${cell}`;
@@ -562,7 +562,7 @@ window.addEventListener("message", (event) => {
               return cell;
             }
             return `"${cell.replaceAll('"', '""')}"`;
-          }
+          };
 
           const header = columns.join(",");
           const rows = matched.map((b, idx) => {

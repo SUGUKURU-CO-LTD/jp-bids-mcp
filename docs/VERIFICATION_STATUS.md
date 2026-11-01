@@ -1,6 +1,6 @@
 # JP Bids MCP 検証状況と既知の問題
 
-更新日: 2026-10-21 JST / 対象: Public版0.10.0
+更新日: 2026-11-01 JST / 対象: Public版0.10.0
 
 実装されている機能、固定データによる自動テスト、実クライアントの確認を分けて記録します。説明書は[こちら](./USER_GUIDE.ja.md)、機能の入出力・制約は[機能仕様書](./FUNCTIONAL_SPEC.md)を参照してください。
 
@@ -13,18 +13,27 @@
 | `get_bid_detail` | 検索で得た署名付きスナップショットの復元 | 公式公告の本文を再取得・照合したという意味ではない |
 | UIの「選択CSV」 | 日本学術振興会・防衛省の2案件を選び、CSVファイルを取得 | 2026-10-21 JST。16列として解析でき、選択案件・機関・理由の対応を確認 |
 
-上記の実機結果は、既存の画面・取得ファイル・実行報告に基づく記録です。UI内部で受信した生JSON-RPC応答と保存ファイルの完全バイト一致までを証明するものではありません。
+## 本番ChatGPT（開発者モード）で確認した範囲
+
+対象配備: Cloud Runリビジョン `jp-bids-mcp-manual-export-20261024`（コミット `9afe0c6ffb1ec18930c1b358d43ecec784ff7da7`、イメージdigest `sha256:3eb275f02f164d975d1790a5e1043461005e044b0b57c905ab38d0ec8bdb46e9`）
+
+| 操作 | 確認内容 | 証拠の範囲 |
+| --- | --- | --- |
+| `search_bids_app` | 実公告の検索とAI Bid Workspaceの表示 | 2026-10-24 JST。サンドボックスiframe内での描画を確認 |
+| UIの「選択CSV」（手動取得欄） | 2案件を選択して「選択CSV」を実行し、`CSV 手動取得欄 (2件)` からコピーして16列CSVを保存 | 2026-10-24 JST。ヘッダー16列・データ2行、選択案件・機関・評価理由の対応を確認。保存時の文字コードは貼り付け先エディタの設定に依存 |
+
+上記の実機結果は、既存の画面・取得ファイル・実行報告に基づく記録です。UI内部で受信した生JSON-RPC応答と保存ファイルの完全バイト一致までを証明するものではありません。また、上流公告データに未収録の項目（`procedure_type`、`tender_submission_deadline`、`opening_tenders_event`）は空欄のまま出力されます。
 
 順位付け・要件抽出・CSV出力については、検索条件を各ツールへ指定した独立検索モードの実行報告もあります。これは、同じ `bid_refs` を引き継ぎ再検索なしで一連操作を完了した試験とは区別します。
 
 ## 固定データとMCPプロトコルの自動テスト
 
-PR #14の対象コミット `ec91927e5b87dd9b2dc7532c7e3770202f56e60d` では、26ファイル・195テストの成功が記録されています。マージコミット `10625694b78506c7470a1149af5d087ee383ecb1` のCI・CodeQLも成功しています。
+コミット `9afe0c6ffb1ec18930c1b358d43ecec784ff7da7` 時点では28ファイル・222テスト（UI改善反映後は28ファイル・224テスト）の成功を確認しています。
 
 - `multi-organization-parity.test.ts`: 複数の発注機関を含む固定データで、機関名・評価理由の対応と配列順を変えた場合の混入の有無を検査。
 - `csv-pipeline-fidelity.test.ts`: MCP SDKのClientとInMemoryTransportを使用。検索モード・選択モードのCSVについて、ヘッダーと各行の16列、件数、案件Key、機関と理由の対応を検査。連続実行と選択モードでの検索呼出0回も検査。
-- テスト内のBOM付与はUI処理の模倣です。実ブラウザの保存・コピー機能を実行した試験ではありません。
-- テスト用CSVパーサーによる確認を、RFC 4180の完全適合認証や全表計算ソフトの互換保証とは扱いません。
+- `manual-export-fallback.test.ts` / `search-results-lifecycle.test.ts`: `downloadFile` およびクリップボード失敗時の `ManualExportPanel` フォールバック、16列/21列CSV検証、非同期競合（古い操作結果の破棄）、および `strict: true` 下での初期化・再試行ライフサイクルを検査。
+- ユニットテスト内のBOM付与はUI処理の検証であり、実ブラウザ・OSクリップボードの挙動とは区別します。
 
 [PR #14](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/pull/14) · [マージ後CI](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/actions/runs/39462427037) · [マージ後CodeQL](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/actions/runs/39462427061)
 

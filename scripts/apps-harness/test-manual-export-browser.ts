@@ -14,11 +14,11 @@
  */
 
 import { spawn } from "node:child_process";
-import { createServer } from "node:http";
+import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { createServer } from "node:http";
 import { extname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { createHash } from "node:crypto";
 import { parseCsvRows } from "../../src/apps/export-diagnostics.js";
 
 const chromePath =
@@ -161,7 +161,9 @@ async function main() {
 
     // Create target page with query params: denyDownload=1, denyClipboard=1, autoResult=1, selectBids=0,1
     const targetUrl = `http://127.0.0.1:${HARNESS_PORT}/host.html?autoResult=1&denyDownload=1&denyClipboard=1&selectBids=0,1`;
-    const target = await session.send<{ targetId: string }>("Target.createTarget", { url: targetUrl });
+    const target = await session.send<{ targetId: string }>("Target.createTarget", {
+      url: targetUrl,
+    });
     const targetSession = await session.send<{ sessionId: string }>("Target.attachToTarget", {
       targetId: target.targetId,
       flatten: true,
@@ -197,8 +199,17 @@ async function main() {
         sessionId,
       );
 
-      const state = evalRes.result.value as { selectionText: string; hasExportBtn: boolean; btnDisabled: boolean } | null;
-      if (state && state.selectionText.includes("2 件選択中") && state.hasExportBtn && !state.btnDisabled) {
+      const state = evalRes.result.value as {
+        selectionText: string;
+        hasExportBtn: boolean;
+        btnDisabled: boolean;
+      } | null;
+      if (
+        state &&
+        state.selectionText.includes("2 件選択中") &&
+        state.hasExportBtn &&
+        !state.btnDisabled
+      ) {
         ready = true;
         console.log(`    -> Confirmed state: "${state.selectionText}", Export CSV button enabled.`);
         break;
@@ -282,7 +293,11 @@ async function main() {
     if (!panelData.headerText.includes("CSV 手動取得欄 (2件)")) {
       throw new Error(`Unexpected header text: ${panelData.headerText}`);
     }
-    if (!panelData.hintText.includes("自動保存・コピーを完了できませんでした。下の欄をクリックして全選択し、コピーしてください。")) {
+    if (
+      !panelData.hintText.includes(
+        "自動保存・コピーを完了できませんでした。下の欄をクリックして全選択し、コピーしてください。",
+      )
+    ) {
       throw new Error(`Unexpected hint text: ${panelData.hintText}`);
     }
 
@@ -290,7 +305,11 @@ async function main() {
     console.log("[7] Verifying diagnostic report collected from browser session...");
     const diag = panelData.diagnosticReport as {
       stage?: string;
-      downloadFile?: { capabilitySupported?: boolean; attempted?: boolean; resultIsError?: boolean };
+      downloadFile?: {
+        capabilitySupported?: boolean;
+        attempted?: boolean;
+        resultIsError?: boolean;
+      };
       clipboard?: { attempted?: boolean; errorName?: string };
       tokensAudit?: { count?: number };
     } | null;
@@ -304,10 +323,14 @@ async function main() {
       throw new Error(`Expected diagnostic stage 'manual_fallback', got: ${diag?.stage}`);
     }
     if (diag?.downloadFile?.capabilitySupported !== false) {
-      throw new Error(`Expected downloadFile capabilitySupported to be false, got: ${diag?.downloadFile?.capabilitySupported}`);
+      throw new Error(
+        `Expected downloadFile capabilitySupported to be false, got: ${diag?.downloadFile?.capabilitySupported}`,
+      );
     }
     if (diag?.clipboard?.errorName !== "NotAllowedError") {
-      throw new Error(`Expected clipboard errorName to be 'NotAllowedError', got: ${diag?.clipboard?.errorName}`);
+      throw new Error(
+        `Expected clipboard errorName to be 'NotAllowedError', got: ${diag?.clipboard?.errorName}`,
+      );
     }
 
     // Click "全選択" button inside manual export panel
@@ -341,8 +364,14 @@ async function main() {
       totalLength: number;
     };
 
-    console.log(`    -> Selection range: [${selectState.selectionStart}, ${selectState.selectionEnd}] (Total length: ${selectState.totalLength})`);
-    if (selectState.selectionStart !== 0 || selectState.selectionEnd !== selectState.totalLength || selectState.totalLength === 0) {
+    console.log(
+      `    -> Selection range: [${selectState.selectionStart}, ${selectState.selectionEnd}] (Total length: ${selectState.totalLength})`,
+    );
+    if (
+      selectState.selectionStart !== 0 ||
+      selectState.selectionEnd !== selectState.totalLength ||
+      selectState.totalLength === 0
+    ) {
       throw new Error(`Select All failed to select full content: ${JSON.stringify(selectState)}`);
     }
 
@@ -392,7 +421,9 @@ async function main() {
     const byteMatch = rawHash === displayedHash;
     console.log(`    -> Byte-level exact match: ${byteMatch ? "YES (Identical)" : "NO"}`);
     if (!byteMatch) {
-      throw new Error(`CSV原文とブラウザ表示値が一致しません (raw=${rawHash}, displayed=${displayedHash})`);
+      throw new Error(
+        `CSV原文とブラウザ表示値が一致しません (raw=${rawHash}, displayed=${displayedHash})`,
+      );
     }
 
     // Line ending check
@@ -400,10 +431,14 @@ async function main() {
     console.log(`    -> Newline convention: ${hasCrlf ? "CRLF (Windows)" : "LF (Unix)"}`);
 
     // Parse and strictly validate CSV structure: 2 rows, each 16 columns, bid keys, and cell-internal newlines
-    console.log("\n[10] Validating Parsed CSV Content (2 rows, 16 columns, keys, cell-internal newlines):");
+    console.log(
+      "\n[10] Validating Parsed CSV Content (2 rows, 16 columns, keys, cell-internal newlines):",
+    );
     const parsed = parseCsvRows(displayedCsv);
     if (!parsed.success) {
-      throw new Error(`CSV parse failed: ${parsed.error} at line ${parsed.line}, column ${parsed.column}`);
+      throw new Error(
+        `CSV parse failed: ${parsed.error} at line ${parsed.line}, column ${parsed.column}`,
+      );
     }
 
     const rows = parsed.rows;
@@ -488,7 +523,9 @@ async function main() {
         `Row 2 fit_reasons mismatch:\nExpected: ${JSON.stringify(expectedFitReasons2)}\nGot:      ${JSON.stringify(fitReasons2)}`,
       );
     }
-    console.log("    -> Parsed content assertion: ALL PASS (2 items, 16 cols each, keys verified, internal newline verified)");
+    console.log(
+      "    -> Parsed content assertion: ALL PASS (2 items, 16 cols each, keys verified, internal newline verified)",
+    );
 
     // Persist verified CSV artifact
     const artifactDir = join(process.cwd(), "artifacts");
@@ -509,7 +546,6 @@ async function main() {
 - 16-Column Strict Specification: PASS (includes cell-internal quotes and newline)
 - Verified Artifact: ${artifactPath}
 `);
-
   } finally {
     if (session) session.close();
     chrome.kill("SIGKILL");

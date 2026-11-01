@@ -25,23 +25,20 @@
 //    - 7-2: Operation A delayed download/clipboard failure ignored after Operation B or new search starts (no manual display, no new copy)
 
 import { describe, expect, it, vi } from "vitest";
-import type { Bid } from "../../src/domain/bid.js";
 import {
   auditTokens,
   EXPECTED_BASE_COLUMNS,
   EXPECTED_EXTRA_COLUMNS,
   extractCsvFromToolResult,
   getLatestDiagnosticReport,
-  resetDiagnosticReport,
-  updateDiagnosticReport,
+  type ManualExportState,
   normalizeErrorName,
   parseCsvRows,
-  type ManualExportState,
+  resetDiagnosticReport,
+  updateDiagnosticReport,
 } from "../../src/apps/export-diagnostics.js";
-import {
-  FALLBACK_MANUAL_COPY_PROMPT,
-  handleExportBids,
-} from "../../src/apps/search-results.js";
+import { FALLBACK_MANUAL_COPY_PROMPT, handleExportBids } from "../../src/apps/search-results.js";
+import type { Bid } from "../../src/domain/bid.js";
 
 describe("Manual Export Fallback & Diagnostic Pipeline", () => {
   const HEADER_16 = EXPECTED_BASE_COLUMNS.join(",");
@@ -94,7 +91,9 @@ describe("Manual Export Fallback & Diagnostic Pipeline", () => {
     const originalClipboard = navigator.clipboard;
     Object.defineProperty(navigator, "clipboard", {
       value: {
-        writeText: vi.fn().mockRejectedValue(new DOMException("Write permission denied", "NotAllowedError")),
+        writeText: vi
+          .fn()
+          .mockRejectedValue(new DOMException("Write permission denied", "NotAllowedError")),
       },
       configurable: true,
     });
@@ -168,7 +167,9 @@ describe("Manual Export Fallback & Diagnostic Pipeline", () => {
     const originalClipboard = navigator.clipboard;
     Object.defineProperty(navigator, "clipboard", {
       value: {
-        writeText: vi.fn().mockRejectedValue(new DOMException("Must handle a user gesture", "SecurityError")),
+        writeText: vi
+          .fn()
+          .mockRejectedValue(new DOMException("Must handle a user gesture", "SecurityError")),
       },
       configurable: true,
     });
@@ -439,13 +440,15 @@ describe("Manual Export Fallback & Diagnostic Pipeline", () => {
       const toolResult = {
         structuredContent: {
           csv: VALID_16_CSV_2, // has 2 data rows
-          rankedCount: 3,       // metadata says 3
+          rankedCount: 3, // metadata says 3
         },
       };
       const extracted = extractCsvFromToolResult(toolResult);
       expect(extracted.valid).toBe(false);
       if (!extracted.valid) {
-        expect(extracted.reason).toContain("CSV解析データ件数 (2件) と rankedCount (3件) が一致しません");
+        expect(extracted.reason).toContain(
+          "CSV解析データ件数 (2件) と rankedCount (3件) が一致しません",
+        );
       }
     });
 
@@ -656,10 +659,7 @@ describe("Manual Export Fallback & Diagnostic Pipeline", () => {
 
   // 6. Token auditing without secret leakage
   it("Case 6: audits token length and full/short SHA-256 hashes without leaking token strings", async () => {
-    const tokens = [
-      "token_alpha_1234567890abcdef",
-      "token_beta_0987654321fedcba",
-    ];
+    const tokens = ["token_alpha_1234567890abcdef", "token_beta_0987654321fedcba"];
 
     const audit = await auditTokens(tokens);
     expect(audit).toHaveLength(2);
@@ -765,7 +765,9 @@ describe("Manual Export Fallback & Diagnostic Pipeline", () => {
         downloadFile: vi.fn().mockImplementationOnce(() => downloadPromiseA),
       };
 
-      const clipboardWriteMock = vi.fn().mockRejectedValue(new DOMException("denied", "NotAllowedError"));
+      const clipboardWriteMock = vi
+        .fn()
+        .mockRejectedValue(new DOMException("denied", "NotAllowedError"));
       const originalClipboard = navigator.clipboard;
       Object.defineProperty(navigator, "clipboard", {
         value: {
@@ -851,7 +853,9 @@ describe("Manual Export Fallback & Diagnostic Pipeline", () => {
         downloadFile: vi.fn().mockImplementationOnce(() => downloadPromiseA),
       };
 
-      const clipboardWriteMock = vi.fn().mockRejectedValue(new DOMException("denied", "NotAllowedError"));
+      const clipboardWriteMock = vi
+        .fn()
+        .mockRejectedValue(new DOMException("denied", "NotAllowedError"));
       const originalClipboard = navigator.clipboard;
       Object.defineProperty(navigator, "clipboard", {
         value: {
@@ -992,7 +996,9 @@ describe("Manual Export Fallback & Diagnostic Pipeline", () => {
 
   // Helper unit test: normalizeErrorName
   it("normalizes DOMException and Error names into allowed list", () => {
-    expect(normalizeErrorName(new DOMException("denied", "NotAllowedError"))).toBe("NotAllowedError");
+    expect(normalizeErrorName(new DOMException("denied", "NotAllowedError"))).toBe(
+      "NotAllowedError",
+    );
     expect(normalizeErrorName(new DOMException("security", "SecurityError"))).toBe("SecurityError");
     expect(normalizeErrorName(new TypeError("type error"))).toBe("TypeError");
     expect(normalizeErrorName(new Error("random unknown"))).toBe("UnknownError");

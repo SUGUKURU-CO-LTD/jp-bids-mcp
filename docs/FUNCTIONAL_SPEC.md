@@ -1,12 +1,12 @@
 # JP Bids MCP 機能仕様書
 
-更新日: 2026-10-21 JST
+更新日: 2026-11-01 JST
 
 [使用説明書](./USER_GUIDE.ja.md) · [検証状況](./VERIFICATION_STATUS.md)
 
 ## 仕様の基準
 
-対象はPublic版0.10.0、公開コードの確認基準は10625694b78506c7470a1149af5d087ee383ecb1です。このソースSHAを、本番コンテナの配備SHAと同一だとは扱いません。配備リビジョン・イメージdigest・ソースとの対応は運用記録で別に管理します。
+対象はPublic版0.10.0、公開コードの確認基準は `9afe0c6ffb1ec18930c1b358d43ecec784ff7da7`（およびその後のUI改善）です。ソースSHAと本番コンテナの配備リビジョン・イメージdigestとの対応は運用記録および[検証状況](./VERIFICATION_STATUS.md)で管理します。
 
 | ツール | 入力・機能 | 動作・制約 |
 | --- | --- | --- |
@@ -47,11 +47,15 @@ Public版の通常出力は次の16列です。
 
 CSV本体はLFで連結され、UI保存処理は必要に応じてUTF-8 BOMを付けます。カンマ・引用符・改行のあるセルのエスケープと、先頭記号による表計算式としての解釈を抑える処理があります。テスト用パーサーによる確認を、あらゆる表計算ソフトでの完全互換保証に拡張しません。
 
-## UIからのCSV取得経路
+## UIからのCSV取得経路とフォールバック
 
-直接呼出に対応するホストでは、UIがexport_bid_shortlistを呼び、structuredContent.csvを優先して取得します。応答にそのフィールドがないときの代替テキスト処理もあるため、すべての場合に構造化CSVだけを通す実装とは記載しません。
+直接呼出（`serverTools`）に対応するホストでは、UIが `export_bid_shortlist` を呼び、16列（または詳細取得時の21列）のヘッダー・列数・件数整合性を検証したうえで、次の3段階で取得を試みます。
 
-直接呼出に非対応のホストでは、チャットへ依頼文を送るか、依頼文のコピーに切り替わります。この経路は、CSV本文の直接受け渡しとは区別します。
+1. **ホストのファイル保存 (`app.downloadFile`)**: 対応している場合はUTF-8 BOM付きCSVの保存を要求します。
+2. **クリップボードコピー (`navigator.clipboard.writeText`)**: ファイル保存が非対応またはエラーとなった場合に試みます。
+3. **CSV 手動取得欄 (`ManualExportPanel`)**: サンドボックスiframeの権限制限等で1・2がいずれも完了しなかった場合、読み取り専用のテキストエリア（「全選択」「閉じる」ボタン付き）に検証済みCSV本文を表示します。再検索や別の出力を開始した際は連番ガード（`exportSeqRef`）により古い非同期結果を破棄します。
+
+直接呼出に非対応のホストでは、チャットへ依頼文を送るか、依頼文のコピーに切り替わります。この経路は、CSV本文の直接受け渡しとは区別します。また、検索結果が0件（`searchHits: 0` / `bids: []`）の場合は、UIの案件一覧と詳細欄に0件の空状態（Empty State）を明示表示します。
 
 確認したコード：
-[CSV UI経路](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/blob/10625694b78506c7470a1149af5d087ee383ecb1/src/apps/search-results.tsx) ／ [CSVツール](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/blob/10625694b78506c7470a1149af5d087ee383ecb1/src/tools/export-bid-shortlist.ts) ／ [CSV生成](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/blob/10625694b78506c7470a1149af5d087ee383ecb1/src/domain/bid-shortlist.ts) ／ [案件参照](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/blob/10625694b78506c7470a1149af5d087ee383ecb1/src/domain/bid-ref.ts) ／ [資料抽出の設定分岐](https://github.com/SUGUKURU-CO-LTD/jp-bids-mcp/blob/10625694b78506c7470a1149af5d087ee383ecb1/src/tools/document-extraction.ts)
+[CSV UI経路 (`src/apps/search-results.tsx`)](../src/apps/search-results.tsx) ／ [CSV出力診断・検証 (`src/apps/export-diagnostics.ts`)](../src/apps/export-diagnostics.ts) ／ [CSVツール (`src/tools/export-bid-shortlist.ts`)](../src/tools/export-bid-shortlist.ts) ／ [CSV生成 (`src/domain/bid-shortlist.ts`)](../src/domain/bid-shortlist.ts) ／ [案件参照 (`src/domain/bid-ref.ts`)](../src/domain/bid-ref.ts) ／ [資料抽出の設定分岐 (`src/tools/document-extraction.ts`)](../src/tools/document-extraction.ts)

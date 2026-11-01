@@ -8,12 +8,11 @@
  */
 
 import { spawn } from "node:child_process";
+import { readFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { extname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { readFile } from "node:fs/promises";
-import { extname } from "node:path";
 
 const chromePath =
   process.platform === "win32"
@@ -109,7 +108,8 @@ const FIXTURE_SEARCH_RESULT = {
     dataSource: "中小企業庁 官公需情報ポータルサイト",
     apiEndpoint: "http://www.kkj.go.jp/api/",
     licenseUrl: "https://www.kkj.go.jp/s/help/notes/",
-    serviceDisclaimer: "JP Bids MCP returns public procurement search results as reference information.",
+    serviceDisclaimer:
+      "JP Bids MCP returns public procurement search results as reference information.",
     accessedAt: "2026-10-23T22:00:00.000Z",
   },
 };
@@ -311,8 +311,13 @@ const chrome = spawn(
 try {
   const browserWsUrl = await waitForDevtools();
   const browser = await CdpSession.connect(browserWsUrl);
-  const { targetId } = await browser.send<{ targetId: string }>("Target.createTarget", { url: "about:blank" });
-  const { sessionId } = await browser.send<{ sessionId: string }>("Target.attachToTarget", { targetId, flatten: true });
+  const { targetId } = await browser.send<{ targetId: string }>("Target.createTarget", {
+    url: "about:blank",
+  });
+  const { sessionId } = await browser.send<{ sessionId: string }>("Target.attachToTarget", {
+    targetId,
+    flatten: true,
+  });
 
   await browser.send("Page.enable", {}, sessionId);
   await browser.send("Runtime.enable", {}, sessionId);
@@ -324,7 +329,11 @@ try {
   // -------------------------------------------------------------
   console.log("\n[試験A] 明示的エラー応答からの再接続・旧リスナー破棄・結果描画試験を開始...");
   currentHostHtml = createHostHtml("error-then-retry");
-  await browser.send("Page.navigate", { url: `http://127.0.0.1:${harnessPort}/host.html?t=${Date.now()}` }, sessionId);
+  await browser.send(
+    "Page.navigate",
+    { url: `http://127.0.0.1:${harnessPort}/host.html?t=${Date.now()}` },
+    sessionId,
+  );
   await sleep(1000);
 
   // 1. エラー表示と再接続ボタンの検証
@@ -350,12 +359,16 @@ try {
   const res1 = JSON.parse(step1.result.value);
   console.log("  ステップ1 (初期エラー表示とリスナー状態):", res1);
   if (!res1.hasErrorNotice || !res1.hasRetryBtn || res1.initCount !== 1) {
-    throw new Error(`[試験A 失敗] エラー通知または再接続ボタンが表示されていません: ${JSON.stringify(res1)}`);
+    throw new Error(
+      `[試験A 失敗] エラー通知または再接続ボタンが表示されていません: ${JSON.stringify(res1)}`,
+    );
   }
   console.log("  -> [PASS] 初期接続失敗のエラー通知と再接続ボタンの表示を確認");
 
   // 2. 再接続ボタンをクリック
-  console.log("  ステップ2: 再接続ボタンをクリック（旧コンポーネントアンマウント＆新インスタンス起動）...");
+  console.log(
+    "  ステップ2: 再接続ボタンをクリック（旧コンポーネントアンマウント＆新インスタンス起動）...",
+  );
   const clickRes = await browser.send<{ result: { value: boolean } }>(
     "Runtime.evaluate",
     {
@@ -372,7 +385,8 @@ try {
     },
     sessionId,
   );
-  if (!clickRes.result.value) throw new Error("[試験A 失敗] 再接続ボタンをクリックできませんでした");
+  if (!clickRes.result.value)
+    throw new Error("[試験A 失敗] 再接続ボタンをクリックできませんでした");
 
   // 3. 新接続確立と旧リスナー破棄の観測・結果描画を待機
   await sleep(1200);
@@ -401,25 +415,47 @@ try {
   );
   const res3 = JSON.parse(step3.result.value);
   console.log("  ステップ3 (新接続確立・旧リスナー破棄・結果描画):", res3);
-  if (res3.initCount < 2 || !res3.receivedInitialized || !res3.cardTitle.includes("岡山大学") || res3.isWelcomePresent) {
+  if (
+    res3.initCount < 2 ||
+    !res3.receivedInitialized ||
+    !res3.cardTitle.includes("岡山大学") ||
+    res3.isWelcomePresent
+  ) {
     throw new Error(`[試験A 失敗] 再接続後の結果描画に失敗しました: ${JSON.stringify(res3)}`);
   }
   // リスナー破棄の観測検証:
   // 再マウントにより旧リスナーの removeEventListener が呼ばれ、新リスナーのみが有効であることを確認
-  console.log("  -> [観測確認] messageリスナー統計: 登録数=", res3.listenerStats.added, "破棄数=", res3.listenerStats.removed, "現存リスナー数=", res3.listenerStats.activeCount);
+  console.log(
+    "  -> [観測確認] messageリスナー統計: 登録数=",
+    res3.listenerStats.added,
+    "破棄数=",
+    res3.listenerStats.removed,
+    "現存リスナー数=",
+    res3.listenerStats.activeCount,
+  );
   if (res3.listenerStats.removed < 1) {
-    console.warn("  ※警告: removeEventListener が直接フックできなかった可能性がありますが、新接続への切り替えは成功しています。");
+    console.warn(
+      "  ※警告: removeEventListener が直接フックできなかった可能性がありますが、新接続への切り替えは成功しています。",
+    );
   } else {
-    console.log("  -> [PASS] 旧インスタンスの message リスナー破棄（removeEventListener）を直接観測確認！");
+    console.log(
+      "  -> [PASS] 旧インスタンスの message リスナー破棄（removeEventListener）を直接観測確認！",
+    );
   }
-  console.log("  -> [PASS] 再接続成功、旧接続終了後の新インスタンスによる初回結果描画（岡山大学 医薬品調達業務）を確認！");
+  console.log(
+    "  -> [PASS] 再接続成功、旧接続終了後の新インスタンスによる初回結果描画（岡山大学 医薬品調達業務）を確認！",
+  );
 
   // -------------------------------------------------------------
   // 試験B: 初回結果待ちの完全分離（WelcomeScreenの誤表示防止＆遅延受信）
   // -------------------------------------------------------------
   console.log("\n[試験B] 初回結果待ち分離試験（WelcomeScreen誤表示防止＆遅延受信）を開始...");
   currentHostHtml = createHostHtml("delayed-result");
-  await browser.send("Page.navigate", { url: `http://127.0.0.1:${harnessPort}/host.html?t=${Date.now()}` }, sessionId);
+  await browser.send(
+    "Page.navigate",
+    { url: `http://127.0.0.1:${harnessPort}/host.html?t=${Date.now()}` },
+    sessionId,
+  );
   await sleep(800);
 
   // 1. 接続直後・結果未受信の状態で WelcomeScreen が表示されていないか検証
@@ -443,9 +479,13 @@ try {
   const bRes1 = JSON.parse(testB_step1.result.value);
   console.log("  ステップ1 (初回結果待ち状態):", bRes1);
   if (!bRes1.hasWaitingNotice || bRes1.hasWelcome) {
-    throw new Error(`[試験B 失敗] WelcomeScreen が誤表示されているか、待機表示がありません: ${JSON.stringify(bRes1)}`);
+    throw new Error(
+      `[試験B 失敗] WelcomeScreen が誤表示されているか、待機表示がありません: ${JSON.stringify(bRes1)}`,
+    );
   }
-  console.log("  -> [PASS] 接続完了後、WelcomeScreen は表示されず「検索結果を受信中…」が表示されていることを確認");
+  console.log(
+    "  -> [PASS] 接続完了後、WelcomeScreen は表示されず「検索結果を受信中…」が表示されていることを確認",
+  );
 
   // 2. ホストから遅延して初回結果（固定データ）を送信
   console.log("  ステップ2: ホストから初回結果を遅延送信...");
@@ -475,17 +515,27 @@ try {
   const bRes2 = JSON.parse(testB_step2.result.value);
   console.log("  ステップ2 (遅延送信後の結果描画):", bRes2);
   if (!bRes2.cardTitle.includes("岡山大学") || bRes2.hasWaitingNotice) {
-    throw new Error(`[試験B 失敗] 初回結果受信後のカード描画に失敗しました: ${JSON.stringify(bRes2)}`);
+    throw new Error(
+      `[試験B 失敗] 初回結果受信後のカード描画に失敗しました: ${JSON.stringify(bRes2)}`,
+    );
   }
-  console.log("  -> [PASS] 初回結果受信後に待機表示が解除され、正常に案件カードが描画されたことを確認！");
+  console.log(
+    "  -> [PASS] 初回結果受信後に待機表示が解除され、正常に案件カードが描画されたことを確認！",
+  );
 
   // -------------------------------------------------------------
   // 試験C: 初期化無応答タイムアウト試験（60秒タイムアウト後のエラー表示と再接続導線の検証）
   // -------------------------------------------------------------
   console.log("\n[試験C] 初期化無応答タイムアウト試験を開始...");
-  console.log("  ※SDK既定要求タイムアウト(60秒)の経過と、タイムアウト後のエラー表示・再接続導線を検証します。");
+  console.log(
+    "  ※SDK既定要求タイムアウト(60秒)の経過と、タイムアウト後のエラー表示・再接続導線を検証します。",
+  );
   currentHostHtml = createHostHtml("hang-init");
-  await browser.send("Page.navigate", { url: `http://127.0.0.1:${harnessPort}/host.html?t=${Date.now()}` }, sessionId);
+  await browser.send(
+    "Page.navigate",
+    { url: `http://127.0.0.1:${harnessPort}/host.html?t=${Date.now()}` },
+    sessionId,
+  );
 
   // 1. 無応答初期（数秒時点）の待機表示確認
   await sleep(2000);
@@ -542,9 +592,15 @@ try {
   const cRes3 = JSON.parse(testC_step3.result.value);
   console.log("  ステップ3 (62秒経過・タイムアウト後):", cRes3);
   if (!cRes3.hasErrorNotice || !cRes3.hasRetryBtn || cRes3.hasConnectingNotice) {
-    throw new Error(`[試験C 失敗] 60秒タイムアウト後にエラー表示または再接続ボタンが表示されていません: ${JSON.stringify(cRes3)}`);
+    throw new Error(
+      `[試験C 失敗] 60秒タイムアウト後にエラー表示または再接続ボタンが表示されていません: ${JSON.stringify(cRes3)}`,
+    );
   }
-  console.log("  -> [PASS] 60秒タイムアウト後、エラー通知（" + cRes3.errorText.slice(0, 40) + "...）および再接続ボタンの表示を確認！");
+  console.log(
+    "  -> [PASS] 60秒タイムアウト後、エラー通知（" +
+      cRes3.errorText.slice(0, 40) +
+      "...）および再接続ボタンの表示を確認！",
+  );
 
   // 4. タイムアウト状態からの再接続ボタン押下・復旧の確認
   console.log("  ステップ4: タイムアウト後の再接続ボタンをクリックして復旧を確認...");
@@ -579,11 +635,17 @@ try {
   const cRes4 = JSON.parse(testC_step4.result.value);
   console.log("  ステップ4 (再接続・復旧結果):", cRes4);
   if (cRes4.initCount < 2 || !cRes4.cardTitle.includes("岡山大学")) {
-    throw new Error(`[試験C 失敗] タイムアウト後の再接続・復旧に失敗しました: ${JSON.stringify(cRes4)}`);
+    throw new Error(
+      `[試験C 失敗] タイムアウト後の再接続・復旧に失敗しました: ${JSON.stringify(cRes4)}`,
+    );
   }
-  console.log("  -> [PASS] タイムアウト後の再接続ボタン押下により新インスタンス接続・結果描画が完了したことを確認！");
+  console.log(
+    "  -> [PASS] タイムアウト後の再接続ボタン押下により新インスタンス接続・結果描画が完了したことを確認！",
+  );
 
-  console.log("\n🎉 全ての限定実UI試験 (試験A: 明示的エラー+リスナー破棄 / 試験B: 待機分離 / 試験C: 60秒タイムアウト+再接続) が 100% 成功しました！");
+  console.log(
+    "\n🎉 全ての限定実UI試験 (試験A: 明示的エラー+リスナー破棄 / 試験B: 待機分離 / 試験C: 60秒タイムアウト+再接続) が 100% 成功しました！",
+  );
 } finally {
   server.close();
   chrome.kill();

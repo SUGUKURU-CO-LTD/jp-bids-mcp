@@ -14,7 +14,9 @@
       "!jgrants-mcp-server",
       "!bom.json",
       "!.smithery",
-      "!evidence"
+      "!evidence",
+      "!scratch",
+      "!artifacts"
     ]
   },
   "formatter": {

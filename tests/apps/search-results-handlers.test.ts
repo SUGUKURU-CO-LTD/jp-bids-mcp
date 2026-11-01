@@ -1,8 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  applyHostTheme,
+  formatModelContextSummary,
   handleExportBids,
   handleInAppSearch,
   handleRankSelected,
+  handleSyncModelContext,
 } from "../../src/apps/search-results.js";
 import type { Bid } from "../../src/domain/bid.js";
 
@@ -221,5 +224,98 @@ describe("K1-a: searchCriteria preservation and in-app search handlers", () => {
       name: "export_bid_shortlist",
       arguments: { bid_refs: ["token_bid_1", "token_bid_2"], format: "json" },
     });
+  });
+
+  it("syncs model context including active bid and multi-select shortlist keys", async () => {
+    let syncedContent: unknown = null;
+    const mockApp = {
+      getHostCapabilities: () => ({ updateModelContext: { text: {} } }),
+      updateModelContext: vi.fn(async (payload: unknown) => {
+        syncedContent = payload;
+        return {};
+      }),
+    };
+
+    const bid: Bid = {
+      resultId: 1,
+      key: "KKJ-2026-001",
+      projectName: "基幹システム更新業務",
+    };
+    const card = {
+      key: "KKJ-2026-001",
+      projectName: "基幹システム更新業務",
+      organizationName: "デジタル庁",
+      prefectureName: "東京都",
+      category: "役務",
+      submissionDeadline: "2026-11-15",
+      openingDate: "2026-11-20",
+      cftIssueDate: "2026-10-20",
+      daysUntilDeadline: 14,
+      deadlineUrgency: "normal" as const,
+      hasPdf: true,
+      officialUrl: "https://www.digital.go.jp/bids/001.html",
+      serverScore: 88,
+      priorityLabel: "pursue" as const,
+    };
+    const workspace = {
+      totalHits: 2,
+      returnedCount: 2,
+      cards: [card],
+      dataSource: "官公需情報ポータルサイト",
+      accessedAt: "2026-11-01T12:00:00Z",
+    };
+
+    const summaryWithoutSelection = formatModelContextSummary(bid, card, workspace, null, []);
+    expect(summaryWithoutSelection).toContain("Key: KKJ-2026-001");
+    expect(summaryWithoutSelection).toContain("Priority: pursue (88)");
+    expect(summaryWithoutSelection).not.toContain("Selected count:");
+
+    let actionMessage = "";
+    await handleSyncModelContext(
+      mockApp as unknown as SearchApp,
+      bid,
+      card,
+      workspace,
+      { score: 92, priority: "pursue", reasons: ["高適合"] },
+      (msg) => {
+        actionMessage = msg;
+      },
+      ["KKJ-2026-001", "KKJ-2026-002"],
+    );
+
+    expect(actionMessage).toBe("検索結果をHostの文脈へ同期しました。");
+    expect(mockApp.updateModelContext).toHaveBeenCalledTimes(1);
+    const text = (syncedContent as { content: Array<{ text: string }> }).content[0]?.text ?? "";
+    expect(text).toContain("Priority: pursue (92)");
+    expect(text).toContain("Selected count: 2 (KKJ-2026-001, KKJ-2026-002)");
+  });
+
+  it("applies host theme to document.documentElement.dataset.theme when available", () => {
+    const originalDoc = globalThis.document;
+    const mockDoc = {
+      documentElement: {
+        dataset: {} as Record<string, string | undefined>,
+      },
+    };
+    Object.defineProperty(globalThis, "document", {
+      value: mockDoc,
+      configurable: true,
+    });
+
+    try {
+      applyHostTheme("dark");
+      expect(mockDoc.documentElement.dataset.theme).toBe("dark");
+
+      applyHostTheme("light");
+      expect(mockDoc.documentElement.dataset.theme).toBe("light");
+
+      applyHostTheme(undefined);
+      expect(mockDoc.documentElement.dataset.theme).toBeUndefined();
+    } finally {
+      Object.defineProperty(globalThis, "document", {
+        value: originalDoc,
+        configurable: true,
+      });
+    }
   });
 });

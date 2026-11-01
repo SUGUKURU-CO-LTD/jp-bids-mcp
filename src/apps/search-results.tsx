@@ -1,16 +1,23 @@
 import { useApp } from "@modelcontextprotocol/ext-apps/react";
-import { Component, type ErrorInfo, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Component,
+  type ErrorInfo,
+  type ReactNode,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { createRoot } from "react-dom/client";
 import { type Bid, type BidSearchResult, BidSearchResultSchema } from "../domain/bid.js";
 import { VERSION } from "../lib/version.js";
 import {
-  type ManualExportState,
-  type AllowedErrorName,
+  auditTokens,
   extractCsvFromToolResult,
+  type ManualExportState,
   normalizeErrorName,
   resetDiagnosticReport,
   updateDiagnosticReport,
-  auditTokens,
 } from "./export-diagnostics.js";
 
 interface ErrorBoundaryProps {
@@ -45,13 +52,30 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   override render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: "16px", color: "#dc2626", background: "#fef2f2", borderRadius: "8px", margin: "16px" }}>
+        <div
+          style={{
+            padding: "16px",
+            color: "#dc2626",
+            background: "#fef2f2",
+            borderRadius: "8px",
+            margin: "16px",
+          }}
+        >
           <h3 style={{ margin: "0 0 8px 0" }}>AI Bid Workspace 初期化エラー</h3>
-          <p style={{ margin: "0 0 12px 0", fontSize: "14px" }}>{this.state.errorMessage ?? "予期せぬエラーが発生しました。"}</p>
+          <p style={{ margin: "0 0 12px 0", fontSize: "14px" }}>
+            {this.state.errorMessage ?? "予期せぬエラーが発生しました。"}
+          </p>
           <button
             type="button"
             onClick={this.handleReset}
-            style={{ padding: "6px 12px", background: "#2563eb", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer" }}
+            style={{
+              padding: "6px 12px",
+              background: "#2563eb",
+              color: "#fff",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+            }}
           >
             再試行
           </button>
@@ -89,6 +113,15 @@ const EXAMPLE_PROMPTS = [
 export const FALLBACK_MANUAL_COPY_PROMPT =
   "自動保存・コピーを完了できませんでした。下の欄をクリックして全選択し、コピーしてください。";
 
+export function applyHostTheme(theme: unknown): void {
+  if (typeof document === "undefined" || !document.documentElement) return;
+  if (theme === "light" || theme === "dark") {
+    document.documentElement.dataset.theme = theme;
+  } else {
+    delete document.documentElement.dataset.theme;
+  }
+}
+
 export function ManualExportPanel({
   data,
   onClose,
@@ -106,7 +139,7 @@ export function ManualExportPanel({
   };
 
   return (
-    <div className="manual-export-panel" role="region" aria-label="手動エクスポートデータ">
+    <section className="manual-export-panel" aria-label="手動エクスポートデータ">
       <div className="manual-export-header">
         <strong>
           {data.type === "json" ? "JSON" : "CSV"} 手動取得欄 ({data.itemCount}件)
@@ -120,9 +153,7 @@ export function ManualExportPanel({
           </button>
         </div>
       </div>
-      <p className="manual-export-hint">
-        {FALLBACK_MANUAL_COPY_PROMPT}
-      </p>
+      <p className="manual-export-hint">{FALLBACK_MANUAL_COPY_PROMPT}</p>
       <textarea
         ref={textareaRef}
         readOnly
@@ -132,7 +163,7 @@ export function ManualExportPanel({
         onClick={(e) => (e.target as HTMLTextAreaElement).select()}
         aria-label="エクスポートデータ"
       />
-    </div>
+    </section>
   );
 }
 
@@ -239,6 +270,7 @@ export function WorkspaceContent({ onRetry }: WorkspaceContentProps) {
         const currentContext = app.getHostContext() ?? context;
         setDisplayMode(currentContext.displayMode ?? null);
         setAvailableDisplayModes(currentContext.availableDisplayModes ?? []);
+        applyHostTheme(currentContext.theme);
       });
     },
   });
@@ -301,6 +333,7 @@ export function WorkspaceContent({ onRetry }: WorkspaceContentProps) {
     const context = app.getHostContext();
     setDisplayMode(context?.displayMode ?? null);
     setAvailableDisplayModes(context?.availableDisplayModes ?? []);
+    applyHostTheme(context?.theme);
   }, [app]);
 
   return (
@@ -386,52 +419,48 @@ export function WorkspaceContent({ onRetry }: WorkspaceContentProps) {
       {error && <div className="notice error">{error}</div>}
       {actionMessage && <div className="notice compact">{actionMessage}</div>}
       {manualExportData && (
-        <ManualExportPanel
-          data={manualExportData}
-          onClose={() => setManualExportData(null)}
-        />
+        <ManualExportPanel data={manualExportData} onClose={() => setManualExportData(null)} />
       )}
       {isSearching && !workspace && <div className="notice">検索中…</div>}
 
       {!workspace ? (
-        !appError && (
-          !isConnected ? (
-            <div className="notice connecting">ワークスペースに接続中…</div>
-          ) : !hasReceivedInitialResult ? (
-            <div className="notice waiting">
-              <p>検索結果を受信中…</p>
-              {isWaitingTooLong && (
-                <div style={{ marginTop: "8px", fontSize: "13px", color: "#475569" }}>
-                  <p>ホストからの初期化応答または検索結果の送信に時間がかかっています。</p>
-                  {onRetry && (
-                    <button
-                      type="button"
-                      className="btn-retry"
-                      onClick={onRetry}
-                      style={{
-                        marginTop: "6px",
-                        padding: "4px 10px",
-                        background: "#2563eb",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      再接続を試す
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-          ) : isSearching ? (
-            <div className="notice">検索中…</div>
-          ) : error ? (
-            <div className="notice error">{error}</div>
-          ) : (
-            <WelcomeScreen />
-          )
-        )
+        !appError &&
+        (!isConnected ? (
+          <div className="notice connecting">ワークスペースに接続中…</div>
+        ) : !hasReceivedInitialResult ? (
+          <div className="notice waiting">
+            <p>検索結果を受信中…</p>
+            {isWaitingTooLong && (
+              <div style={{ marginTop: "8px", fontSize: "13px", color: "#475569" }}>
+                <p>ホストからの初期化応答または検索結果の送信に時間がかかっています。</p>
+                {onRetry && (
+                  <button
+                    type="button"
+                    className="btn-retry"
+                    onClick={onRetry}
+                    style={{
+                      marginTop: "6px",
+                      padding: "4px 10px",
+                      background: "#2563eb",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    再接続を試す
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        ) : isSearching ? (
+          <div className="notice">検索中…</div>
+        ) : error ? (
+          <div className="notice error">{error}</div>
+        ) : (
+          <WelcomeScreen />
+        ))
       ) : (
         <div className={`ws-body${isSearching ? " ws-body--loading" : ""}`}>
           {/* Priority Lane */}
@@ -516,72 +545,78 @@ export function WorkspaceContent({ onRetry }: WorkspaceContentProps) {
             </div>
 
             <div className="lane-cards">
-              {workspace.cards.map((card) => {
-                const scoreInfo = rankingScores.get(card.key);
-                return (
-                  <button
-                    key={card.key}
-                    type="button"
-                    className={`bid-card ${card.key === selectedKey ? "selected" : ""}`}
-                    onClick={() => setSelectedKey(card.key)}
-                  >
-                    <div className="bid-card-header">
-                      <span className="card-checkbox-label">
-                        <input
-                          type="checkbox"
-                          className="card-checkbox"
-                          checked={selectedBidKeys.includes(card.key)}
-                          onClick={(e) => e.stopPropagation()}
-                          onChange={(e) => toggleSelectCard(card.key, e.target.checked)}
-                          aria-label={`${card.projectName} を選択`}
-                        />
-                      </span>
-                      <div className="card-priority">
-                        {scoreInfo ? (
-                          <>
-                            <span className={`priority-badge ${scoreInfo.priority}`}>
-                              {scoreInfo.priority === "pursue"
-                                ? "追う"
-                                : scoreInfo.priority === "review"
-                                  ? "要確認"
-                                  : "見送り"}
-                            </span>
-                            <span className="card-score">{scoreInfo.score}点</span>
-                          </>
-                        ) : card.serverScore !== undefined ? (
-                          <>
-                            <span className={`priority-badge ${card.priorityLabel ?? "review"}`}>
-                              {card.priorityLabel === "pursue"
-                                ? "追う"
-                                : card.priorityLabel === "review"
-                                  ? "要確認"
-                                  : "見送り"}
-                            </span>
-                            <span className="card-score">{card.serverScore}点</span>
-                          </>
-                        ) : (
-                          <span className="priority-badge unranked">未評価</span>
-                        )}
+              {workspace.cards.length === 0 ? (
+                <div className="lane-empty" role="status">
+                  該当する入札公告はありません（0件）
+                </div>
+              ) : (
+                workspace.cards.map((card) => {
+                  const scoreInfo = rankingScores.get(card.key);
+                  return (
+                    <button
+                      key={card.key}
+                      type="button"
+                      className={`bid-card ${card.key === selectedKey ? "selected" : ""}`}
+                      onClick={() => setSelectedKey(card.key)}
+                    >
+                      <div className="bid-card-header">
+                        <span className="card-checkbox-label">
+                          <input
+                            type="checkbox"
+                            className="card-checkbox"
+                            checked={selectedBidKeys.includes(card.key)}
+                            onClick={(e) => e.stopPropagation()}
+                            onChange={(e) => toggleSelectCard(card.key, e.target.checked)}
+                            aria-label={`${card.projectName} を選択`}
+                          />
+                        </span>
+                        <div className="card-priority">
+                          {scoreInfo ? (
+                            <>
+                              <span className={`priority-badge ${scoreInfo.priority}`}>
+                                {scoreInfo.priority === "pursue"
+                                  ? "追う"
+                                  : scoreInfo.priority === "review"
+                                    ? "要確認"
+                                    : "見送り"}
+                              </span>
+                              <span className="card-score">{scoreInfo.score}点</span>
+                            </>
+                          ) : card.serverScore !== undefined ? (
+                            <>
+                              <span className={`priority-badge ${card.priorityLabel ?? "review"}`}>
+                                {card.priorityLabel === "pursue"
+                                  ? "追う"
+                                  : card.priorityLabel === "review"
+                                    ? "要確認"
+                                    : "見送り"}
+                              </span>
+                              <span className="card-score">{card.serverScore}点</span>
+                            </>
+                          ) : (
+                            <span className="priority-badge unranked">未評価</span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                    <div className="card-project">{card.projectName}</div>
-                    <div className="card-meta">
-                      <span>{card.organizationName}</span>
-                      <span>{card.prefectureName}</span>
-                    </div>
-                    <div className="card-deadline">
-                      {card.hasPdf && <span className="tag pdf">PDF</span>}
-                      <span className={`tag ${card.deadlineUrgency}`}>
-                        {card.daysUntilDeadline !== null
-                          ? card.daysUntilDeadline < 0
-                            ? "期限切れ"
-                            : `${card.daysUntilDeadline}日`
-                          : "期限不明"}
-                      </span>
-                    </div>
-                  </button>
-                );
-              })}
+                      <div className="card-project">{card.projectName}</div>
+                      <div className="card-meta">
+                        <span>{card.organizationName}</span>
+                        <span>{card.prefectureName}</span>
+                      </div>
+                      <div className="card-deadline">
+                        {card.hasPdf && <span className="tag pdf">PDF</span>}
+                        <span className={`tag ${card.deadlineUrgency}`}>
+                          {card.daysUntilDeadline !== null
+                            ? card.daysUntilDeadline < 0
+                              ? "期限切れ"
+                              : `${card.daysUntilDeadline}日`
+                            : "期限不明"}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })
+              )}
             </div>
             <div className="lane-actions">
               <button
@@ -614,6 +649,7 @@ export function WorkspaceContent({ onRetry }: WorkspaceContentProps) {
                     workspace,
                     selectedScore,
                     setActionMessage,
+                    selectedBidKeys,
                   )
                 }
               >
@@ -796,7 +832,11 @@ export function WorkspaceContent({ onRetry }: WorkspaceContentProps) {
             </section>
           ) : (
             <section className="workbench empty">
-              <p>案件を選択してください。</p>
+              <p>
+                {workspace.cards.length === 0
+                  ? "条件に一致する入札公告は見つかりませんでした（0件）。検索条件を広げて再検索してください。"
+                  : "案件を選択してください。"}
+              </p>
             </section>
           )}
         </div>
@@ -1205,7 +1245,9 @@ export async function handleExportBids(
           stage: "tool_call_success",
           toolCall: {
             isExplicitSuccess: (result as { isError?: unknown }).isError !== true,
-            hasStructuredContent: Boolean((result as { structuredContent?: unknown }).structuredContent),
+            hasStructuredContent: Boolean(
+              (result as { structuredContent?: unknown }).structuredContent,
+            ),
             hasExpectedField: true,
             rawTextLength: extracted.rawCsv.length,
             reportedItemCount: extracted.itemCount,
@@ -1250,8 +1292,7 @@ export async function handleExportBids(
         jsonText = JSON.stringify(structured.jsonContent, null, 2);
       } else {
         jsonText =
-          ((result as { content?: Array<{ type: string; text?: string }> }).content)?.[0]?.text ??
-          "";
+          (result as { content?: Array<{ type: string; text?: string }> }).content?.[0]?.text ?? "";
       }
       const itemCount =
         typeof structured?.rankedCount === "number" ? structured.rankedCount : validRefs.length;
@@ -1633,13 +1674,14 @@ async function handleDownloadJson(
   );
 }
 
-async function handleSyncModelContext(
+export async function handleSyncModelContext(
   app: ReturnType<typeof useApp>["app"],
   bid: Bid | null,
   card: BidCardViewModel | null,
   workspace: WorkspaceViewModel | null,
   scoreInfo: RankedScore | null,
   setActionMessage: (message: string) => void,
+  selectedBidKeys: string[] = [],
 ): Promise<void> {
   if (!app || !bid || !card || !workspace) {
     setActionMessage("同期対象がありません。");
@@ -1654,7 +1696,7 @@ async function handleSyncModelContext(
       content: [
         {
           type: "text",
-          text: formatModelContextSummary(bid, card, workspace, scoreInfo),
+          text: formatModelContextSummary(bid, card, workspace, scoreInfo, selectedBidKeys),
         },
       ],
     });
@@ -1680,11 +1722,12 @@ async function handleToggleDisplayMode(
   }
 }
 
-function formatModelContextSummary(
+export function formatModelContextSummary(
   bid: Bid,
   card: BidCardViewModel,
   workspace: WorkspaceViewModel,
   scoreInfo: RankedScore | null,
+  selectedBidKeys: string[] = [],
 ): string {
   const priorityStr = scoreInfo
     ? `${scoreInfo.priority} (${scoreInfo.score})`
@@ -1699,6 +1742,9 @@ function formatModelContextSummary(
     "",
     `Key: ${bid.key}`,
     `Priority: ${priorityStr}`,
+    ...(selectedBidKeys.length > 0
+      ? [`Selected count: ${selectedBidKeys.length} (${selectedBidKeys.join(", ")})`]
+      : []),
     `Official URL: ${card.officialUrl || "not available"}`,
     `Source: ${workspace.dataSource}`,
     `Accessed at: ${workspace.accessedAt}`,

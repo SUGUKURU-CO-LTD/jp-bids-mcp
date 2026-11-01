@@ -11,13 +11,13 @@
  * 7. Report byte differences (CRLF vs LF, BOM) clearly.
  */
 
-import { spawn, execSync } from "node:child_process";
-import { createServer } from "node:http";
+import { execSync, spawn } from "node:child_process";
+import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { createServer } from "node:http";
 import { extname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { createHash } from "node:crypto";
-import { parseCsvRows, EXPECTED_BASE_COLUMNS } from "../../src/apps/export-diagnostics.js";
+import { EXPECTED_BASE_COLUMNS, parseCsvRows } from "../../src/apps/export-diagnostics.js";
 
 const chromePath =
   process.platform === "win32"
@@ -167,7 +167,9 @@ async function main() {
 
     // Create target page with query params: denyDownload=1, denyClipboard=1, autoResult=1, selectBids=0,1
     const targetUrl = `http://127.0.0.1:${HARNESS_PORT}/host.html?autoResult=1&denyDownload=1&denyClipboard=1&selectBids=0,1`;
-    const target = await session.send<{ targetId: string }>("Target.createTarget", { url: targetUrl });
+    const target = await session.send<{ targetId: string }>("Target.createTarget", {
+      url: targetUrl,
+    });
     const targetSession = await session.send<{ sessionId: string }>("Target.attachToTarget", {
       targetId: target.targetId,
       flatten: true,
@@ -203,8 +205,17 @@ async function main() {
         sessionId,
       );
 
-      const state = evalRes.result.value as { selectionText: string; hasExportBtn: boolean; btnDisabled: boolean } | null;
-      if (state && state.selectionText.includes("2 件選択中") && state.hasExportBtn && !state.btnDisabled) {
+      const state = evalRes.result.value as {
+        selectionText: string;
+        hasExportBtn: boolean;
+        btnDisabled: boolean;
+      } | null;
+      if (
+        state &&
+        state.selectionText.includes("2 件選択中") &&
+        state.hasExportBtn &&
+        !state.btnDisabled
+      ) {
         ready = true;
         console.log(`    -> Confirmed selection: "${state.selectionText}"`);
         break;
@@ -282,14 +293,20 @@ async function main() {
       sessionId,
     );
 
-    const selectionInfo = selectAllRes.result.value as { selectionStart: number; selectionEnd: number; totalLength: number };
-    console.log(`    -> Textarea selection range: [${selectionInfo.selectionStart}, ${selectionInfo.selectionEnd}] (Length: ${selectionInfo.totalLength})`);
+    const selectionInfo = selectAllRes.result.value as {
+      selectionStart: number;
+      selectionEnd: number;
+      totalLength: number;
+    };
+    console.log(
+      `    -> Textarea selection range: [${selectionInfo.selectionStart}, ${selectionInfo.selectionEnd}] (Length: ${selectionInfo.totalLength})`,
+    );
 
     // Clear OS clipboard first to be certain no stale data remains
     execSync(`powershell.exe -NoProfile -Command "Set-Clipboard -Value 'CLEARED'"`);
 
     // Step 2: Perform automated Ctrl+C copy without granting any extra clipboard permissions
-    console.log('[8] Step 2: Executing automated Ctrl+C copy without extra permissions...');
+    console.log("[8] Step 2: Executing automated Ctrl+C copy without extra permissions...");
 
     // Dispatch Ctrl+C via CDP Input
     await session.send(
@@ -340,11 +357,13 @@ async function main() {
 
     // Step 3: Read text directly from the host Windows OS clipboard
     console.log("[9] Step 3: Reading text from Windows OS clipboard via PowerShell...");
-    let clipboardText = getWindowsClipboardText();
+    const clipboardText = getWindowsClipboardText();
     console.log(`    -> Automated Ctrl+C result length: ${clipboardText.length} characters`);
 
     if (!clipboardText || clipboardText.trim() === "CLEARED" || clipboardText.trim().length === 0) {
-      throw new Error("Windows OS clipboard did not receive copied text (copy failed or blocked without permissions)");
+      throw new Error(
+        "Windows OS clipboard did not receive copied text (copy failed or blocked without permissions)",
+      );
     }
 
     // Step 4: Save as UTF-8 CSV file
@@ -357,8 +376,12 @@ async function main() {
     console.log(`    -> Saved pasted CSV to: ${pastedCsvPath}`);
 
     // Step 5: Parse saved file and strictly verify full cell-by-cell match against raw CSV
-    console.log("\n[11] Step 5: Parsing saved file and performing exhaustive all-cell comparison against raw CSV...");
-    const rawMockCsv = (await readFile(join(artifactDir, "browser-manual-export-20261024.csv"))).toString("utf-8");
+    console.log(
+      "\n[11] Step 5: Parsing saved file and performing exhaustive all-cell comparison against raw CSV...",
+    );
+    const rawMockCsv = (
+      await readFile(join(artifactDir, "browser-manual-export-20261024.csv"))
+    ).toString("utf-8");
     const rawParsed = parseCsvRows(rawMockCsv);
     if (!rawParsed.success) {
       throw new Error(`Raw CSV parse failed: ${rawParsed.error}`);
@@ -366,25 +389,33 @@ async function main() {
 
     const parsed = parseCsvRows(clipboardText);
     if (!parsed.success) {
-      throw new Error(`Clipboard CSV parse failed: ${parsed.error} at line ${parsed.line}, column ${parsed.column}`);
+      throw new Error(
+        `Clipboard CSV parse failed: ${parsed.error} at line ${parsed.line}, column ${parsed.column}`,
+      );
     }
 
     const rawRows = rawParsed.rows;
     const pastedRows = parsed.rows;
-    console.log(`    -> Raw rows count: ${rawRows.length}, Pasted rows count: ${pastedRows.length}`);
+    console.log(
+      `    -> Raw rows count: ${rawRows.length}, Pasted rows count: ${pastedRows.length}`,
+    );
     if (rawRows.length !== pastedRows.length) {
       throw new Error(`Row count mismatch: expected ${rawRows.length}, got ${pastedRows.length}`);
     }
 
     // Exhaustive cell-by-cell comparison (all rows and all 16 columns)
     // Permitted normalization: CRLF (\r\n) normalized to LF (\n) for internal multiline cell text.
-    console.log("    -> Performing cell-by-cell comparison across all rows and columns with newline normalization (CRLF -> LF)...");
+    console.log(
+      "    -> Performing cell-by-cell comparison across all rows and columns with newline normalization (CRLF -> LF)...",
+    );
     let totalCellsChecked = 0;
     for (let r = 0; r < rawRows.length; r++) {
       const rawRow = rawRows[r]!;
       const pastedRow = pastedRows[r]!;
       if (rawRow.length !== pastedRow.length) {
-        throw new Error(`Row ${r} column count mismatch: raw has ${rawRow.length}, pasted has ${pastedRow.length}`);
+        throw new Error(
+          `Row ${r} column count mismatch: raw has ${rawRow.length}, pasted has ${pastedRow.length}`,
+        );
       }
       for (let c = 0; c < rawRow.length; c++) {
         const rawCell = rawRow[c] ?? "";
@@ -394,13 +425,15 @@ async function main() {
         if (normRaw !== normPasted) {
           const colName = rawRows[0]?.[c] ?? `col_${c}`;
           throw new Error(
-            `Cell mismatch at row ${r}, col ${c} (${colName}):\nExpected: ${JSON.stringify(normRaw)}\nGot:      ${JSON.stringify(normPasted)}`
+            `Cell mismatch at row ${r}, col ${c} (${colName}):\nExpected: ${JSON.stringify(normRaw)}\nGot:      ${JSON.stringify(normPasted)}`,
           );
         }
         totalCellsChecked++;
       }
     }
-    console.log(`    -> All-cell comparison: PASS (${totalCellsChecked} cells verified identically, including headers and quoted multiline cells)`);
+    console.log(
+      `    -> All-cell comparison: PASS (${totalCellsChecked} cells verified identically, including headers and quoted multiline cells)`,
+    );
 
     // Byte & Hash Analysis
     const rawBuffer = Buffer.from(rawMockCsv, "utf-8");
@@ -411,15 +444,25 @@ async function main() {
 
     console.log("\n[12] Byte and Line-Ending Analysis:");
     console.log(`    Browser Textarea Value SHA-256: ${rawHash} (${rawBuffer.length} bytes, LF)`);
-    console.log(`    OS Clipboard Pasted File SHA-256: ${pastedHash} (${pastedBuffer.length} bytes)`);
+    console.log(
+      `    OS Clipboard Pasted File SHA-256: ${pastedHash} (${pastedBuffer.length} bytes)`,
+    );
 
     const hasCrlf = clipboardText.includes("\r\n");
     const hasBom = clipboardText.startsWith("\ufeff");
-    console.log(`    -> Pasted Line Endings: ${hasCrlf ? "CRLF (Windows standard)" : "LF (Unix standard)"}`);
-    console.log(`    -> Pasted BOM Present:  ${hasBom ? "YES (UTF-8 with BOM)" : "NO (UTF-8 without BOM)"}`);
+    console.log(
+      `    -> Pasted Line Endings: ${hasCrlf ? "CRLF (Windows standard)" : "LF (Unix standard)"}`,
+    );
+    console.log(
+      `    -> Pasted BOM Present:  ${hasBom ? "YES (UTF-8 with BOM)" : "NO (UTF-8 without BOM)"}`,
+    );
 
-    console.log(`    -> Breakdown: +3 bytes from converting 3 LFs to CRLF, +2 bytes from trailing CRLF addition (origin of trailing newline pending: copy, PowerShell read, or save).`);
-    console.log(`    -> Parsed Content Verification: PASS (Identical when line breaks and trailing newline are normalized).`);
+    console.log(
+      `    -> Breakdown: +3 bytes from converting 3 LFs to CRLF, +2 bytes from trailing CRLF addition (origin of trailing newline pending: copy, PowerShell read, or save).`,
+    );
+    console.log(
+      `    -> Parsed Content Verification: PASS (Identical when line breaks and trailing newline are normalized).`,
+    );
 
     console.log("\n=== Real OS Clipboard Copy & File Persistence Verification SUCCESS ===");
     console.log(`RECORD OF VERIFICATION MILESTONES:
@@ -429,7 +472,6 @@ async function main() {
 - Verification: 48 cells (16 cols x 3 rows) verified identically against raw CSV with multiline newline normalization (CRLF -> LF)
 - Verified Pasted Artifact: ${pastedCsvPath}
 `);
-
   } finally {
     if (session) session.close();
     chrome.kill("SIGKILL");

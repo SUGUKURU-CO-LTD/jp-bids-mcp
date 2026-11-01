@@ -95,6 +95,13 @@ describe("UI Harness & Interaction Verification (F05 / V02-V05 / S03 / C01)", ()
     expect(html).not.toContain("handleDownloadIcs");
     expect(html).not.toContain("handleDownloadMemo");
 
+    // Verify zero-match UI empty state & host theme support are compiled into the UI bundle
+    expect(html).toContain("該当する入札公告はありません（0件）");
+    expect(html).toContain(
+      "条件に一致する入札公告は見つかりませんでした（0件）。検索条件を広げて再検索してください。",
+    );
+    expect(html).toContain(":root[data-theme=dark]");
+
     // Verify pro tools are not registered
     const { tools } = await client.listTools();
     const toolNames = tools.map((t) => t.name);
