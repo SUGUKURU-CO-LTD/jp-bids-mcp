@@ -30,7 +30,8 @@ on:
         type: string
         default: "10"
   schedule:
-    # 毎週月曜 9:17 JST（= 月曜 0:17 UTC）。live・3モデル・1試行
+    # 毎週月曜 9:17 JST（= 月曜 0:17 UTC）。live・3モデル・1試行。
+    # プロモーションクレジットの失効（2026-12-12 00:00 UTC）以降は、mock・Sonnet のみ・上限 $2 に自動で切り替わる。
     - cron: "17 0 * * 1"
   pull_request:
     paths:
@@ -65,6 +66,18 @@ jobs:
       - name: Skip when API key is not configured
         if: env.ANTHROPIC_API_KEY == ''
         run: echo "::notice::ANTHROPIC_API_KEY が未設定のため評価をスキップしました（evals/README.md 参照）"
+
+      - name: Switch scheduled run to low-cost profile after credit expiry
+        # クレジット失効（2026-12-12 00:00 UTC）以降は実費になるため、定期実行だけ固定データ・Sonnet のみにする。
+        # 手動実行（workflow_dispatch）は入力値のまま。
+        if: github.event_name == 'schedule' && env.ANTHROPIC_API_KEY != ''
+        run: |
+          if [ "$(date -u +%Y%m%d)" -ge 20261212 ]; then
+            echo "EVAL_SERVER=mock" >> "$GITHUB_ENV"
+            echo "EVAL_MODELS=claude-sonnet-5-5" >> "$GITHUB_ENV"
+            echo "EVAL_BUDGET_USD=2" >> "$GITHUB_ENV"
+            echo "::notice::クレジット失効後のため mock・Sonnet のみで実行します"
+          fi
 
       - uses: actions/checkout@v5
         if: env.ANTHROPIC_API_KEY != ''
