@@ -77,8 +77,10 @@ jobs:
 
       - name: Install and build server
         if: env.ANTHROPIC_API_KEY != ''
+        # main の devDependencies に vitest 5 と @vitest/coverage-v8 4.x の peer 衝突があり、
+        # 素の npm ci は ERESOLVE で失敗する（2026-11-18 時点）。評価には影響しないため回避する。
         run: |
-          npm ci
+          npm ci --legacy-peer-deps
           npm run build:server
 
       - name: Install eval dependencies
