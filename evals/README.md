@@ -29,7 +29,7 @@ Claude API（Messages API）で実際の Claude モデルに JP Bids の7ツー�
 | 起動方法 | サーバー | モデル | 予算上限（既定） |
 |---|---|---|---|
 | 手動（workflow_dispatch） | 選択（既定 live） | 選択（既定 Opus/Sonnet/Haiku） | 入力値（既定 $10） |
-| 毎週月曜 9:17 JST | live | Opus/Sonnet/Haiku | $5 |
+| 毎週月曜 9:17 JST | live（2026-12-12 以降は mock） | Opus/Sonnet/Haiku（同 Sonnet のみ） | $5（同 $2） |
 | PR（ツール関連ファイルの変更時） | mock | Sonnet | $2 |
 
 キーが未登録なら、何も呼ばずにスキップします。結果は実行ページの Summary に表で出て、`results.json` と `summary.md` が Artifact に30日間残ります。
