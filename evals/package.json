@@ -1,0 +1,13 @@
+{
+  "name": "jp-bids-mcp-evals",
+  "private": true,
+  "type": "module",
+  "description": "Claude API (Messages API) を使った JP Bids MCP のツール選択・引数品質の評価ハーネス",
+  "scripts": {
+    "eval": "tsx run.ts",
+    "eval:dry": "tsx run.ts --dry-run"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "1.4.0"
+  }
+}
