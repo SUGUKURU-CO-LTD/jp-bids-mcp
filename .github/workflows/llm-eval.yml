@@ -1,0 +1,100 @@
+name: LLM Eval (Claude API)
+
+# Claude API で実際のモデルに JP Bids のツールを使わせて採点する。
+# 使い方と費用の考え方は evals/README.md を参照。
+# 必要な Secret: ANTHROPIC_API_KEY（Claude Console の SUGUKURU CO LTD 組織で発行したキー）
+# remote モードのみ: JP_BIDS_SERVICE_KEY（本番 Cloud Run の JP_BIDS_PRO_API_KEYS に登録済みのキー）
+
+on:
+  workflow_dispatch:
+    inputs:
+      server:
+        description: "mock=オフライン fixture / live=実KKJ(stdio) / remote=本番エンドポイント"
+        type: choice
+        options: [mock, live, remote]
+        default: live
+      models:
+        description: "カンマ区切りのモデルID"
+        type: string
+        default: "claude-opus-5-5,claude-sonnet-5-5,claude-haiku-5-5"
+      trials:
+        description: "各ケースの試行回数（ばらつきを見るなら3以上）"
+        type: string
+        default: "1"
+      cases:
+        description: "対象ケース（空=全件。id または tag:xxx をカンマ区切り）"
+        type: string
+        default: ""
+      budget_usd:
+        description: "この実行の概算費用の上限（USD）。超えたら停止"
+        type: string
+        default: "10"
+  schedule:
+    # 毎週月曜 9:17 JST（= 月曜 0:17 UTC）。live・3モデル・1試行
+    - cron: "17 0 * * 1"
+  pull_request:
+    paths:
+      - "src/tools/**"
+      - "src/domain/**"
+      - "src/mcp.ts"
+      - "evals/**"
+      - ".github/workflows/llm-eval.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: llm-eval-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      JP_BIDS_SERVICE_KEY: ${{ secrets.JP_BIDS_SERVICE_KEY }}
+      # PR はオフライン fixture・Sonnet のみ・少額。定期実行は live・3モデル。
+      EVAL_SERVER: ${{ inputs.server || (github.event_name == 'schedule' && 'live') || 'mock' }}
+      EVAL_MODELS: ${{ inputs.models || (github.event_name == 'schedule' && 'claude-opus-5-5,claude-sonnet-5-5,claude-haiku-5-5') || 'claude-sonnet-5-5' }}
+      EVAL_TRIALS: ${{ inputs.trials || '1' }}
+      EVAL_CASES: ${{ inputs.cases || '' }}
+      EVAL_BUDGET_USD: ${{ inputs.budget_usd || (github.event_name == 'pull_request' && '2') || '5' }}
+      EVAL_OUT_DIR: ${{ github.workspace }}/evals/results/run
+    steps:
+      - name: Skip when API key is not configured
+        if: env.ANTHROPIC_API_KEY == ''
+        run: echo "::notice::ANTHROPIC_API_KEY が未設定のため評価をスキップしました（evals/README.md 参照）"
+
+      - uses: actions/checkout@v5
+        if: env.ANTHROPIC_API_KEY != ''
+
+      - uses: actions/setup-node@v5
+        if: env.ANTHROPIC_API_KEY != ''
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install and build server
+        if: env.ANTHROPIC_API_KEY != ''
+        run: |
+          npm ci
+          npm run build:server
+
+      - name: Install eval dependencies
+        if: env.ANTHROPIC_API_KEY != ''
+        working-directory: evals
+        run: npm ci
+
+      - name: Run eval
+        if: env.ANTHROPIC_API_KEY != ''
+        run: npx tsx evals/run.ts
+
+      - name: Upload results
+        if: always() && env.ANTHROPIC_API_KEY != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: llm-eval-${{ github.run_id }}
+          path: evals/results/run
+          if-no-files-found: ignore
+          retention-days: 30
