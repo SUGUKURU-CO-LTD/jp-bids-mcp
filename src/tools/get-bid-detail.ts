@@ -25,7 +25,7 @@ export function registerGetBidDetail(server: McpServer, client: KkjClient): void
     {
       title: "官公需入札詳細",
       description:
-        "入札Keyまたはbid_refから1件の詳細を取得する。添付資料は保存せず公式サイトのURIのみ返す。USE THIS WHEN: search_bids/list_recent_bids が返した bid_ref や Key から公式公告ページ・添付URI・機関情報を確認したいとき。DO NOT USE WHEN: Key や bid_ref がまだ無いとき（search_bids を先に使う）。Fetch full details for one bid by bid_ref or key without storing attachments. Ambil detail lengkap satu tender berdasarkan bid_ref atau kunci tanpa menyimpan lampiran.",
+        "入札Keyまたはbid_refから1件の詳細を取得する。添付資料は保存せず公式サイトのURIのみ返す。USE THIS WHEN: search_bids/list_recent_bids が返した bid_ref や Key から公式公告ページ・添付URI・機関情報を確認したいとき。DO NOT USE WHEN: Key や bid_ref がまだ無いとき（search_bids を先に使う）。bid_ref は長い署名付きトークンなので、検索結果の値を一字一句そのまま渡す。bid_ref が無効・期限切れのエラーになったら、同じ案件の bid_key（Key）だけを指定して再試行する。Fetch full details for one bid by bid_ref or key without storing attachments. Pass bid_ref exactly as returned; if it is rejected as invalid or expired, retry with bid_key only. Ambil detail lengkap satu tender berdasarkan bid_ref atau kunci tanpa menyimpan lampiran.",
       inputSchema,
       outputSchema: BidSearchResultSchema.shape,
       annotations: {

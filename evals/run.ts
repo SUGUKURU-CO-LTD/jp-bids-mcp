@@ -140,6 +140,7 @@ interface ToolCall {
   name: string;
   input: Record<string, unknown>;
   isError: boolean;
+  errorText?: string;
 }
 
 interface RunRecord {
@@ -389,7 +390,12 @@ async function runLocal(
         isError = true;
         text = `MCP call failed: ${err instanceof Error ? err.message : String(err)}`;
       }
-      toolCalls.push({ name: u.name, input, isError });
+      toolCalls.push({
+        name: u.name,
+        input,
+        isError,
+        ...(isError ? { errorText: text.slice(0, 300) } : {}),
+      });
       results.push({
         type: "tool_result",
         tool_use_id: u.id,
@@ -463,7 +469,10 @@ async function runRemote(
       }
       if (b.type === "mcp_tool_result") {
         const call = pending.get(b.tool_use_id);
-        if (call) call.isError = b.is_error === true;
+        if (call) {
+          call.isError = b.is_error === true;
+          if (call.isError) call.errorText = JSON.stringify(b.content).slice(0, 300);
+        }
       }
     }
     finalText = texts.join("\n");
@@ -485,6 +494,13 @@ async function runRemote(
 }
 
 // ---------- レポート ----------
+
+// 長い文字列（bid_ref など）は先頭と長さだけ表示する
+function shortArgs(input: Record<string, unknown>): string {
+  return JSON.stringify(input, (_k, v) =>
+    typeof v === "string" && v.length > 60 ? `${v.slice(0, 16)}…(${v.length}文字)` : v,
+  );
+}
 
 function pct(n: number, d: number): string {
   return d === 0 ? "-" : `${Math.round((n / d) * 100)}%`;
@@ -541,10 +557,13 @@ function buildSummary(cfg: Config, records: RunRecord[], stoppedByBudget: boolea
     lines.push("## 不合格の内訳");
     lines.push("");
     for (const r of failed) {
-      const calls = r.toolCalls.map((t) => `${t.name}(${JSON.stringify(t.input)})`).join(" → ");
+      const calls = r.toolCalls.map((t) => `${t.name}(${shortArgs(t.input)})`).join(" → ");
       lines.push(`### ${r.caseId} / ${r.model} / 試行${r.trial}`);
       for (const f of r.failures) lines.push(`- ${f}`);
       lines.push(`- 呼び出し: ${calls || "なし"}`);
+      for (const t of r.toolCalls.filter((x) => x.isError)) {
+        lines.push(`- エラー内容（${t.name}）: ${(t.errorText ?? "").replace(/\s+/g, " ")}`);
+      }
       lines.push("");
     }
   }
