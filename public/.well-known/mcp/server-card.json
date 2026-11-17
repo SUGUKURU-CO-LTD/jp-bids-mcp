@@ -19,12 +19,12 @@
     {
       "name": "search_bids",
       "title": "官公需入札検索",
-      "description": "日本全国の官公需入札情報を検索する。USE THIS WHEN: キーワード・件名・発注機関・都道府県・期間で入札候補を探したいとき。DO NOT USE WHEN: 既に Key があり1件の詳細が欲しいとき（get_bid_detail を使う）、追うべき順に並べたいとき（rank_bids を使う）。Search Japanese public procurement bids by keyword, project name, organization, prefecture, or date range. Cari tender pengadaan pemerintah Jepang berdasarkan kata kunci, nama proyek, instansi, prefektur, atau rentang tanggal.",
+      "description": "日本全国の官公需入札情報を検索する。USE THIS WHEN: キーワード・件名・発注機関・都道府県・期間で入札候補を探したいとき。DO NOT USE WHEN: 既に Key があり1件の詳細が欲しいとき（get_bid_detail を使う）、追うべき順に並べたいとき（rank_bids を使う）。必須: query・project_name・organization_name・prefecture のいずれか1つ以上（区分・資格・日付だけでは不可。全国から探すときは query に代表的な語を入れる）。Search Japanese public procurement bids by keyword, project name, organization, prefecture, or date range. Requires at least one of query, project_name, organization_name, or prefecture. Cari tender pengadaan pemerintah Jepang berdasarkan kata kunci, nama proyek, instansi, prefektur, atau rentang tanggal.",
       "inputSchema": {
         "type": "object",
         "properties": {
           "query": {
-            "description": "自由記述キーワード。複数キーワードはAND結合で検索されます。",
+            "description": "自由記述キーワード。複数キーワードはAND結合で検索されます。検索時は query・project_name・organization_name・prefecture のうち少なくとも1つが必要です（区分・資格・日付だけでは検索できません）。",
             "type": "string",
             "minLength": 1
           },
@@ -146,12 +146,12 @@
             ]
           },
           "category": {
-            "description": "入札区分。物品、役務、工事、その他。",
+            "description": "入札区分。物品・工事・役務。",
             "type": "string",
             "enum": ["物品", "工事", "役務"]
           },
           "procedure_type": {
-            "description": "公示種別。一般競争入札、指名競争入札、随意契約など。",
+            "description": "公示種別。一般競争入札・簡易公募型競争入札・簡易公募型指名競争入札。",
             "type": "string",
             "enum": ["一般競争入札", "簡易公募型競争入札", "簡易公募型指名競争入札"]
           },
@@ -352,14 +352,7 @@
               "type": "string"
             },
             "additionalProperties": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "number"
-                }
-              ]
+              "type": ["string", "number"]
             }
           },
           "attribution": {
@@ -383,7 +376,7 @@
               "accessedAt": {
                 "type": "string",
                 "format": "date-time",
-                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
               }
             },
             "required": [
@@ -402,14 +395,7 @@
                 "type": "boolean"
               },
               "next_cursor": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
+                "type": ["string", "null"]
               },
               "total_count": {
                 "type": "integer",
@@ -501,7 +487,7 @@
             ]
           },
           "category": {
-            "description": "入札区分。物品、役務、工事、その他。",
+            "description": "入札区分。物品・工事・役務。",
             "type": "string",
             "enum": ["物品", "工事", "役務"]
           },
@@ -664,14 +650,7 @@
               "type": "string"
             },
             "additionalProperties": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "number"
-                }
-              ]
+              "type": ["string", "number"]
             }
           },
           "attribution": {
@@ -695,7 +674,7 @@
               "accessedAt": {
                 "type": "string",
                 "format": "date-time",
-                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
               }
             },
             "required": [
@@ -714,14 +693,7 @@
                 "type": "boolean"
               },
               "next_cursor": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
+                "type": ["string", "null"]
               },
               "total_count": {
                 "type": "integer",
@@ -914,14 +886,7 @@
               "type": "string"
             },
             "additionalProperties": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "number"
-                }
-              ]
+              "type": ["string", "number"]
             }
           },
           "attribution": {
@@ -945,7 +910,7 @@
               "accessedAt": {
                 "type": "string",
                 "format": "date-time",
-                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
               }
             },
             "required": [
@@ -964,14 +929,7 @@
                 "type": "boolean"
               },
               "next_cursor": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
+                "type": ["string", "null"]
               },
               "total_count": {
                 "type": "integer",
@@ -1010,7 +968,7 @@
         "type": "object",
         "properties": {
           "query": {
-            "description": "自由記述キーワード。複数キーワードはAND結合で検索されます。",
+            "description": "自由記述キーワード。複数キーワードはAND結合で検索されます。検索時は query・project_name・organization_name・prefecture のうち少なくとも1つが必要です（区分・資格・日付だけでは検索できません）。",
             "type": "string",
             "minLength": 1
           },
@@ -1132,12 +1090,12 @@
             ]
           },
           "category": {
-            "description": "入札区分。物品、役務、工事、その他。",
+            "description": "入札区分。物品・工事・役務。",
             "type": "string",
             "enum": ["物品", "工事", "役務"]
           },
           "procedure_type": {
-            "description": "公示種別。一般競争入札、指名競争入札、随意契約など。",
+            "description": "公示種別。一般競争入札・簡易公募型競争入札・簡易公募型指名競争入札。",
             "type": "string",
             "enum": ["一般競争入札", "簡易公募型競争入札", "簡易公募型指名競争入札"]
           },
@@ -1425,14 +1383,7 @@
               "type": "string"
             },
             "additionalProperties": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "number"
-                }
-              ]
+              "type": ["string", "number"]
             }
           },
           "attribution": {
@@ -1456,7 +1407,7 @@
               "accessedAt": {
                 "type": "string",
                 "format": "date-time",
-                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
               }
             },
             "required": [
@@ -1800,74 +1751,25 @@
                 }
               },
               "questionDeadline": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
+                "type": ["string", "null"]
               },
               "tenderSubmissionDeadline": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
+                "type": ["string", "null"]
               },
               "openingDate": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
+                "type": ["string", "null"]
               },
               "briefingDate": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
+                "type": ["string", "null"]
               },
               "deliveryDeadline": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
+                "type": ["string", "null"]
               },
               "contractPeriod": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
+                "type": ["string", "null"]
               },
               "contactPoint": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
+                "type": ["string", "null"]
               },
               "disqualification": {
                 "type": "array",
@@ -1876,14 +1778,7 @@
                 }
               },
               "estimatedBudget": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
+                "type": ["string", "null"]
               },
               "evaluationCriteria": {
                 "type": "array",
@@ -1957,7 +1852,7 @@
               "accessedAt": {
                 "type": "string",
                 "format": "date-time",
-                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
               }
             },
             "required": [
@@ -2000,7 +1895,7 @@
         "type": "object",
         "properties": {
           "query": {
-            "description": "自由記述キーワード。複数キーワードはAND結合で検索されます。",
+            "description": "自由記述キーワード。複数キーワードはAND結合で検索されます。検索時は query・project_name・organization_name・prefecture のうち少なくとも1つが必要です（区分・資格・日付だけでは検索できません）。",
             "type": "string",
             "minLength": 1
           },
@@ -2122,12 +2017,12 @@
             ]
           },
           "category": {
-            "description": "入札区分。物品、役務、工事、その他。",
+            "description": "入札区分。物品・工事・役務。",
             "type": "string",
             "enum": ["物品", "工事", "役務"]
           },
           "procedure_type": {
-            "description": "公示種別。一般競争入札、指名競争入札、随意契約など。",
+            "description": "公示種別。一般競争入札・簡易公募型競争入札・簡易公募型指名競争入札。",
             "type": "string",
             "enum": ["一般競争入札", "簡易公募型競争入札", "簡易公募型指名競争入札"]
           },
@@ -2291,7 +2186,7 @@
               "accessedAt": {
                 "type": "string",
                 "format": "date-time",
-                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
               }
             },
             "required": [
@@ -2344,7 +2239,7 @@
         "type": "object",
         "properties": {
           "query": {
-            "description": "自由記述キーワード。複数キーワードはAND結合で検索されます。",
+            "description": "自由記述キーワード。複数キーワードはAND結合で検索されます。検索時は query・project_name・organization_name・prefecture のうち少なくとも1つが必要です（区分・資格・日付だけでは検索できません）。",
             "type": "string",
             "minLength": 1
           },
@@ -2466,12 +2361,12 @@
             ]
           },
           "category": {
-            "description": "入札区分。物品、役務、工事、その他。",
+            "description": "入札区分。物品・工事・役務。",
             "type": "string",
             "enum": ["物品", "工事", "役務"]
           },
           "procedure_type": {
-            "description": "公示種別。一般競争入札、指名競争入札、随意契約など。",
+            "description": "公示種別。一般競争入札・簡易公募型競争入札・簡易公募型指名競争入札。",
             "type": "string",
             "enum": ["一般競争入札", "簡易公募型競争入札", "簡易公募型指名競争入札"]
           },
@@ -2672,14 +2567,7 @@
               "type": "string"
             },
             "additionalProperties": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "number"
-                }
-              ]
+              "type": ["string", "number"]
             }
           },
           "attribution": {
@@ -2703,7 +2591,7 @@
               "accessedAt": {
                 "type": "string",
                 "format": "date-time",
-                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
               }
             },
             "required": [
@@ -2722,14 +2610,7 @@
                 "type": "boolean"
               },
               "next_cursor": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
+                "type": ["string", "null"]
               },
               "total_count": {
                 "type": "integer",
