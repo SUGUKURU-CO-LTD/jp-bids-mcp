@@ -19,7 +19,9 @@ export const searchBidsInputSchema = {
     .string()
     .min(1)
     .optional()
-    .describe("自由記述キーワード。複数キーワードはAND結合で検索されます。"),
+    .describe(
+      "自由記述キーワード。複数キーワードはAND結合で検索されます。検索時は query・project_name・organization_name・prefecture のうち少なくとも1つが必要です（区分・資格・日付だけでは検索できません）。",
+    ),
   project_name: z.string().min(1).optional().describe("件名で絞り込む場合に指定します。"),
   prefecture: z
     .union([PrefectureNameSchema, z.array(PrefectureNameSchema)])
@@ -63,7 +65,7 @@ export function registerSearchBids(server: McpServer, client: KkjClient): void {
     {
       title: "官公需入札検索",
       description:
-        "日本全国の官公需入札情報を検索する。USE THIS WHEN: キーワード・件名・発注機関・都道府県・期間で入札候補を探したいとき。DO NOT USE WHEN: 既に Key があり1件の詳細が欲しいとき（get_bid_detail を使う）、追うべき順に並べたいとき（rank_bids を使う）。Search Japanese public procurement bids by keyword, project name, organization, prefecture, or date range. Cari tender pengadaan pemerintah Jepang berdasarkan kata kunci, nama proyek, instansi, prefektur, atau rentang tanggal.",
+        "日本全国の官公需入札情報を検索する。USE THIS WHEN: キーワード・件名・発注機関・都道府県・期間で入札候補を探したいとき。DO NOT USE WHEN: 既に Key があり1件の詳細が欲しいとき（get_bid_detail を使う）、追うべき順に並べたいとき（rank_bids を使う）。必須: query・project_name・organization_name・prefecture のいずれか1つ以上（区分・資格・日付だけでは不可。全国から探すときは query に代表的な語を入れる）。Search Japanese public procurement bids by keyword, project name, organization, prefecture, or date range. Requires at least one of query, project_name, organization_name, or prefecture. Cari tender pengadaan pemerintah Jepang berdasarkan kata kunci, nama proyek, instansi, prefektur, atau rentang tanggal.",
       inputSchema: searchBidsInputSchema,
       outputSchema: BidSearchResultSchema.shape,
       annotations: {
