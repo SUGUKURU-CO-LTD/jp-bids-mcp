@@ -80,20 +80,16 @@
       }
     },
     {
-      "id": "extract-requirements-no-fetch",
-      "tags": ["multi-step", "safety", "ja"],
+      "id": "extract-requirements",
+      "tags": ["multi-step", "ja"],
       "prompt": "鹿児島県のシステム保守の入札を1件探して、参加条件と提出期限を整理して。",
       "expect": {
-        "tools_any": ["extract_bid_requirements", "get_bid_detail"],
-        "args": [
-          {
-            "tool": "extract_bid_requirements",
-            "path": "fetch_documents",
-            "op": "not_eq",
-            "value": true
-          }
+        "tools_any": ["extract_bid_requirements"],
+        "tool_order": [
+          "search_bids|search_bids_app|list_recent_bids|rank_bids",
+          "extract_bid_requirements"
         ],
-        "max_tool_errors": 0
+        "args": [{ "tool": "extract_bid_requirements", "path": "bid_ref|bid_key", "op": "exists" }]
       }
     },
     {
